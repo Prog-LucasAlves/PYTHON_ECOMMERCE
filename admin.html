@@ -14,9 +14,10 @@
     <div class="login-box">
       <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee.svg/200px-Shopee.svg.png" alt="Shopee" height="40"/>
       <h2>Painel Admin</h2>
+      <input type="email" id="loginEmail" placeholder="E-mail" style="margin-bottom:8px" onkeydown="if(event.key==='Enter')doLogin()"/>
       <input type="password" id="loginPassword" placeholder="Senha" onkeydown="if(event.key==='Enter')doLogin()"/>
       <button onclick="doLogin()" class="btn-primary">Entrar</button>
-      <p id="loginError" style="color:red;margin-top:8px;display:none">Senha incorreta.</p>
+      <p id="loginError" style="color:red;margin-top:8px;display:none">E-mail ou senha incorretos.</p>
     </div>
   </div>
 
@@ -126,6 +127,7 @@
     </main>
   </div>
 
-  <script src="js/admin.js"></script>
+  <!-- Firebase SDK -->
+  <script type="module" src="js/admin.js"></script>
 </body>
 </html>

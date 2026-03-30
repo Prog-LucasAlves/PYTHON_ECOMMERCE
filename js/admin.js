@@ -1,6 +1,23 @@
+// ── FIREBASE CONFIG ───────────────────────────────────────────
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC4yyyPqrVJRx5ZBdKmlJQizcnP4KkaHj0",
+  authDomain: "e-commerce-shopee.firebaseapp.com",
+  projectId: "e-commerce-shopee",
+  storageBucket: "e-commerce-shopee.firebasestorage.app",
+  messagingSenderId: "152384004387",
+  appId: "1:152384004387:web:7569ae1f73efec9d886c96",
+  measurementId: "G-DDCGPWH0XD"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
 // ── CONFIG ────────────────────────────────────────────────────
-const ADMIN_PASSWORD = 'shopee123';
-const STORAGE_KEY    = 'shopee_products';
+const STORAGE_KEY = 'shopee_products';
 
 // ── STATE ─────────────────────────────────────────────────────
 let products  = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
@@ -8,33 +25,34 @@ let editingId = null;
 let imageCount = 0;
 
 // ── LOGIN ─────────────────────────────────────────────────────
-if (sessionStorage.getItem('admin_auth') === '1') {
-  document.getElementById('loginOverlay').style.display = 'none';
-  document.getElementById('adminPanel').style.display = 'block';
-  setTimeout(() => { renderAdminList(); initImageFields(); }, 0);
-}
-
-function doLogin() {
-  const pw = document.getElementById('loginPassword').value;
-  if (pw === ADMIN_PASSWORD) {
-    sessionStorage.setItem('admin_auth', '1');
+onAuthStateChanged(auth, user => {
+  if (user) {
     document.getElementById('loginOverlay').style.display = 'none';
     document.getElementById('adminPanel').style.display = 'block';
     renderAdminList();
     initImageFields();
   } else {
-    document.getElementById('loginError').style.display = 'block';
-    document.getElementById('loginPassword').value = '';
-    document.getElementById('loginPassword').focus();
+    document.getElementById('loginOverlay').style.display = 'flex';
+    document.getElementById('adminPanel').style.display = 'none';
   }
+});
+
+function doLogin() {
+  const email = document.getElementById('loginEmail').value;
+  const pw    = document.getElementById('loginPassword').value;
+  signInWithEmailAndPassword(auth, email, pw)
+    .then(() => {
+      document.getElementById('loginError').style.display = 'none';
+    })
+    .catch(() => {
+      document.getElementById('loginError').style.display = 'block';
+      document.getElementById('loginPassword').value = '';
+      document.getElementById('loginPassword').focus();
+    });
 }
 
 function doLogout() {
-  sessionStorage.removeItem('admin_auth');
-  document.getElementById('loginOverlay').style.display = 'flex';
-  document.getElementById('adminPanel').style.display = 'none';
-  document.getElementById('loginPassword').value = '';
-  document.getElementById('loginError').style.display = 'none';
+  signOut(auth);
 }
 
 // ── IMAGE LIST MANAGEMENT ──────────────────────────────────────
