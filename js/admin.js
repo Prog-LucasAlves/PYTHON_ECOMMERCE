@@ -20,6 +20,7 @@ const CLICKS_KEY   = 'shopee_clicks';
 
 // ── STATE ─────────────────────────────────────────────────────
 let products  = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+console.log('[INIT] Loaded', products.length, 'products from localStorage');
 let editingId = null;
 let imageCount = 0;
 
@@ -252,8 +253,12 @@ function editProduct(id) {
 function deleteProduct(id) {
   if (!confirm('Tem certeza que quer remover este produto?')) return;
   const p = products.find(x => x.id === id);
+  console.log('[DELETE] Before:', products.length, 'products');
+  console.log('[DELETE] Produto a remover:', p?.name, 'ID:', id);
   products = products.filter(p => p.id !== id);
+  console.log('[DELETE] After filter:', products.length, 'products');
   saveToStorage();
+  console.log('[DELETE] localStorage após saveToStorage:', localStorage.getItem(STORAGE_KEY)?.length, 'chars');
   if (p) addHistory('delete', p);
   renderAdminList();
   renderDashboard();
