@@ -125,13 +125,16 @@ header {
 
 /* ========== FILTERS ========== */
 .filters-bar {
-  display: flex; flex-wrap: wrap; gap: 8px;
-  max-width: 1200px; margin: 20px auto 0; padding: 0 16px;
+  display: flex; gap: 8px;
+  max-width: 1200px; margin: 16px auto 0; padding: 0 16px;
+  overflow-x: auto; scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
+.filters-bar::-webkit-scrollbar { display: none; }
 .filter-btn {
   background: #fff; border: 1.5px solid #ddd; border-radius: 20px;
-  padding: 7px 16px; cursor: pointer; font-size: 0.85rem;
-  transition: all .2s;
+  padding: 7px 14px; cursor: pointer; font-size: 0.82rem;
+  transition: all .2s; white-space: nowrap; flex-shrink: 0;
 }
 .filter-btn:hover  { border-color: #ee4d2d; color: #ee4d2d; }
 .filter-btn.active { background: #ee4d2d; color: #fff; border-color: #ee4d2d; }
