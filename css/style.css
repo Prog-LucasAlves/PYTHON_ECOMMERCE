@@ -1004,6 +1004,16 @@ footer {
 .dash-empty { color: #bbb; font-size: .82rem; text-align: center; padding: 12px 0; }
 .admin-item-scheduled { border-left: 3px solid #ff9800; }
 
+/* ── ADMIN TELEGRAM SHARE BUTTON ────────────────────────────── */
+.btn-tg-share {
+  background: #229ED9; color: #fff; border: none;
+  border-radius: 6px; width: 34px; height: 34px;
+  cursor: pointer; display: flex; align-items: center;
+  justify-content: center; font-size: .9rem;
+  transition: background .2s, transform .15s;
+}
+.btn-tg-share:hover { background: #1a8bbf; transform: scale(1.1); }
+
 /* ── PWA INSTALL BANNER ──────────────────────────────────────── */
 .pwa-banner {
   position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
