@@ -473,6 +473,8 @@ function renderProducts() {
 
 function _renderFiltered(grid, empty, search) {
   let filtered = [...allProducts];
+  // Hide products scheduled for the future
+  filtered = filtered.filter(p => !p.publishDate || new Date(p.publishDate) <= new Date());
   if (currentCategory !== 'todos') filtered = filtered.filter(p => p.category === currentCategory);
   if (search) filtered = filtered.filter(p => p.name.toLowerCase().includes(search));
   if (priceMin !== null) filtered = filtered.filter(p => p.price >= priceMin);
@@ -596,7 +598,7 @@ function cardHTML(p) {
       </div>
     </div>
         <div class="card-btn">🛒 Comprar na Shopee</div>
-    $((() => { const t = p.countdown ? new Date(p.countdown).getTime() : null; const s = t ? renderCountdownStr(t) : null; return s ? `<div class="card-countdown-wrap"><span class="card-countdown" data-countdown="${t}">⏰ Oferta encerra em: ${s}</span></div>` : ''; })())
+    ${(() => { const t = p.countdown ? new Date(p.countdown).getTime() : null; const s = t ? renderCountdownStr(t) : null; return s ? `<div class="card-countdown-wrap"><span class="card-countdown" data-countdown="${t}">⏰ Oferta encerra em: ${s}</span></div>` : ''; })()}
     <button class="card-compare-btn ${compareList.includes(p.id)?'active':''}" data-pid="${p.id}"
       onclick="toggleCompare(${p.id},event)" title="Adicionar para comparar">
       <i class="fas fa-columns"></i>
@@ -621,6 +623,10 @@ let modalIndex   = 0;
 function openProductModal(id, startIdx) {
   const p = allProducts.find(x => x.id === id);
   if (!p) return;
+  // Track click
+  const clicks = JSON.parse(localStorage.getItem('shopee_clicks') || '{}');
+  clicks[id] = (clicks[id] || 0) + 1;
+  localStorage.setItem('shopee_clicks', JSON.stringify(clicks));
   modalProduct = p;
   const images = getImages(p);
   const allMedia = [...images, ...(p.video ? ['__video__'] : [])];

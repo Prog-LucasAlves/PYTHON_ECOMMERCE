@@ -37,6 +37,20 @@
     </header>
 
     <main class="admin-main">
+      <!-- DASHBOARD -->
+      <section class="admin-form-card" style="padding:20px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+          <h2><i class="fas fa-chart-bar"></i> Dashboard</h2>
+          <div style="display:flex;gap:10px;align-items:center">
+            <button class="btn-secondary" onclick="triggerCSVImport()">
+              <i class="fas fa-file-csv"></i> Importar CSV
+            </button>
+            <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="importCSV(event)"/>
+          </div>
+        </div>
+        <div id="dashboardSection"></div>
+      </section>
+
       <!-- FORM -->
       <section class="admin-form-card">
         <h2 id="formTitle"><i class="fas fa-plus-circle"></i> Adicionar Produto</h2>
@@ -119,6 +133,11 @@
               <label>⏰ Oferta até (data/hora)</label>
               <input type="datetime-local" id="prodCountdown"/>
               <small style="color:#aaa">Deixe em branco se não tiver prazo.</small>
+            </div>
+            <div class="form-group">
+              <label>🗓️ Publicar em (agendar)</label>
+              <input type="datetime-local" id="prodPublishDate"/>
+              <small style="color:#aaa">Produto ficará oculto até essa data/hora.</small>
             </div>
           </div>
           <div class="form-actions">

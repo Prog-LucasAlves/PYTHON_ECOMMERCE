@@ -890,3 +890,51 @@ footer {
   .modal-info { padding: 16px; }
   .modal-price { font-size: 1.3rem; }
 }
+
+/* ── ADMIN DASHBOARD ─────────────────────────────────────────── */
+.dash-stats {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px; margin-bottom: 20px;
+}
+.dash-card {
+  display: flex; align-items: center; gap: 12px;
+  background: #fafafa; border: 1px solid #eee; border-radius: 10px; padding: 14px 16px;
+}
+.dash-icon {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: #ee4d2d22; color: #ee4d2d;
+  display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0;
+}
+.dash-icon.clicks { background: #1976d222; color: #1976d2; }
+.dash-icon.sched  { background: #ff980022; color: #ff9800; }
+.dash-icon.cat    { background: #4caf5022; color: #4caf50; }
+.dash-value { font-size: 1.3rem; font-weight: 800; color: #333; line-height: 1; }
+.dash-label { font-size: .72rem; color: #999; margin-top: 2px; }
+.dash-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 700px) { .dash-row { grid-template-columns: 1fr; } }
+.dash-panel {
+  background: #fafafa; border: 1px solid #eee; border-radius: 10px; padding: 14px 16px;
+}
+.dash-panel h3 {
+  font-size: .85rem; font-weight: 700; color: #888; text-transform: uppercase;
+  letter-spacing: .4px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+}
+.dash-top-item, .dash-hist-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 6px 0; border-bottom: 1px solid #f0f0f0; font-size: .82rem;
+}
+.dash-top-item:last-child, .dash-hist-item:last-child { border-bottom: none; }
+.dash-top-item img { width: 36px; height: 36px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+.dash-top-name { flex: 1; color: #444; }
+.dash-top-count { font-weight: 700; color: #1976d2; font-size: .78rem; white-space: nowrap; }
+.hist-icon { font-size: .85rem; flex-shrink: 0; }
+.hist-icon.create { color: #4caf50; }
+.hist-icon.edit   { color: #1976d2; }
+.hist-icon.delete { color: #f44336; }
+.dash-hist-dt  { font-size: .72rem; color: #aaa; white-space: nowrap; }
+.dash-hist-lbl { font-size: .7rem; padding: 2px 8px; border-radius: 10px; white-space: nowrap; }
+.dash-hist-lbl.create { background: #e8f5e9; color: #388e3c; }
+.dash-hist-lbl.edit   { background: #e3f2fd; color: #1565c0; }
+.dash-hist-lbl.delete { background: #fce4ec; color: #c62828; }
+.dash-empty { color: #bbb; font-size: .82rem; text-align: center; padding: 12px 0; }
+.admin-item-scheduled { border-left: 3px solid #ff9800; }

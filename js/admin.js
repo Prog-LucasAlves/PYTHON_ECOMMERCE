@@ -17,12 +17,21 @@ const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
 // ── CONFIG ────────────────────────────────────────────────────
-const STORAGE_KEY = 'shopee_products';
+const STORAGE_KEY  = 'shopee_products';
+const HISTORY_KEY  = 'shopee_history';
+const CLICKS_KEY   = 'shopee_clicks';
 
 // ── STATE ─────────────────────────────────────────────────────
 let products  = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
 let editingId = null;
 let imageCount = 0;
+
+// ── HISTORY HELPER ────────────────────────────────────────────
+function addHistory(action, product) {
+  const hist = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+  hist.unshift({ ts: Date.now(), action, id: product.id, name: product.name });
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(hist.slice(0, 100)));
+}
 
 // ── LOGIN ─────────────────────────────────────────────────────
 onAuthStateChanged(auth, user => {
@@ -30,6 +39,7 @@ onAuthStateChanged(auth, user => {
     document.getElementById('loginOverlay').style.display = 'none';
     document.getElementById('adminPanel').style.display = 'block';
     renderAdminList();
+    renderDashboard();
     initImageFields();
   } else {
     document.getElementById('loginOverlay').style.display = 'flex';
@@ -67,6 +77,9 @@ window.removeImageField   = removeImageField;
 window.updateImagesPreview = updateImagesPreview;
 window.previewVideo       = previewVideo;
 window.renderAdminList    = renderAdminList;
+window.renderDashboard    = renderDashboard;
+window.importCSV          = importCSV;
+window.triggerCSVImport   = triggerCSVImport;
 
 // ── IMAGE LIST MANAGEMENT ──────────────────────────────────────
 function initImageFields() {
@@ -165,6 +178,7 @@ function saveProduct(e) {
     soldCount:     parseInt(document.getElementById('prodSoldCount')?.value) || null,
     featured:      document.getElementById('prodFeatured').checked,
     countdown:     document.getElementById('prodCountdown')?.value || null,
+    publishDate:   document.getElementById('prodPublishDate')?.value || null,
   };
 
   if (editingId) {
@@ -175,8 +189,10 @@ function saveProduct(e) {
   }
 
   saveToStorage();
+  addHistory(editingId ? 'edit' : 'create', product);
   resetForm();
   renderAdminList();
+  renderDashboard();
   showToast(editingId ? 'Produto atualizado! ✅' : 'Produto adicionado! ✅');
 }
 
@@ -204,6 +220,8 @@ function editProduct(id) {
     document.getElementById('prodVideo').value = p.video || '';
   if (document.getElementById('prodCountdown'))
     document.getElementById('prodCountdown').value = p.countdown || '';
+  if (document.getElementById('prodPublishDate'))
+    document.getElementById('prodPublishDate').value = p.publishDate || '';
 
   // Populate image fields
   const list = document.getElementById('imagesList');
@@ -220,9 +238,12 @@ function editProduct(id) {
 // ── DELETE ────────────────────────────────────────────────────
 function deleteProduct(id) {
   if (!confirm('Tem certeza que quer remover este produto?')) return;
+  const p = products.find(x => x.id === id);
   products = products.filter(p => p.id !== id);
   saveToStorage();
+  if (p) addHistory('delete', p);
   renderAdminList();
+  renderDashboard();
   showToast('Produto removido. 🗑️');
 }
 
@@ -258,17 +279,22 @@ function renderAdminList() {
     const discount = p.originalPrice && p.originalPrice > p.price
       ? Math.round((1 - p.price / p.originalPrice) * 100) : null;
     const mediaCount = imgs.length + (p.video ? 1 : 0);
+    const clicks   = JSON.parse(localStorage.getItem(CLICKS_KEY) || '{}');
+    const clickN   = clicks[p.id] || 0;
+    const isScheduled = p.publishDate && new Date(p.publishDate) > new Date();
     return `
-    <div class="admin-item">
+    <div class="admin-item${isScheduled ? ' admin-item-scheduled' : ''}">
       <img src="${mainImg}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/60x60?text=?'"/>
       <div class="admin-item-info">
-        <div class="name">${p.featured ? '⭐ ' : ''}${p.name}</div>
+        <div class="name">${p.featured ? '⭐ ' : ''}${isScheduled ? '🗓️ ' : ''}${p.name}</div>
         <div class="meta">
           R$ ${Number(p.price).toFixed(2).replace('.',',')}
           ${discount ? `· <span style="color:#ee4d2d">-${discount}%</span>` : ''}
           · ${categoryLabel(p.category)}
           ${mediaCount > 1 ? `· <span style="color:#888">📷 ${mediaCount} mídias</span>` : ''}
           ${p.video ? '· <span style="color:#888">🎬 vídeo</span>' : ''}
+          ${clickN ? `· <span style="color:#1976d2"><i class="fas fa-mouse-pointer"></i> ${clickN}</span>` : ''}
+          ${isScheduled ? `· <span style="color:#ff9800">Pub: ${new Date(p.publishDate).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span>` : ''}
         </div>
       </div>
       <div class="admin-item-actions">
@@ -286,6 +312,128 @@ function categoryLabel(cat) {
   const map = { eletronicos:'📱 Eletrônicos', moda:'👗 Moda', casa:'🏠 Casa',
                 beleza:'💄 Beleza', esporte:'⚽ Esporte', outros:'✨ Outros' };
   return map[cat] || cat;
+}
+
+// ── DASHBOARD ─────────────────────────────────────────────────
+function renderDashboard() {
+  const el = document.getElementById('dashboardSection');
+  if (!el) return;
+  const clicks  = JSON.parse(localStorage.getItem(CLICKS_KEY) || '{}');
+  const history = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+
+  const totalClicks  = Object.values(clicks).reduce((a, b) => a + b, 0);
+  const scheduled    = products.filter(p => p.publishDate && new Date(p.publishDate) > new Date()).length;
+
+  const catCount = {};
+  products.forEach(p => { catCount[p.category] = (catCount[p.category] || 0) + 1; });
+  const topCat = Object.entries(catCount).sort((a, b) => b[1] - a[1])[0];
+
+  const topClicked = Object.entries(clicks)
+    .map(([id, n]) => ({ p: products.find(x => x.id === Number(id)), n }))
+    .filter(x => x.p)
+    .sort((a, b) => b.n - a.n)
+    .slice(0, 5);
+
+  el.innerHTML = `
+    <div class="dash-stats">
+      <div class="dash-card">
+        <div class="dash-icon"><i class="fas fa-box"></i></div>
+        <div class="dash-info"><div class="dash-value">${products.length}</div><div class="dash-label">Produtos</div></div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-icon clicks"><i class="fas fa-mouse-pointer"></i></div>
+        <div class="dash-info"><div class="dash-value">${totalClicks}</div><div class="dash-label">Cliques totais</div></div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-icon sched"><i class="fas fa-calendar-alt"></i></div>
+        <div class="dash-info"><div class="dash-value">${scheduled}</div><div class="dash-label">Agendados</div></div>
+      </div>
+      <div class="dash-card">
+        <div class="dash-icon cat"><i class="fas fa-tag"></i></div>
+        <div class="dash-info"><div class="dash-value">${topCat ? categoryLabel(topCat[0]) : '–'}</div><div class="dash-label">Cat. principal</div></div>
+      </div>
+    </div>
+
+    <div class="dash-row">
+      <div class="dash-panel">
+        <h3><i class="fas fa-fire"></i> Top Cliques</h3>
+        ${topClicked.length ? topClicked.map(({p, n}) => `
+          <div class="dash-top-item">
+            <img src="${(p.images&&p.images[0])||''}" alt="" onerror="this.src='https://via.placeholder.com/36?text=?'"/>
+            <div class="dash-top-name">${p.name.substring(0,40)}${p.name.length>40?'…':''}</div>
+            <span class="dash-top-count">${n} cliques</span>
+          </div>`).join('') : '<p class="dash-empty">Nenhum clique registrado ainda.</p>'}
+      </div>
+
+      <div class="dash-panel">
+        <h3><i class="fas fa-history"></i> Histórico</h3>
+        ${history.length ? history.slice(0,10).map(h => {
+          const icons = { create:'fas fa-plus-circle', edit:'fas fa-pen', delete:'fas fa-trash' };
+          const labels = { create:'Adicionado', edit:'Editado', delete:'Removido' };
+          const dt = new Date(h.ts).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+          return `<div class="dash-hist-item">
+            <i class="hist-icon ${h.action} ${icons[h.action]||'fas fa-circle'}"></i>
+            <div class="dash-top-name">${h.name.substring(0,38)}${h.name.length>38?'…':''}</div>
+            <span class="dash-hist-dt">${dt}</span>
+            <span class="dash-hist-lbl ${h.action}">${labels[h.action]||h.action}</span>
+          </div>`;
+        }).join('') : '<p class="dash-empty">Nenhum histórico ainda.</p>'}
+      </div>
+    </div>`;
+}
+
+// ── CSV IMPORT ────────────────────────────────────────────────
+function triggerCSVImport() {
+  document.getElementById('csvFileInput').click();
+}
+
+function importCSV(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const lines = ev.target.result.split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length < 2) { alert('CSV inválido ou vazio.'); return; }
+    const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g,''));
+    let imported = 0, errors = 0;
+    lines.slice(1).forEach(line => {
+      // Split respecting quoted fields
+      const cols = line.match(/(".*?"|[^,]+)(?=,|$)/g) || line.split(',');
+      const clean = v => (v||'').trim().replace(/^"|"$/g,'');
+      const get   = key => { const i = headers.indexOf(key); return i>=0 ? clean(cols[i]) : ''; };
+
+      const name  = get('name') || get('nome');
+      const price = parseFloat(get('price') || get('preco') || get('preço'));
+      const link  = get('link') || get('url');
+      if (!name || isNaN(price) || !link) { errors++; return; }
+
+      const product = {
+        id:            Date.now() + Math.random(),
+        name,
+        category:      get('category') || get('categoria') || 'outros',
+        originalPrice: parseFloat(get('originalprice') || get('precooriginal') || get('preco_original')) || null,
+        price,
+        link,
+        images:        [get('image') || get('imagem') || get('img')].filter(Boolean),
+        video:         get('video') || '',
+        desc:          get('desc') || get('descricao') || get('descrição') || '',
+        rating:        parseFloat(get('rating') || get('avaliacao')) || null,
+        soldCount:     parseInt(get('soldcount') || get('vendidos')) || null,
+        featured:      (get('featured') || get('destaque')) === 'true',
+        countdown:     get('countdown') || null,
+        publishDate:   get('publishdate') || get('publicacao') || null,
+      };
+      products.unshift(product);
+      addHistory('create', product);
+      imported++;
+    });
+    saveToStorage();
+    renderAdminList();
+    renderDashboard();
+    e.target.value = '';
+    showToast(`${imported} produto(s) importado(s)${errors ? `, ${errors} linha(s) ignorada(s)` : ''} ✅`);
+  };
+  reader.readAsText(file);
 }
 
 function showToast(msg) {
