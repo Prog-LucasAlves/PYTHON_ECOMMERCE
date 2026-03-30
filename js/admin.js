@@ -8,7 +8,7 @@ import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyC4yyyPqrVJRx5ZBdKmlJQizcnP4KkaHj0",
+  apiKey: "",
   authDomain: "e-commerce-shopee.firebaseapp.com",
   projectId: "e-commerce-shopee",
   storageBucket: "e-commerce-shopee.firebasestorage.app",
@@ -195,10 +195,17 @@ function saveProduct(e) {
 
   saveToStorage();
   addHistory(editingId ? 'edit' : 'create', product);
+  const savedId = product.id;
   resetForm();
   renderAdminList();
   renderDashboard();
-  showToast(editingId ? 'Produto atualizado! ✅' : 'Produto adicionado! ✅');
+  // Show share banner
+  const shareBanner = document.getElementById('shareAfterSave');
+  const shareBtn    = document.getElementById('btnShareTgAfterSave');
+  if (shareBanner && shareBtn) {
+    shareBanner.style.display = 'flex';
+    shareBtn.onclick = () => shareTelegramAdmin(savedId);
+  }
 }
 
 // ── EDIT ──────────────────────────────────────────────────────
