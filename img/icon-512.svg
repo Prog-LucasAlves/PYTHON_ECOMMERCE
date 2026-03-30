@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Melhores Ofertas">
+  <rect width="512" height="512" rx="104" fill="#ee4d2d"/>
+  <path d="M154 198h204l-22 178H176z" fill="#fff"/>
+  <path d="M198 198c0-34 24-58 58-58s58 24 58 58" fill="none" stroke="#fff" stroke-width="24" stroke-linecap="round"/>
+  <circle cx="206" cy="276" r="20" fill="#ee4d2d"/>
+  <circle cx="306" cy="276" r="20" fill="#ee4d2d"/>
+</svg>

@@ -20,7 +20,7 @@ function initHeroBanner() {
       <div class="hero-static">
         <div class="hero-content">
           <h1>🔥 Ofertas Imperdíveis</h1>
-          <p>Os melhores preços da Shopee, direto pra você!</p>
+          <p>Selecao de ofertas online com links para a Shopee.</p>
         </div>
       </div>`;
     return;
@@ -295,7 +295,7 @@ function removeFav(id) {
 // ── SHARE ─────────────────────────────────────────────────────
 function shareWhatsApp() {
   if (!modalProduct) return;
-  const text = `🔥 *${modalProduct.name}*\n💰 R$ ${Number(modalProduct.price).toFixed(2).replace('.',',')}\n🛒 ${modalProduct.link}\n\n_Via MelhoresDaShopee_`;
+  const text = `🔥 *${modalProduct.name}*\n💰 R$ ${Number(modalProduct.price).toFixed(2).replace('.',',')}\n🛒 ${modalProduct.link}\n\n_Via Melhores Ofertas_`;
   window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
 }
 function shareTelegram() {
