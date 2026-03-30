@@ -436,26 +436,6 @@ let priceMax        = null;
 let firstLoad       = true;
 let allProducts = JSON.parse(localStorage.getItem('shopee_products') || '[]');
 
-if (allProducts.length === 0) {
-  allProducts = [
-    {
-      id: Date.now() + 1,
-      name: 'Fone Bluetooth sem fio com cancelamento de ruído',
-      category: 'eletronicos',
-      price: 49.90, originalPrice: 89.90,
-      link: 'https://s.shopee.com.br/BPTGynFRK',
-      images: [
-        'https://cf.shopee.com.br/file/br-11134207-7qukw-lf8h7j5wfu9v8a_tn',
-        'https://cf.shopee.com.br/file/br-11134207-7r98o-lt3d5txqb2pm75_tn'
-      ],
-      video: '',
-      desc: 'Frete grátis · Mais de 2 mil vendidos · Produto original',
-      featured: true
-    }
-  ];
-  localStorage.setItem('shopee_products', JSON.stringify(allProducts));
-}
-
 window.addEventListener('storage', (e) => {
   if (e.key === 'shopee_products') {
     allProducts = JSON.parse(e.newValue || '[]');
