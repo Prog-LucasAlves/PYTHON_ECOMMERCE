@@ -56,8 +56,17 @@ function doLogout() {
 }
 
 // Expõe funções ao escopo global (necessário com type="module")
-window.doLogin  = doLogin;
-window.doLogout = doLogout;
+window.doLogin            = doLogin;
+window.doLogout           = doLogout;
+window.saveProduct        = saveProduct;
+window.editProduct        = editProduct;
+window.deleteProduct      = deleteProduct;
+window.resetForm          = resetForm;
+window.addImageField      = addImageField;
+window.removeImageField   = removeImageField;
+window.updateImagesPreview = updateImagesPreview;
+window.previewVideo       = previewVideo;
+window.renderAdminList    = renderAdminList;
 
 // ── IMAGE LIST MANAGEMENT ──────────────────────────────────────
 function initImageFields() {
