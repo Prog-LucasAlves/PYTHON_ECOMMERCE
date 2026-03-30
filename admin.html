@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Painel Admin · Ofertas Shopee</title>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body class="admin-page">
+
+  <!-- LOGIN OVERLAY -->
+  <div id="loginOverlay" class="login-overlay">
+    <div class="login-box">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee.svg/200px-Shopee.svg.png" alt="Shopee" height="40"/>
+      <h2>Painel Admin</h2>
+      <input type="password" id="loginPassword" placeholder="Senha" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <button onclick="doLogin()" class="btn-primary">Entrar</button>
+      <p id="loginError" style="color:red;margin-top:8px;display:none">Senha incorreta.</p>
+    </div>
+  </div>
+
+  <!-- ADMIN PANEL -->
+  <div id="adminPanel" style="display:none">
+    <header>
+      <div class="header-inner">
+        <div class="logo">
+          <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee.svg/200px-Shopee.svg.png" alt="Shopee" height="32"/>
+          <span>Painel Admin</span>
+        </div>
+        <div class="header-actions">
+          <a href="index.html" class="btn-secondary"><i class="fas fa-eye"></i> Ver site</a>
+          <button onclick="doLogout()" class="btn-admin"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+      </div>
+    </header>
+
+    <main class="admin-main">
+      <!-- FORM -->
+      <section class="admin-form-card">
+        <h2 id="formTitle"><i class="fas fa-plus-circle"></i> Adicionar Produto</h2>
+        <form id="productForm" onsubmit="saveProduct(event)">
+          <input type="hidden" id="editId"/>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Nome do Produto *</label>
+              <input type="text" id="prodName" placeholder="Ex: Fone Bluetooth JBL" required/>
+            </div>
+            <div class="form-group">
+              <label>Categoria *</label>
+              <select id="prodCategory" required>
+                <option value="">Selecione...</option>
+                <option value="eletronicos">📱 Eletrônicos</option>
+                <option value="moda">👗 Moda</option>
+                <option value="casa">🏠 Casa</option>
+                <option value="beleza">💄 Beleza</option>
+                <option value="esporte">⚽ Esporte</option>
+                <option value="outros">✨ Outros</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Preço Original (R$)</label>
+              <input type="number" id="prodOriginalPrice" placeholder="99.90" step="0.01" min="0"/>
+            </div>
+            <div class="form-group">
+              <label>Preço com Desconto (R$) *</label>
+              <input type="number" id="prodPrice" placeholder="49.90" step="0.01" min="0" required/>
+            </div>
+            <div class="form-group full-width">
+              <label>Link de Afiliado Shopee *</label>
+              <input type="url" id="prodLink" placeholder="https://s.shopee.com.br/..." required/>
+            </div>
+
+            <!-- MULTI-IMAGE SECTION -->
+            <div class="form-group full-width">
+              <label>🖼️ Imagens do Produto * <span style="font-weight:400;color:#aaa">(adicione quantas quiser)</span></label>
+              <div id="imagesList"></div>
+              <button type="button" class="btn-add-image" onclick="addImageField()">
+                <i class="fas fa-plus"></i> Adicionar Imagem
+              </button>
+            </div>
+
+            <!-- IMAGE PREVIEWS -->
+            <div class="form-group full-width" id="imagesPreviewBox" style="display:none">
+              <label>Preview das Imagens</label>
+              <div id="imagesPreviewStrip" class="admin-preview-strip"></div>
+            </div>
+
+            <!-- VIDEO SECTION -->
+            <div class="form-group full-width">
+              <label>🎬 Vídeo do Produto <span style="font-weight:400;color:#aaa">(opcional · YouTube ou link direto)</span></label>
+              <input type="text" id="prodVideo" placeholder="https://www.youtube.com/watch?v=... ou link .mp4" oninput="previewVideo()"/>
+              <div id="videoPreviewBox" style="display:none;margin-top:8px">
+                <div id="videoPreviewContent"></div>
+              </div>
+            </div>
+            <div class="form-group full-width">
+              <label>Descrição curta</label>
+              <textarea id="prodDesc" placeholder="Ex: Frete grátis · Produto original · Entrega rápida" rows="2"></textarea>
+            </div>
+            <div class="form-group">
+              <label>Destaque?</label>
+              <label class="toggle">
+                <input type="checkbox" id="prodFeatured"/>
+                <span class="slider"></span>
+                <span class="toggle-label">Produto em destaque</span>
+              </label>
+            </div>
+            <div class="form-group"></div>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" id="submitBtn"><i class="fas fa-save"></i> Salvar Produto</button>
+            <button type="button" class="btn-secondary" onclick="resetForm()"><i class="fas fa-times"></i> Cancelar</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- LISTA DE PRODUTOS -->
+      <section class="admin-list-card">
+        <div class="list-header">
+          <h2><i class="fas fa-list"></i> Produtos Cadastrados <span id="prodCount" class="badge">0</span></h2>
+          <input type="text" id="adminSearch" placeholder="🔍 Filtrar..." oninput="renderAdminList()"/>
+        </div>
+        <div id="adminProductList" class="admin-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="js/admin.js"></script>
+</body>
+</html>
