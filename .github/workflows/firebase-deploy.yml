@@ -1,0 +1,18 @@
+name: Deploy to Firebase Hosting
+
+on:
+  push:
+    branches:
+      - ECOM
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Deploy to Firebase Hosting
+        run: firebase deploy --project vendas-f54d4 --token "${{ secrets.FIREBASE_DEPLOY_TOKEN }}"
