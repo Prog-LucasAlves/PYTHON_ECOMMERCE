@@ -79,6 +79,10 @@ console.log('[ADMIN.JS] localStorage.getItem result:', localStorage.getItem(STOR
 let editingId = null;
 let imageCount = 0;
 
+function sameId(a, b) {
+  return String(a) === String(b);
+}
+
 // ── HISTORY HELPER ────────────────────────────────────────────
 function addHistory(action, product) {
   const hist = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
@@ -240,7 +244,7 @@ function saveProduct(e) {
   };
 
   if (editingId) {
-    const idx = products.findIndex(p => p.id === editingId);
+    const idx = products.findIndex(p => sameId(p.id, editingId));
     if (idx !== -1) products[idx] = product;
   } else {
     products.unshift(product);
@@ -263,10 +267,10 @@ function saveProduct(e) {
 
 // ── EDIT ──────────────────────────────────────────────────────
 function editProduct(id) {
-  const p = products.find(pr => pr.id === id);
+  const p = products.find(pr => sameId(pr.id, id));
   if (!p) return;
 
-  editingId = id;
+  editingId = p.id;
   document.getElementById('formTitle').innerHTML  = '<i class="fas fa-edit"></i> Editar Produto';
   document.getElementById('submitBtn').innerHTML  = '<i class="fas fa-save"></i> Atualizar Produto';
 
@@ -303,9 +307,9 @@ function editProduct(id) {
 // ── DELETE ────────────────────────────────────────────────────
 function deleteProduct(id) {
   if (!confirm('Tem certeza que quer remover este produto?')) return;
-  const p = products.find(x => x.id === id);
+  const p = products.find(x => sameId(x.id, id));
   const before = products.length;
-  products = products.filter(p => p.id !== id);
+  products = products.filter(p => !sameId(p.id, id));
   const after = products.length;
   console.log(`[DELETE] "${p?.name}" - antes: ${before}, depois: ${after}`);
   saveToStorage();
@@ -391,7 +395,7 @@ function saveToStorage() {
 const TG_GROUP = 'https://t.me/ofertasshopeeday';
 
 function shareTelegramAdmin(id) {
-  const p = products.find(x => x.id === id);
+  const p = products.find(x => sameId(x.id, id));
   if (!p) return;
   const discount = p.originalPrice && p.originalPrice > p.price
     ? Math.round((1 - p.price / p.originalPrice) * 100) : null;
@@ -456,7 +460,7 @@ function renderDashboard() {
   const topCat = Object.entries(catCount).sort((a, b) => b[1] - a[1])[0];
 
   const topClicked = Object.entries(clicks)
-    .map(([id, n]) => ({ p: products.find(x => x.id === Number(id)), n }))
+    .map(([id, n]) => ({ p: products.find(x => sameId(x.id, id)), n }))
     .filter(x => x.p)
     .sort((a, b) => b.n - a.n)
     .slice(0, 5);

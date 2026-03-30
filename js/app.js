@@ -3,6 +3,10 @@ let heroCurrent  = 0;
 let heroTimer    = null;
 const HERO_INTERVAL = 5000;
 
+function sameId(a, b) {
+  return String(a) === String(b);
+}
+
 function initHeroBanner() {
   const slidesEl = document.getElementById('heroSlides');
   const dotsEl   = document.getElementById('heroDots');
@@ -97,7 +101,7 @@ function renderRelated(p) {
   const el     = document.getElementById('modalRelated');
   const listEl = document.getElementById('modalRelatedList');
   if (!el || !listEl) return;
-  const related = allProducts.filter(x => x.category === p.category && x.id !== p.id).slice(0, 6);
+  const related = allProducts.filter(x => x.category === p.category && !sameId(x.id, p.id)).slice(0, 6);
   if (!related.length) { el.style.display = 'none'; return; }
   el.style.display = 'block';
   listEl.innerHTML = related.map(r => {
@@ -116,7 +120,7 @@ let compareList = [];
 
 function toggleCompare(id, e) {
   e.stopPropagation();
-  const idx = compareList.indexOf(id);
+  const idx = compareList.findIndex(x => sameId(x, id));
   if (idx === -1) {
     if (compareList.length >= 3) { showCompareToast(); return; }
     compareList.push(id);
@@ -125,7 +129,7 @@ function toggleCompare(id, e) {
   }
   renderCompareBar();
   document.querySelectorAll('.card-compare-btn').forEach(btn => {
-    btn.classList.toggle('active', compareList.includes(parseInt(btn.dataset.pid)));
+    btn.classList.toggle('active', compareList.some(id => sameId(id, btn.dataset.pid)));
   });
 }
 
@@ -151,7 +155,7 @@ function renderCompareBar() {
   bar.style.display = 'flex';
   btn.disabled      = compareList.length < 2;
   slots.innerHTML   = compareList.map(id => {
-    const p   = allProducts.find(x => x.id === id);
+    const p   = allProducts.find(x => sameId(x.id, id));
     if (!p) return '';
     const img = getImages(p)[0] || '';
     return `<div class="compare-slot">
@@ -172,7 +176,7 @@ function openCompareModal() {
   if (compareList.length < 2) return;
   const modal = document.getElementById('compareModal');
   const table = document.getElementById('compareTable');
-  const prods = compareList.map(id => allProducts.find(x => x.id === id)).filter(Boolean);
+  const prods = compareList.map(id => allProducts.find(x => sameId(x.id, id))).filter(Boolean);
 
   const rows = [
     { label: 'Imagem',     fn: p => `<img src="${getImages(p)[0]||''}" alt="" onerror="this.src='https://via.placeholder.com/90x90?text=?'"/>` },
@@ -226,7 +230,7 @@ function saveFavorites() { localStorage.setItem('shopee_favs', JSON.stringify(fa
 function toggleFavorite() {
   if (!modalProduct) return;
   const id  = modalProduct.id;
-  const idx = favorites.indexOf(id);
+  const idx = favorites.findIndex(x => sameId(x, id));
   if (idx === -1) { favorites.push(id); }
   else            { favorites.splice(idx, 1); }
   saveFavorites();
@@ -234,7 +238,7 @@ function toggleFavorite() {
   updateFavFab();
 }
 
-function isFav(id) { return favorites.includes(id); }
+function isFav(id) { return favorites.some(x => sameId(x, id)); }
 
 function updateFavBtn() {
   const btn  = document.getElementById('modalFavBtn');
@@ -256,7 +260,7 @@ function updateFavFab() {
 function openFavPanel() {
   const panel   = document.getElementById('favPanel');
   const listEl  = document.getElementById('favList');
-  const favProds = allProducts.filter(p => favorites.includes(p.id));
+  const favProds = allProducts.filter(p => favorites.some(id => sameId(id, p.id)));
   if (!favProds.length) {
     listEl.innerHTML = '<p class="fav-empty">Nenhum favorito ainda.</p>';
   } else {
@@ -282,7 +286,7 @@ function closeFavPanel() {
 }
 
 function removeFav(id) {
-  favorites = favorites.filter(f => f !== id);
+  favorites = favorites.filter(f => !sameId(f, id));
   saveFavorites();
   updateFavFab();
   openFavPanel();
@@ -586,7 +590,7 @@ function cardHTML(p) {
     </div>
         <div class="card-btn">🛒 Comprar na Shopee</div>
     ${(() => { const t = p.countdown ? new Date(p.countdown).getTime() : null; const s = t ? renderCountdownStr(t) : null; return s ? `<div class="card-countdown-wrap"><span class="card-countdown" data-countdown="${t}">⏰ Oferta encerra em: ${s}</span></div>` : ''; })()}
-    <button class="card-compare-btn ${compareList.includes(p.id)?'active':''}" data-pid="${p.id}"
+    <button class="card-compare-btn ${compareList.some(id => sameId(id, p.id))?'active':''}" data-pid="${p.id}"
       onclick="toggleCompare(${p.id},event)" title="Adicionar para comparar">
       <i class="fas fa-columns"></i>
     </button>
@@ -608,7 +612,7 @@ let modalProduct = null;
 let modalIndex   = 0;
 
 function openProductModal(id, startIdx) {
-  const p = allProducts.find(x => x.id === id);
+  const p = allProducts.find(x => sameId(x.id, id));
   if (!p) return;
   // Track click
   const clicks = JSON.parse(localStorage.getItem('shopee_clicks') || '{}');
