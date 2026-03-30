@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 180" role="img" aria-label="Melhores Ofertas">
+  <rect width="640" height="180" rx="28" fill="#f7ecd0"/>
+  <g transform="translate(28 28)">
+    <rect x="0" y="24" width="92" height="84" rx="20" fill="#d4a017"/>
+    <path d="M24 44c0-15 12-27 22-27h0c10 0 22 12 22 27" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round"/>
+    <path d="M40 44c0-15 12-27 22-27h0c10 0 22 12 22 27" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round"/>
+    <circle cx="30" cy="71" r="6" fill="#fff"/>
+    <circle cx="62" cy="71" r="6" fill="#fff"/>
+  </g>
+  <text x="146" y="76" font-size="34" font-weight="800" font-family="Segoe UI, Arial, sans-serif" fill="#161616">Melhores</text>
+  <text x="146" y="116" font-size="34" font-weight="800" font-family="Segoe UI, Arial, sans-serif" fill="#d4a017">Ofertas</text>
+  <text x="146" y="145" font-size="16" font-weight="600" font-family="Segoe UI, Arial, sans-serif" fill="#6a5c3a">curadoria de ofertas online</text>
+</svg>
