@@ -654,10 +654,15 @@ footer {
 }
 .footer-disclaimer {
   font-size: .72rem;
-  color: #444;
+  color: #222;
   margin: 10px auto 0;
   max-width: 640px;
   line-height: 1.5;
+  font-weight: 500;
+  background: rgba(255, 193, 7, 0.1);
+  border-left: 3px solid #ffc107;
+  padding: 8px 12px;
+  border-radius: 4px;
 }
 .footer-legal {
   font-size: .75rem;
