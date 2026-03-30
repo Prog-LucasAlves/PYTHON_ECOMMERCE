@@ -209,18 +209,6 @@ function showToast(msg) {
 }
 
 // Initialize
-if (!products.length) {
-  products = [{
-    id: Date.now(),
-    name: 'Fone Bluetooth (EXEMPLO)',
-    category: 'eletronicos',
-    price: 49.90,
-    originalPrice: 89.90,
-    link: 'https://s.shopee.com.br/',
-    images: ['https://via.placeholder.com/300x300?text=Fone']
-  }];
-  saveToStorage();
-}
 addImageField();
 renderList();
   </script>
