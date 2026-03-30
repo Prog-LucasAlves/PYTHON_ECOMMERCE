@@ -1,3 +1,174 @@
+// ── FAVORITES ────────────────────────────────────────────────
+let favorites = JSON.parse(localStorage.getItem('shopee_favs') || '[]');
+
+function saveFavorites() { localStorage.setItem('shopee_favs', JSON.stringify(favorites)); }
+
+function toggleFavorite() {
+  if (!modalProduct) return;
+  const id  = modalProduct.id;
+  const idx = favorites.indexOf(id);
+  if (idx === -1) { favorites.push(id); }
+  else            { favorites.splice(idx, 1); }
+  saveFavorites();
+  updateFavBtn();
+  updateFavFab();
+}
+
+function isFav(id) { return favorites.includes(id); }
+
+function updateFavBtn() {
+  const btn  = document.getElementById('modalFavBtn');
+  const text = document.getElementById('modalFavText');
+  if (!btn || !modalProduct) return;
+  const faved = isFav(modalProduct.id);
+  btn.classList.toggle('active', faved);
+  text.textContent = faved ? 'Favoritado' : 'Favoritar';
+}
+
+function updateFavFab() {
+  const fab   = document.getElementById('favFab');
+  const count = document.getElementById('favCount');
+  if (!fab) return;
+  fab.style.display  = favorites.length > 0 ? 'flex' : 'none';
+  count.textContent  = favorites.length;
+}
+
+function openFavPanel() {
+  const panel   = document.getElementById('favPanel');
+  const listEl  = document.getElementById('favList');
+  const favProds = allProducts.filter(p => favorites.includes(p.id));
+  if (!favProds.length) {
+    listEl.innerHTML = '<p class="fav-empty">Nenhum favorito ainda.</p>';
+  } else {
+    listEl.innerHTML = favProds.map(p => {
+      const img = getImages(p)[0] || '';
+      return `<div class="fav-item" onclick="closeFavPanel();openProductModal(${p.id},0)">
+        <img src="${img}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/60x60?text=?'"/>
+        <div class="fav-item-info">
+          <div class="fav-name">${p.name}</div>
+          <div class="fav-price">R$ ${Number(p.price).toFixed(2).replace('.',',')}</div>
+        </div>
+        <button class="fav-remove" onclick="event.stopPropagation();removeFav(${p.id})">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>`;
+    }).join('');
+  }
+  panel.style.display = 'flex';
+}
+
+function closeFavPanel() {
+  document.getElementById('favPanel').style.display = 'none';
+}
+
+function removeFav(id) {
+  favorites = favorites.filter(f => f !== id);
+  saveFavorites();
+  updateFavFab();
+  openFavPanel();
+}
+
+// ── SHARE ─────────────────────────────────────────────────────
+function shareWhatsApp() {
+  if (!modalProduct) return;
+  const text = `🔥 *${modalProduct.name}*\n💰 R$ ${Number(modalProduct.price).toFixed(2).replace('.',',')}\n🛒 ${modalProduct.link}\n\n_Via MelhoresDaShopee_`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+}
+function shareTelegram() {
+  if (!modalProduct) return;
+  const text = `🔥 ${modalProduct.name}\n💰 R$ ${Number(modalProduct.price).toFixed(2).replace('.',',')}\n🛒 ${modalProduct.link}`;
+  window.open(`https://t.me/share/url?url=${encodeURIComponent(modalProduct.link)}&text=${encodeURIComponent(text)}`, '_blank');
+}
+
+// ── SEARCH SUGGESTIONS & HISTORY ─────────────────────────────
+const SEARCH_HISTORY_KEY = 'shopee_search_history';
+
+function getSearchHistory() {
+  return JSON.parse(localStorage.getItem(SEARCH_HISTORY_KEY) || '[]');
+}
+function saveSearchTerm(term) {
+  if (!term.trim()) return;
+  let history = getSearchHistory().filter(h => h !== term);
+  history.unshift(term);
+  if (history.length > 8) history = history.slice(0, 8);
+  localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history));
+}
+
+function updateSearchSuggestions() {
+  const input = document.getElementById('searchInput').value.trim().toLowerCase();
+  const dd    = document.getElementById('searchDropdown');
+  if (!input) { showSearchHistory(); return; }
+
+  const matches = [...new Set(allProducts
+    .filter(p => p.name.toLowerCase().includes(input))
+    .map(p => p.name)
+  )].slice(0, 6);
+
+  if (!matches.length) { dd.style.display = 'none'; return; }
+  dd.innerHTML = matches.map(m => {
+    const hi = m.replace(new RegExp(`(${input})`, 'gi'), '<mark>$1</mark>');
+    return `<div class="dd-item" onmousedown="selectSuggestion('${m.replace(/'/g,"\\'")}')">
+      <i class="fas fa-search"></i> ${hi}
+    </div>`;
+  }).join('');
+  dd.style.display = 'block';
+}
+
+function showSearchHistory() {
+  const input   = document.getElementById('searchInput').value.trim();
+  if (input) return;
+  const history = getSearchHistory();
+  const dd      = document.getElementById('searchDropdown');
+  if (!history.length) { dd.style.display = 'none'; return; }
+  dd.innerHTML = `<div class="dd-header">🕐 Buscas recentes</div>` +
+    history.map(h => `
+      <div class="dd-item" onmousedown="selectSuggestion('${h.replace(/'/g,"\\'")}')">
+        <i class="fas fa-history"></i> ${h}
+        <button class="dd-remove" onmousedown="event.stopPropagation();removeHistory('${h.replace(/'/g,"\\'")}')">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>`).join('') +
+    `<div class="dd-clear" onmousedown="clearHistory()">Limpar histórico</div>`;
+  dd.style.display = 'block';
+}
+
+function hideSearchDropdown() {
+  setTimeout(() => {
+    const input = document.getElementById('searchInput').value.trim();
+    if (input) saveSearchTerm(input);
+    document.getElementById('searchDropdown').style.display = 'none';
+  }, 200);
+}
+
+function selectSuggestion(val) {
+  document.getElementById('searchInput').value = val;
+  saveSearchTerm(val);
+  filterProducts();
+  document.getElementById('searchDropdown').style.display = 'none';
+}
+
+function removeHistory(term) {
+  const history = getSearchHistory().filter(h => h !== term);
+  localStorage.setItem(SEARCH_HISTORY_KEY, JSON.stringify(history));
+  showSearchHistory();
+}
+
+function clearHistory() {
+  localStorage.removeItem(SEARCH_HISTORY_KEY);
+  document.getElementById('searchDropdown').style.display = 'none';
+}
+
+function handleSearchKey(e) {
+  if (e.key === 'Enter') {
+    const val = e.target.value.trim();
+    if (val) saveSearchTerm(val);
+    document.getElementById('searchDropdown').style.display = 'none';
+  }
+  if (e.key === 'Escape') {
+    document.getElementById('searchDropdown').style.display = 'none';
+  }
+}
+
 // ── DARK MODE ─────────────────────────────────────────────────
 function initDarkMode() {
   if (localStorage.getItem('darkMode') === '1') {
@@ -196,6 +367,7 @@ function cardHTML(p) {
     <div class="card-body">
       <div class="card-name">${p.name}</div>
       ${p.desc ? `<div class="card-desc">${p.desc}</div>` : ''}
+      ${p.rating ? `<div class="card-stars">${starsHTML(p.rating)}${p.soldCount ? `<span class="card-sold">${p.soldCount}+ vendidos</span>` : ''}</div>` : (p.soldCount ? `<div class="card-stars"><span class="card-sold">${p.soldCount}+ vendidos</span></div>` : '')}
       <div class="card-prices">
         ${p.originalPrice && p.originalPrice > p.price
           ? `<div class="card-original">R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}</div>` : ''}
@@ -204,6 +376,16 @@ function cardHTML(p) {
     </div>
     <div class="card-btn">�� Comprar na Shopee</div>
   </div>`;
+}
+
+// ── STARS ─────────────────────────────────────────────────────
+function starsHTML(rating) {
+  const r = parseFloat(rating) || 0;
+  return Array.from({length: 5}, (_, i) => {
+    if (i + 1 <= r)      return '<i class="fas fa-star"></i>';
+    if (i + 0.5 <= r)    return '<i class="fas fa-star-half-alt"></i>';
+    return '<i class="far fa-star"></i>';
+  }).join('') + ` <span class="star-val">${r.toFixed(1)}</span>`;
 }
 
 // ── MODAL ─────────────────────────────────────────────────────
@@ -226,6 +408,15 @@ function openProductModal(id, startIdx) {
   document.getElementById('modalCategory').textContent = categoryLabel(p.category);
   document.getElementById('modalDesc').textContent = p.desc || '';
   document.getElementById('modalBuyBtn').href = p.link;
+
+  // Stars & sold count
+  const starsEl = document.getElementById('modalStars');
+  const soldEl  = document.getElementById('modalSoldCount');
+  starsEl.innerHTML  = p.rating ? starsHTML(p.rating) : '';
+  soldEl.textContent = p.soldCount ? `🛒 ${p.soldCount}+ vendidos` : '';
+
+  // Favorite button
+  updateFavBtn();
 
   const priceEl    = document.getElementById('modalPrice');
   const origEl     = document.getElementById('modalOriginal');
@@ -325,4 +516,5 @@ function categoryLabel(cat) {
 }
 
 initDarkMode();
+updateFavFab();
 renderProducts();
