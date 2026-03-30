@@ -18,6 +18,17 @@ const STORAGE_KEY  = 'shopee_products';
 const HISTORY_KEY  = 'shopee_history';
 const CLICKS_KEY   = 'shopee_clicks';
 
+// Monitorar todas as mudanças ao localStorage
+const originalSetItem = localStorage.setItem;
+localStorage.setItem = function(key, value) {
+  if (key === STORAGE_KEY) {
+    const parsed = JSON.parse(value);
+    console.log('[localStorage.setItem]', key, '→', parsed.length, 'products');
+    console.trace();
+  }
+  originalSetItem.apply(localStorage, arguments);
+};
+
 // ── STATE ─────────────────────────────────────────────────────
 let products  = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
 console.log('[INIT] Loaded', products.length, 'products from localStorage');
