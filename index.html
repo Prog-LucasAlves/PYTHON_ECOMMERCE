@@ -22,6 +22,13 @@
 
   <link rel="stylesheet" href="css/style.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json"/>
+  <meta name="theme-color" content="#ee4d2d"/>
+  <meta name="mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-capable" content="yes"/>
+  <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+  <meta name="apple-mobile-web-app-title" content="ShopeeOfertas"/>
 </head>
 <body>
 
@@ -150,6 +157,28 @@
   </div>
 
   <script src="js/app.js"></script>
+  <script>
+    // Service Worker registration
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+    // PWA install prompt
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      deferredPrompt = e;
+      const banner = document.getElementById('pwaBanner');
+      if (banner && !localStorage.getItem('pwa_dismissed')) banner.style.display = 'flex';
+    });
+    document.getElementById('pwaBtnInstall')?.addEventListener('click', () => {
+      document.getElementById('pwaBanner').style.display = 'none';
+      if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; }
+    });
+    document.getElementById('pwaBtnClose')?.addEventListener('click', () => {
+      document.getElementById('pwaBanner').style.display = 'none';
+      localStorage.setItem('pwa_dismissed', '1');
+    });
+  </script>
 
   <!-- BARRA DE COMPARAÇÃO -->
   <div id="compareBar" class="compare-bar">
@@ -192,6 +221,19 @@
     <i class="fab fa-telegram-plane"></i>
     <span>Grupo de Ofertas</span>
   </a>
+
+  <!-- PWA Install Banner -->
+  <div id="pwaBanner" class="pwa-banner" style="display:none">
+    <div class="pwa-banner-inner">
+      <i class="fas fa-mobile-alt pwa-icon"></i>
+      <div>
+        <strong>Instale o app!</strong>
+        <p>Acesse as ofertas ainda mais rápido direto do seu celular.</p>
+      </div>
+      <button class="pwa-install-btn" id="pwaBtnInstall">Instalar</button>
+      <button class="pwa-close-btn" id="pwaBtnClose" title="Fechar"><i class="fas fa-times"></i></button>
+    </div>
+  </div>
 
   <!-- Rodapé -->
   <footer class="site-footer">

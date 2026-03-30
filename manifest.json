@@ -1,0 +1,26 @@
+{
+  "name": "Melhores Ofertas Shopee",
+  "short_name": "ShopeeOfertas",
+  "description": "Os melhores preços da Shopee, direto pra você!",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ee4d2d",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee.svg/192x192/Shopee.svg.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee.svg/512x512/Shopee.svg.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["shopping"],
+  "lang": "pt-BR"
+}
