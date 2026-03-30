@@ -3,23 +3,79 @@
 // Real security is enforced via Firebase Security Rules on the console:
 // https://console.firebase.google.com → Authentication → Settings → Authorized domains
 // Ensure only melhoresdashopee.com.br and localhost are authorized.
-import { firebaseConfig } from "./config.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-// firebaseConfig is imported from config.js (not committed to git)
+let auth = null;
+let signInWithEmailAndPassword_fn = null;
+let signOut_fn = null;
+let onAuthStateChanged_fn = null;
 
-const app  = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+// Load Firebase asynchronously - don't block if it fails
+(async () => {
+  try {
+    const { firebaseConfig } = await import("./config.js");
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const fb = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+
+    const app = initializeApp(firebaseConfig);
+    auth = fb.getAuth(app);
+    signInWithEmailAndPassword_fn = fb.signInWithEmailAndPassword;
+    signOut_fn = fb.signOut;
+    onAuthStateChanged_fn = fb.onAuthStateChanged;
+
+    console.log('[FIREBASE] ✅ Firebase loaded successfully');
+
+    // Setup auth listener
+    onAuthStateChanged_fn(auth, user => {
+      if (user) {
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('adminPanel').style.display = 'block';
+        renderAdminList();
+        renderDashboard();
+        initImageFields();
+      } else {
+        document.getElementById('loginOverlay').style.display = 'flex';
+        document.getElementById('adminPanel').style.display = 'none';
+      }
+    });
+  } catch (e) {
+    console.error('[FIREBASE] ⚠️ Firebase failed to load:', e.message);
+    console.log('[FIREBASE] Admin will work in offline mode (localStorage only)');
+    // Allow admin to work without Firebase
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'block';
+    renderAdminList();
+    renderDashboard();
+    initImageFields();
+  }
+})();
 
 // ── CONFIG ────────────────────────────────────────────────────
 const STORAGE_KEY  = 'shopee_products';
 const HISTORY_KEY  = 'shopee_history';
 const CLICKS_KEY   = 'shopee_clicks';
 
+// Test if localStorage is available and working
+function testLocalStorage() {
+  try {
+    const test = '__test__';
+    localStorage.setItem(test, 'ok');
+    const result = localStorage.getItem(test);
+    localStorage.removeItem(test);
+    console.log('[STORAGE] ✅ localStorage is working');
+    return true;
+  } catch (e) {
+    console.error('[STORAGE] ❌ localStorage not available:', e.message);
+    console.error('[STORAGE] This might be because: incognito mode, localStorage disabled, or CORS issue');
+    return false;
+  }
+}
+
+testLocalStorage();
+
 // ── STATE ─────────────────────────────────────────────────────
 let products  = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+console.log('[ADMIN.JS] Loaded', products.length, 'products from localStorage at', new Date().toLocaleTimeString());
+console.log('[ADMIN.JS] localStorage.getItem result:', localStorage.getItem(STORAGE_KEY) ? 'HAS DATA' : 'IS NULL/EMPTY');
 let editingId = null;
 let imageCount = 0;
 
@@ -30,20 +86,8 @@ function addHistory(action, product) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(hist.slice(0, 100)));
 }
 
-// ── LOGIN ─────────────────────────────────────────────────────
-onAuthStateChanged(auth, user => {
-  if (user) {
-    document.getElementById('loginOverlay').style.display = 'none';
-    document.getElementById('adminPanel').style.display = 'block';
-    renderAdminList();
-    renderDashboard();
-    initImageFields();
-  } else {
-    document.getElementById('loginOverlay').style.display = 'flex';
-    document.getElementById('adminPanel').style.display = 'none';
-  }
-});
-
+// ── STORAGE EVENT LISTENER ────────────────────────────────────
+// Sync data across tabs when localStorage changes from another tab
 window.addEventListener('storage', (e) => {
   if (e.key === STORAGE_KEY) {
     products = JSON.parse(e.newValue || '[]');
@@ -53,9 +97,13 @@ window.addEventListener('storage', (e) => {
 });
 
 function doLogin() {
+  if (!auth || !signInWithEmailAndPassword_fn) {
+    alert('❌ Firebase não carregou. Tente novamente ou abra em modo offline.');
+    return;
+  }
   const email = document.getElementById('loginEmail').value;
   const pw    = document.getElementById('loginPassword').value;
-  signInWithEmailAndPassword(auth, email, pw)
+  signInWithEmailAndPassword_fn(auth, email, pw)
     .then(() => {
       document.getElementById('loginError').style.display = 'none';
     })
@@ -67,7 +115,11 @@ function doLogin() {
 }
 
 function doLogout() {
-  signOut(auth);
+  if (!auth || !signOut_fn) {
+    console.warn('Firebase not available');
+    return;
+  }
+  signOut_fn(auth);
 }
 
 // Expõe funções ao escopo global (necessário com type="module")
@@ -252,8 +304,12 @@ function editProduct(id) {
 function deleteProduct(id) {
   if (!confirm('Tem certeza que quer remover este produto?')) return;
   const p = products.find(x => x.id === id);
+  const before = products.length;
   products = products.filter(p => p.id !== id);
+  const after = products.length;
+  console.log(`[DELETE] "${p?.name}" - antes: ${before}, depois: ${after}`);
   saveToStorage();
+  console.log(`[DELETE] localStorage após save:`, localStorage.getItem(STORAGE_KEY)?.substring(0, 100));
   if (p) addHistory('delete', p);
   renderAdminList();
   renderDashboard();
@@ -320,7 +376,16 @@ function renderAdminList() {
 }
 
 // ── HELPERS ───────────────────────────────────────────────────
-function saveToStorage() { localStorage.setItem(STORAGE_KEY, JSON.stringify(products)); }
+function saveToStorage() {
+  try {
+    const json = JSON.stringify(products);
+    localStorage.setItem(STORAGE_KEY, json);
+    console.log('[STORAGE] ✅ Saved', products.length, 'products to localStorage');
+  } catch (e) {
+    console.error('[STORAGE] ❌ Failed to save:', e.message);
+    alert('⚠️ Erro ao salvar no armazenamento local. Verifique se está em modo incógnito.');
+  }
+}
 
 // ── TELEGRAM SHARE ────────────────────────────────────────────
 const TG_GROUP = 'https://t.me/ofertasshopeeday';
