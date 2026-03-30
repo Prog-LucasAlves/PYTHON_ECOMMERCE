@@ -3,19 +3,12 @@
 // Real security is enforced via Firebase Security Rules on the console:
 // https://console.firebase.google.com → Authentication → Settings → Authorized domains
 // Ensure only melhoresdashopee.com.br and localhost are authorized.
+import { firebaseConfig } from "./config.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-const firebaseConfig = {
-  apiKey: "",
-  authDomain: "e-commerce-shopee.firebaseapp.com",
-  projectId: "e-commerce-shopee",
-  storageBucket: "e-commerce-shopee.firebasestorage.app",
-  messagingSenderId: "152384004387",
-  appId: "1:152384004387:web:7569ae1f73efec9d886c96",
-  measurementId: "G-DDCGPWH0XD"
-};
+// firebaseConfig is imported from config.js (not committed to git)
 
 const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
