@@ -407,7 +407,7 @@ function shareTelegramAdmin(id) {
       : `💰 R$ ${Number(p.price).toFixed(2).replace('.',',')}`,
     p.desc ? `\n📝 ${p.desc}` : null,
     `\n🛒 Compre agora: ${p.link}`,
-    `\n_Via MelhoresDaShopee.com.br_`,
+    `\n_Via Melhores Ofertas_`,
   ].filter(Boolean).join('\n');
   const url = `https://t.me/share/url?url=${encodeURIComponent(p.link)}&text=${encodeURIComponent(lines)}`;
   window.open(url, '_blank');
