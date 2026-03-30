@@ -65,31 +65,106 @@
     <button class="hero-arrow hero-next" onclick="heroNext()">&#8250;</button>
   </section>
 
-  <!-- FILTROS -->
-  <section class="filters-bar">
-    <button class="filter-btn active" onclick="setCategory('todos', this)">🏷️ Todos</button>
-    <button class="filter-btn" onclick="setCategory('roupas-fem', this)">👗 Roupas Femininas</button>
-    <button class="filter-btn" onclick="setCategory('roupas-masc', this)">👔 Roupas Masculinas</button>
-    <button class="filter-btn" onclick="setCategory('sapatos', this)">👟 Sapatos</button>
-    <button class="filter-btn" onclick="setCategory('moda', this)">💍 Acessórios de Moda</button>
-    <button class="filter-btn" onclick="setCategory('celulares', this)">📱 Celulares</button>
-    <button class="filter-btn" onclick="setCategory('eletronicos', this)">💻 Eletrônicos</button>
-    <button class="filter-btn" onclick="setCategory('eletrodom', this)">🏠 Eletrodomésticos</button>
-    <button class="filter-btn" onclick="setCategory('jogos', this)">🎮 Jogos e Consoles</button>
-    <button class="filter-btn" onclick="setCategory('cameras', this)">📷 Câmeras e Drones</button>
-    <button class="filter-btn" onclick="setCategory('audio', this)">🎧 Áudio</button>
-    <button class="filter-btn" onclick="setCategory('computadores', this)">🖥️ Computadores</button>
-    <button class="filter-btn" onclick="setCategory('casa', this)">🏡 Casa e Construção</button>
-    <button class="filter-btn" onclick="setCategory('beleza', this)">💄 Beleza</button>
-    <button class="filter-btn" onclick="setCategory('saude', this)">💊 Saúde</button>
-    <button class="filter-btn" onclick="setCategory('esporte', this)">⚽ Esportes e Lazer</button>
-    <button class="filter-btn" onclick="setCategory('animais', this)">🐾 Animais Domésticos</button>
-    <button class="filter-btn" onclick="setCategory('brinquedos', this)">🧸 Brinquedos e Hobbies</button>
-    <button class="filter-btn" onclick="setCategory('bebes', this)">👶 Mãe e Bebê</button>
-    <button class="filter-btn" onclick="setCategory('automoveis', this)">🚗 Automóveis</button>
-    <button class="filter-btn" onclick="setCategory('alimentos', this)">🍎 Alimentos e Bebidas</button>
-    <button class="filter-btn" onclick="setCategory('livros', this)">📚 Livros e Revistas</button>
-    <button class="filter-btn" onclick="setCategory('outros', this)">✨ Outros</button>
+  <!-- FILTROS / CATEGORIAS -->
+  <section class="cat-section">
+    <div class="cat-track-wrap">
+      <button class="cat-arrow cat-arrow-left" id="catLeft" onclick="scrollCat(-1)">&#8249;</button>
+      <div class="cat-track" id="catTrack">
+        <button class="cat-item active" onclick="setCategory('todos', this)" data-cat="todos">
+          <span class="cat-circle">🏷️</span>
+          <span class="cat-label">Todos</span>
+        </button>
+        <button class="cat-item" onclick="setCategory('roupas-fem', this)" data-cat="roupas-fem">
+          <span class="cat-circle">👗</span>
+          <span class="cat-label">Roupas Femininas</span>
+        </button>
+        <button class="cat-item" onclick="setCategory('roupas-masc', this)" data-cat="roupas-masc">
+          <span class="cat-circle">👔</span>
+          <span class="cat-label">Roupas Masculinas</span>
+        </button>
+        <button class="cat-item" onclick="setCategory('sapatos', this)" data-cat="sapatos">
+          <span class="cat-circle">👟</span>
+          <span class="cat-label">Sapatos</span>
+        </button>
+        <button class="cat-item" onclick="setCategory('moda', this)" data-cat="moda">
+          <span class="cat-circle">💍</span>
+          <span class="cat-label">Acessórios de Moda</span>
+        </button>
+        <button class="cat-item" onclick="setCategory('celulares', this)" data-cat="celulares">
+          <span class="cat-circle">📱</span>
+          <span class="cat-label">Celulares</span>
+        </button>
+        <button class="cat-item" onclick="setCategory('eletronicos', this)" data-cat="eletronicos">
+          <span class="cat-circle">💻</span>
+          <span class="cat-label">Eletrônicos</span>
+        </button>
+        <button class="cat-item" onclick="setCategory('eletrodom', this)" data-cat="eletrodom">
+          <span class="cat-circle">🏠</span>
+          <span class="cat-label">Eletrodomésticos</span>
+        </button>
+        <button class="cat-item" onclick="setCategory('computadores', this)" data-cat="computadores">
+          <span class="cat-circle">🖥️</span>
+          <span class="cat-label">Computadores</span>
+        </button>
+        <button class="cat-item" onclick="setCategory('jogos', this)" data-cat="jogos">
+          <span class="cat-circle">🎮</span>
+          <span class="cat-label">Jogos e Consoles</span>
+        </button>
+        <button class="cat-item" onclick="setCategory('cameras', this)" data-cat="cameras">
+          <span class="cat-circle">📷</span>
+          <span class="cat-label">Câmeras e Drones</span>
+        </button>
+        <button class="cat-item" onclick="setCategory('audio', this)" data-cat="audio">
+          <span class="cat-circle">🎧</span>
+          <span class="cat-label">Áudio</span>
+        </button>
+        <button class="cat-item" onclick="setCategory('casa', this)" data-cat="casa">
+          <span class="cat-circle">🏡</span>
+          <span class="cat-label">Casa e Construção</span>
+        </button>
+        <button class="cat-item" onclick="setCategory('beleza', this)" data-cat="beleza">
+          <span class="cat-circle">💄</span>
+          <span class="cat-label">Beleza</span>
+        </button>
+        <button class="cat-item" onclick="setCategory('saude', this)" data-cat="saude">
+          <span class="cat-circle">💊</span>
+          <span class="cat-label">Saúde</span>
+        </button>
+        <button class="cat-item" onclick="setCategory('esporte', this)" data-cat="esporte">
+          <span class="cat-circle">⚽</span>
+          <span class="cat-label">Esportes e Lazer</span>
+        </button>
+        <button class="cat-item" onclick="setCategory('animais', this)" data-cat="animais">
+          <span class="cat-circle">🐾</span>
+          <span class="cat-label">Animais Domésticos</span>
+        </button>
+        <button class="cat-item" onclick="setCategory('brinquedos', this)" data-cat="brinquedos">
+          <span class="cat-circle">🧸</span>
+          <span class="cat-label">Brinquedos e Hobbies</span>
+        </button>
+        <button class="cat-item" onclick="setCategory('bebes', this)" data-cat="bebes">
+          <span class="cat-circle">👶</span>
+          <span class="cat-label">Mãe e Bebê</span>
+        </button>
+        <button class="cat-item" onclick="setCategory('automoveis', this)" data-cat="automoveis">
+          <span class="cat-circle">🚗</span>
+          <span class="cat-label">Automóveis</span>
+        </button>
+        <button class="cat-item" onclick="setCategory('alimentos', this)" data-cat="alimentos">
+          <span class="cat-circle">🍎</span>
+          <span class="cat-label">Alimentos e Bebidas</span>
+        </button>
+        <button class="cat-item" onclick="setCategory('livros', this)" data-cat="livros">
+          <span class="cat-circle">📚</span>
+          <span class="cat-label">Livros e Revistas</span>
+        </button>
+        <button class="cat-item" onclick="setCategory('outros', this)" data-cat="outros">
+          <span class="cat-circle">✨</span>
+          <span class="cat-label">Outros</span>
+        </button>
+      </div>
+      <button class="cat-arrow cat-arrow-right" id="catRight" onclick="scrollCat(1)">&#8250;</button>
+    </div>
   </section>
 
   <!-- CONTROLES: ORDENAÇÃO + FILTRO DE PREÇO -->
