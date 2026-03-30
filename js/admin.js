@@ -18,9 +18,28 @@ const STORAGE_KEY  = 'shopee_products';
 const HISTORY_KEY  = 'shopee_history';
 const CLICKS_KEY   = 'shopee_clicks';
 
+// Test if localStorage is available and working
+function testLocalStorage() {
+  try {
+    const test = '__test__';
+    localStorage.setItem(test, 'ok');
+    const result = localStorage.getItem(test);
+    localStorage.removeItem(test);
+    console.log('[STORAGE] ✅ localStorage is working');
+    return true;
+  } catch (e) {
+    console.error('[STORAGE] ❌ localStorage not available:', e.message);
+    console.error('[STORAGE] This might be because: incognito mode, localStorage disabled, or CORS issue');
+    return false;
+  }
+}
+
+testLocalStorage();
+
 // ── STATE ─────────────────────────────────────────────────────
 let products  = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
 console.log('[ADMIN.JS] Loaded', products.length, 'products from localStorage at', new Date().toLocaleTimeString());
+console.log('[ADMIN.JS] localStorage.getItem result:', localStorage.getItem(STORAGE_KEY) ? 'HAS DATA' : 'IS NULL/EMPTY');
 let editingId = null;
 let imageCount = 0;
 
@@ -325,7 +344,16 @@ function renderAdminList() {
 }
 
 // ── HELPERS ───────────────────────────────────────────────────
-function saveToStorage() { localStorage.setItem(STORAGE_KEY, JSON.stringify(products)); }
+function saveToStorage() {
+  try {
+    const json = JSON.stringify(products);
+    localStorage.setItem(STORAGE_KEY, json);
+    console.log('[STORAGE] ✅ Saved', products.length, 'products to localStorage');
+  } catch (e) {
+    console.error('[STORAGE] ❌ Failed to save:', e.message);
+    alert('⚠️ Erro ao salvar no armazenamento local. Verifique se está em modo incógnito.');
+  }
+}
 
 // ── TELEGRAM SHARE ────────────────────────────────────────────
 const TG_GROUP = 'https://t.me/ofertasshopeeday';
