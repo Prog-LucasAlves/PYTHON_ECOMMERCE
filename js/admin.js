@@ -309,8 +309,30 @@ function renderAdminList() {
 function saveToStorage() { localStorage.setItem(STORAGE_KEY, JSON.stringify(products)); }
 
 function categoryLabel(cat) {
-  const map = { eletronicos:'📱 Eletrônicos', moda:'👗 Moda', casa:'🏠 Casa',
-                beleza:'💄 Beleza', esporte:'⚽ Esporte', outros:'✨ Outros' };
+  const map = {
+    'roupas-fem':  '👗 Roupas Femininas',
+    'roupas-masc': '👔 Roupas Masculinas',
+    'sapatos':     '👟 Sapatos',
+    'moda':        '💍 Acessórios de Moda',
+    'celulares':   '📱 Celulares',
+    'eletronicos': '💻 Eletrônicos',
+    'computadores':'🖥️ Computadores',
+    'jogos':       '🎮 Jogos e Consoles',
+    'cameras':     '📷 Câmeras e Drones',
+    'audio':       '🎧 Áudio',
+    'eletrodom':   '🏠 Eletrodomésticos',
+    'casa':        '🏡 Casa e Construção',
+    'alimentos':   '🍎 Alimentos e Bebidas',
+    'beleza':      '💄 Beleza',
+    'saude':       '💊 Saúde',
+    'esporte':     '⚽ Esportes e Lazer',
+    'bebes':       '👶 Mãe e Bebê',
+    'brinquedos':  '🧸 Brinquedos e Hobbies',
+    'animais':     '🐾 Animais Domésticos',
+    'automoveis':  '🚗 Automóveis',
+    'livros':      '📚 Livros e Revistas',
+    'outros':      '✨ Outros',
+  };
   return map[cat] || cat;
 }
 
