@@ -652,6 +652,47 @@ footer {
   color: #555;
   margin: 0;
 }
+.footer-disclaimer {
+  font-size: .72rem;
+  color: #444;
+  margin: 10px auto 0;
+  max-width: 640px;
+  line-height: 1.5;
+}
+.footer-legal {
+  font-size: .75rem;
+  color: #555;
+  margin-top: 10px;
+}
+.footer-legal a {
+  color: #ff9800;
+  text-decoration: underline;
+}
+.footer-legal a:hover { color: #ffb74d; }
+
+/* ── LGPD CONSENT BANNER ─────────────────────────────────────── */
+.lgpd-banner {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
+  background: #1a1a1a; border-top: 2px solid #ee4d2d;
+  padding: 12px 20px; box-shadow: 0 -2px 12px rgba(0,0,0,.35);
+}
+.lgpd-inner {
+  max-width: 900px; margin: 0 auto;
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+}
+.lgpd-inner p { flex: 1; font-size: .8rem; color: #bbb; line-height: 1.5; margin: 0; min-width: 200px; }
+.lgpd-inner p a { color: #ff9800; text-decoration: underline; }
+.lgpd-btns { display: flex; gap: 8px; flex-shrink: 0; }
+.lgpd-accept {
+  background: #ee4d2d; color: #fff; border: none; border-radius: 6px;
+  padding: 7px 18px; font-size: .8rem; font-weight: 600; cursor: pointer;
+}
+.lgpd-accept:hover { background: #d94025; }
+.lgpd-decline {
+  background: transparent; color: #888; border: 1px solid #444;
+  border-radius: 6px; padding: 7px 14px; font-size: .8rem; cursor: pointer;
+}
+.lgpd-decline:hover { color: #bbb; border-color: #666; }
 
 /* ========== CARD THUMBNAILS ========== */
 .badge-gallery {
