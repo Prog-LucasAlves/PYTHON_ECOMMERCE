@@ -18,20 +18,9 @@ const STORAGE_KEY  = 'shopee_products';
 const HISTORY_KEY  = 'shopee_history';
 const CLICKS_KEY   = 'shopee_clicks';
 
-// Monitorar todas as mudanças ao localStorage
-const originalSetItem = localStorage.setItem;
-localStorage.setItem = function(key, value) {
-  if (key === STORAGE_KEY) {
-    const parsed = JSON.parse(value);
-    console.log('[localStorage.setItem]', key, '→', parsed.length, 'products');
-    console.trace();
-  }
-  originalSetItem.apply(localStorage, arguments);
-};
-
 // ── STATE ─────────────────────────────────────────────────────
 let products  = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-console.log('[INIT] Loaded', products.length, 'products from localStorage');
+console.log('[ADMIN.JS] Loaded', products.length, 'products from localStorage at', new Date().toLocaleTimeString());
 let editingId = null;
 let imageCount = 0;
 
@@ -264,12 +253,12 @@ function editProduct(id) {
 function deleteProduct(id) {
   if (!confirm('Tem certeza que quer remover este produto?')) return;
   const p = products.find(x => x.id === id);
-  console.log('[DELETE] Before:', products.length, 'products');
-  console.log('[DELETE] Produto a remover:', p?.name, 'ID:', id);
+  const before = products.length;
   products = products.filter(p => p.id !== id);
-  console.log('[DELETE] After filter:', products.length, 'products');
+  const after = products.length;
+  console.log(`[DELETE] "${p?.name}" - antes: ${before}, depois: ${after}`);
   saveToStorage();
-  console.log('[DELETE] localStorage após saveToStorage:', localStorage.getItem(STORAGE_KEY)?.length, 'chars');
+  console.log(`[DELETE] localStorage após save:`, localStorage.getItem(STORAGE_KEY)?.substring(0, 100));
   if (p) addHistory('delete', p);
   renderAdminList();
   renderDashboard();
