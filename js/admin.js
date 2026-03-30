@@ -80,6 +80,7 @@ window.renderAdminList    = renderAdminList;
 window.renderDashboard    = renderDashboard;
 window.importCSV          = importCSV;
 window.triggerCSVImport   = triggerCSVImport;
+window.shareTelegramAdmin = shareTelegramAdmin;
 
 // ── IMAGE LIST MANAGEMENT ──────────────────────────────────────
 function initImageFields() {
@@ -298,6 +299,7 @@ function renderAdminList() {
         </div>
       </div>
       <div class="admin-item-actions">
+        <button class="btn-tg-share" onclick="shareTelegramAdmin(${p.id})" title="Compartilhar no Telegram"><i class="fab fa-telegram-plane"></i></button>
         <button class="btn-edit"   onclick="editProduct(${p.id})"><i class="fas fa-pen"></i></button>
         <button class="btn-delete" onclick="deleteProduct(${p.id})"><i class="fas fa-trash"></i></button>
       </div>
@@ -307,6 +309,32 @@ function renderAdminList() {
 
 // ── HELPERS ───────────────────────────────────────────────────
 function saveToStorage() { localStorage.setItem(STORAGE_KEY, JSON.stringify(products)); }
+
+// ── TELEGRAM SHARE ────────────────────────────────────────────
+const TG_GROUP = 'https://t.me/ofertasshopeeday';
+
+function shareTelegramAdmin(id) {
+  const p = products.find(x => x.id === id);
+  if (!p) return;
+  const discount = p.originalPrice && p.originalPrice > p.price
+    ? Math.round((1 - p.price / p.originalPrice) * 100) : null;
+  const lines = [
+    `🔥 *${p.name}*`,
+    discount ? `🏷️ -${discount}% de desconto!` : null,
+    p.originalPrice && p.originalPrice > p.price
+      ? `~~R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}~~  →  *R$ ${Number(p.price).toFixed(2).replace('.',',')}*`
+      : `💰 R$ ${Number(p.price).toFixed(2).replace('.',',')}`,
+    p.desc ? `\n📝 ${p.desc}` : null,
+    `\n🛒 Compre agora: ${p.link}`,
+    `\n_Via MelhoresDaShopee.com.br_`,
+  ].filter(Boolean).join('\n');
+  const url = `https://t.me/share/url?url=${encodeURIComponent(p.link)}&text=${encodeURIComponent(lines)}`;
+  window.open(url, '_blank');
+}
+
+function shareTelegramGroupAdmin(id) {
+  shareTelegramAdmin(id);
+}
 
 function categoryLabel(cat) {
   const map = {

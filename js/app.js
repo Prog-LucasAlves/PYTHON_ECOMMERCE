@@ -743,10 +743,17 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft'  && modalIndex > 0)                   setModalIndex(modalIndex - 1);
 });
 
+// ── CATEGORY SCROLL ───────────────────────────────────────────
+function scrollCat(dir) {
+  const track = document.getElementById('catTrack');
+  if (track) track.scrollBy({ left: dir * 220, behavior: 'smooth' });
+}
+window.scrollCat = scrollCat;
+
 // ── FILTER CONTROLS ───────────────────────────────────────────
 function setCategory(cat, btn) {
   currentCategory = cat;
-  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.cat-item, .filter-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   renderProducts();
 }
