@@ -3,8 +3,7 @@ __pycache__/
 *.py[codz]
 *$py.class
 
-# Firebase configuration (contains API keys)
-js/config.js
+
 
 # C extensions
 *.so
