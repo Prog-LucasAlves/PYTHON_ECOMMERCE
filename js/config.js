@@ -3,7 +3,7 @@
 // pragma: allowlist secret
 
 export const firebaseConfig = {
-  apiKey: "AIzaSyDosbzgjIQfzFQPQyx-xocbANGxM8Ce14", // pragma: allowlist secret
+  apiKey: "AIzaSyC4NkuCmj295_GWZ7w0_oxRvH2ZRL996Ul", // pragma: allowlist secret
   authDomain: "vendas-f54d4.firebaseapp.com",
   projectId: "vendas-f54d4",
   storageBucket: "vendas-f54d4.firebasestorage.app",
