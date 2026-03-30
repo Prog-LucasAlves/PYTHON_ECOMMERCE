@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -33,7 +33,18 @@
         <span>Melhores Ofertas</span>
       </div>
       <div class="header-actions">
-        <input type="text" id="searchInput" placeholder="🔍 Buscar produto..." oninput="filterProducts()"/>
+        <div class="search-wrap">
+          <input type="text" id="searchInput" placeholder="🔍 Buscar produto..."
+            oninput="filterProducts(); updateSearchSuggestions()"
+            onfocus="showSearchHistory()"
+            onblur="hideSearchDropdown()"
+            onkeydown="handleSearchKey(event)"
+            autocomplete="off"/>
+          <div id="searchDropdown" class="search-dropdown" style="display:none"></div>
+        </div>
+        <button class="btn-dark-mode" id="darkToggle" onclick="toggleDarkMode()" title="Modo escuro">
+          <i class="fas fa-moon" id="darkIcon"></i>
+        </button>
         <a href="admin.html" class="btn-admin"><i class="fas fa-cog"></i></a>
       </div>
     </div>
@@ -58,6 +69,29 @@
     <button class="filter-btn" onclick="setCategory('outros', this)">✨ Outros</button>
   </section>
 
+  <!-- CONTROLES: ORDENAÇÃO + FILTRO DE PREÇO -->
+  <section class="controls-bar">
+    <div class="controls-inner">
+      <div class="sort-control">
+        <label><i class="fas fa-sort"></i></label>
+        <select id="sortSelect" onchange="setSortMode(this.value)">
+          <option value="default">Destaques primeiro</option>
+          <option value="price-asc">Menor preço</option>
+          <option value="price-desc">Maior preço</option>
+          <option value="discount">Maior desconto</option>
+          <option value="newest">Mais recente</option>
+        </select>
+      </div>
+      <div class="price-control">
+        <label><i class="fas fa-tag"></i> Preço:</label>
+        <input type="number" id="priceMin" placeholder="Min" min="0" oninput="setPriceFilter()"/>
+        <span>—</span>
+        <input type="number" id="priceMax" placeholder="Max" min="0" oninput="setPriceFilter()"/>
+        <button class="btn-clear-price" onclick="clearPriceFilter()" title="Limpar"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+  </section>
+
   <!-- PRODUTOS -->
   <main>
     <div id="productGrid" class="product-grid"></div>
@@ -67,11 +101,6 @@
       <a href="admin.html" class="btn-primary">Adicionar produtos</a>
     </div>
   </main>
-
-  <!-- FOOTER -->
-  <footer>
-    <p>Links de afiliado Shopee · Ao clicar, você nos ajuda sem pagar nada a mais 💛</p>
-  </footer>
 
   <!-- PRODUCT DETAIL MODAL -->
   <div id="productModal" class="product-modal" onclick="closeModalOutside(event)">
@@ -88,6 +117,8 @@
       <div class="modal-info">
         <span class="modal-category" id="modalCategory"></span>
         <h2 id="modalName"></h2>
+        <div id="modalStars" class="modal-stars"></div>
+        <div id="modalSoldCount" class="modal-sold"></div>
         <div class="modal-prices">
           <span class="modal-original" id="modalOriginal"></span>
           <span class="modal-price" id="modalPrice"></span>
@@ -97,12 +128,38 @@
         <a id="modalBuyBtn" href="#" target="_blank" rel="noopener" class="modal-buy-btn">
           <i class="fas fa-shopping-cart"></i> Comprar na Shopee
         </a>
+        <div class="modal-actions-row">
+          <button class="modal-fav-btn" id="modalFavBtn" onclick="toggleFavorite()">
+            <i class="fas fa-heart"></i> <span id="modalFavText">Favoritar</span>
+          </button>
+          <button class="modal-share-btn" onclick="shareWhatsApp()">
+            <i class="fab fa-whatsapp"></i>
+          </button>
+          <button class="modal-share-btn telegram" onclick="shareTelegram()">
+            <i class="fab fa-telegram-plane"></i>
+          </button>
+        </div>
         <p class="modal-affiliate-note">🔗 Link de afiliado · Você nos ajuda sem pagar nada a mais</p>
       </div>
     </div>
   </div>
 
   <script src="js/app.js"></script>
+
+  <!-- PAINEL DE FAVORITOS -->
+  <div id="favPanel" class="fav-panel" style="display:none">
+    <div class="fav-panel-inner">
+      <div class="fav-panel-header">
+        <h3>❤️ Favoritos</h3>
+        <button onclick="closeFavPanel()"><i class="fas fa-times"></i></button>
+      </div>
+      <div id="favList" class="fav-list"></div>
+    </div>
+  </div>
+  <button class="fav-fab" id="favFab" onclick="openFavPanel()" style="display:none" title="Meus favoritos">
+    <i class="fas fa-heart"></i>
+    <span class="fav-count" id="favCount">0</span>
+  </button>
 
   <!-- Botão Telegram flutuante -->
   <a href="https://t.me/ofertasshopeeday" target="_blank" class="telegram-fab" title="Entrar no grupo de ofertas">

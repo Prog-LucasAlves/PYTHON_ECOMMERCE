@@ -161,6 +161,8 @@ function saveProduct(e) {
     images,
     video:         (document.getElementById('prodVideo')?.value || '').trim(),
     desc:          document.getElementById('prodDesc').value.trim(),
+    rating:        parseFloat(document.getElementById('prodRating')?.value) || null,
+    soldCount:     parseInt(document.getElementById('prodSoldCount')?.value) || null,
     featured:      document.getElementById('prodFeatured').checked
   };
 
@@ -193,6 +195,10 @@ function editProduct(id) {
   document.getElementById('prodLink').value          = p.link;
   document.getElementById('prodDesc').value          = p.desc || '';
   document.getElementById('prodFeatured').checked    = p.featured || false;
+  if (document.getElementById('prodRating'))
+    document.getElementById('prodRating').value    = p.rating || '';
+  if (document.getElementById('prodSoldCount'))
+    document.getElementById('prodSoldCount').value = p.soldCount || '';
   if (document.getElementById('prodVideo'))
     document.getElementById('prodVideo').value = p.video || '';
 
