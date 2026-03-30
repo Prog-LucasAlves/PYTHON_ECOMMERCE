@@ -163,7 +163,8 @@ function saveProduct(e) {
     desc:          document.getElementById('prodDesc').value.trim(),
     rating:        parseFloat(document.getElementById('prodRating')?.value) || null,
     soldCount:     parseInt(document.getElementById('prodSoldCount')?.value) || null,
-    featured:      document.getElementById('prodFeatured').checked
+    featured:      document.getElementById('prodFeatured').checked,
+    countdown:     document.getElementById('prodCountdown')?.value || null,
   };
 
   if (editingId) {
@@ -201,6 +202,8 @@ function editProduct(id) {
     document.getElementById('prodSoldCount').value = p.soldCount || '';
   if (document.getElementById('prodVideo'))
     document.getElementById('prodVideo').value = p.video || '';
+  if (document.getElementById('prodCountdown'))
+    document.getElementById('prodCountdown').value = p.countdown || '';
 
   // Populate image fields
   const list = document.getElementById('imagesList');

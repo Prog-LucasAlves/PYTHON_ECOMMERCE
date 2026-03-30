@@ -50,12 +50,12 @@
     </div>
   </header>
 
-  <!-- HERO BANNER -->
-  <section class="hero">
-    <div class="hero-content">
-      <h1>🔥 Ofertas Imperdíveis</h1>
-      <p>Os melhores preços da Shopee, direto pra você!</p>
-    </div>
+  <!-- HERO BANNER CAROUSEL -->
+  <section class="hero-banner" id="heroBanner">
+    <div class="hero-slides" id="heroSlides"></div>
+    <div class="hero-dots"   id="heroDots"></div>
+    <button class="hero-arrow hero-prev" onclick="heroPrev()">&#8249;</button>
+    <button class="hero-arrow hero-next" onclick="heroNext()">&#8250;</button>
   </section>
 
   <!-- FILTROS -->
@@ -124,6 +124,7 @@
           <span class="modal-price" id="modalPrice"></span>
           <span class="modal-discount" id="modalDiscount"></span>
         </div>
+        <div id="modalCountdown" class="modal-countdown" style="display:none"></div>
         <p class="modal-desc" id="modalDesc"></p>
         <a id="modalBuyBtn" href="#" target="_blank" rel="noopener" class="modal-buy-btn">
           <i class="fas fa-shopping-cart"></i> Comprar na Shopee
@@ -140,11 +141,36 @@
           </button>
         </div>
         <p class="modal-affiliate-note">🔗 Link de afiliado · Você nos ajuda sem pagar nada a mais</p>
+        <div id="modalRelated" class="modal-related-section" style="display:none">
+          <h4>Produtos Relacionados</h4>
+          <div class="modal-related-list" id="modalRelatedList"></div>
+        </div>
       </div>
     </div>
   </div>
 
   <script src="js/app.js"></script>
+
+  <!-- BARRA DE COMPARAÇÃO -->
+  <div id="compareBar" class="compare-bar">
+    <div class="compare-bar-inner">
+      <span class="compare-title"><i class="fas fa-columns"></i> Comparar</span>
+      <div class="compare-slots" id="compareSlots"></div>
+      <button class="btn-compare-now" onclick="openCompareModal()" id="btnCompareNow" disabled>Comparar agora</button>
+      <button class="compare-clear" onclick="clearCompare()" title="Limpar"><i class="fas fa-times"></i></button>
+    </div>
+  </div>
+
+  <!-- MODAL DE COMPARAÇÃO -->
+  <div id="compareModal" class="compare-modal" onclick="closeCompareOutside(event)">
+    <div class="compare-box">
+      <div class="compare-header">
+        <h2><i class="fas fa-columns"></i> Comparar Produtos</h2>
+        <button onclick="closeCompareModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div id="compareTable" class="compare-table"></div>
+    </div>
+  </div>
 
   <!-- PAINEL DE FAVORITOS -->
   <div id="favPanel" class="fav-panel" style="display:none">
