@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
@@ -34,6 +34,9 @@
       </div>
       <div class="header-actions">
         <input type="text" id="searchInput" placeholder="🔍 Buscar produto..." oninput="filterProducts()"/>
+        <button class="btn-dark-mode" id="darkToggle" onclick="toggleDarkMode()" title="Modo escuro">
+          <i class="fas fa-moon" id="darkIcon"></i>
+        </button>
         <a href="admin.html" class="btn-admin"><i class="fas fa-cog"></i></a>
       </div>
     </div>
@@ -58,6 +61,29 @@
     <button class="filter-btn" onclick="setCategory('outros', this)">✨ Outros</button>
   </section>
 
+  <!-- CONTROLES: ORDENAÇÃO + FILTRO DE PREÇO -->
+  <section class="controls-bar">
+    <div class="controls-inner">
+      <div class="sort-control">
+        <label><i class="fas fa-sort"></i></label>
+        <select id="sortSelect" onchange="setSortMode(this.value)">
+          <option value="default">Destaques primeiro</option>
+          <option value="price-asc">Menor preço</option>
+          <option value="price-desc">Maior preço</option>
+          <option value="discount">Maior desconto</option>
+          <option value="newest">Mais recente</option>
+        </select>
+      </div>
+      <div class="price-control">
+        <label><i class="fas fa-tag"></i> Preço:</label>
+        <input type="number" id="priceMin" placeholder="Min" min="0" oninput="setPriceFilter()"/>
+        <span>—</span>
+        <input type="number" id="priceMax" placeholder="Max" min="0" oninput="setPriceFilter()"/>
+        <button class="btn-clear-price" onclick="clearPriceFilter()" title="Limpar"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+  </section>
+
   <!-- PRODUTOS -->
   <main>
     <div id="productGrid" class="product-grid"></div>
@@ -67,11 +93,6 @@
       <a href="admin.html" class="btn-primary">Adicionar produtos</a>
     </div>
   </main>
-
-  <!-- FOOTER -->
-  <footer>
-    <p>Links de afiliado Shopee · Ao clicar, você nos ajuda sem pagar nada a mais 💛</p>
-  </footer>
 
   <!-- PRODUCT DETAIL MODAL -->
   <div id="productModal" class="product-modal" onclick="closeModalOutside(event)">

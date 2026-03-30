@@ -1,3 +1,20 @@
+// ── DARK MODE ─────────────────────────────────────────────────
+function initDarkMode() {
+  if (localStorage.getItem('darkMode') === '1') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    const icon = document.getElementById('darkIcon');
+    if (icon) icon.className = 'fas fa-sun';
+  }
+}
+function toggleDarkMode() {
+  const html   = document.documentElement;
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  const icon = document.getElementById('darkIcon');
+  if (icon) icon.className = isDark ? 'fas fa-moon' : 'fas fa-sun';
+  localStorage.setItem('darkMode', isDark ? '0' : '1');
+}
+
 // ── HELPERS ──────────────────────────────────────────────────
 function getImages(p) {
   if (p.images && p.images.length > 0) return p.images.filter(Boolean);
@@ -22,6 +39,10 @@ function getEmbedUrl(url) {
 
 // ── DATA ─────────────────────────────────────────────────────
 let currentCategory = 'todos';
+let currentSort     = 'default';
+let priceMin        = null;
+let priceMax        = null;
+let firstLoad       = true;
 let allProducts = JSON.parse(localStorage.getItem('shopee_products') || '[]');
 
 if (allProducts.length === 0) {
@@ -46,26 +67,103 @@ if (allProducts.length === 0) {
 
 // ── RENDER ────────────────────────────────────────────────────
 function renderProducts() {
-  const grid  = document.getElementById('productGrid');
-  const empty = document.getElementById('emptyState');
-  const search = document.getElementById('searchInput').value.toLowerCase().trim();
+  const grid   = document.getElementById('productGrid');
+  const empty  = document.getElementById('emptyState');
+  const search = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
 
-  let filtered = allProducts;
+  if (firstLoad) {
+    firstLoad = false;
+    showSkeleton();
+    setTimeout(() => _renderFiltered(grid, empty, search), 400);
+  } else {
+    _renderFiltered(grid, empty, search);
+  }
+}
+
+function _renderFiltered(grid, empty, search) {
+  let filtered = [...allProducts];
   if (currentCategory !== 'todos') filtered = filtered.filter(p => p.category === currentCategory);
   if (search) filtered = filtered.filter(p => p.name.toLowerCase().includes(search));
-  filtered = [...filtered.filter(p => p.featured), ...filtered.filter(p => !p.featured)];
+  if (priceMin !== null) filtered = filtered.filter(p => p.price >= priceMin);
+  if (priceMax !== null) filtered = filtered.filter(p => p.price <= priceMax);
+
+  switch (currentSort) {
+    case 'price-asc':  filtered.sort((a, b) => a.price - b.price); break;
+    case 'price-desc': filtered.sort((a, b) => b.price - a.price); break;
+    case 'discount':   filtered.sort((a, b) => getDiscount(b) - getDiscount(a)); break;
+    case 'newest':     filtered.sort((a, b) => b.id - a.id); break;
+    default:           filtered = [...filtered.filter(p => p.featured), ...filtered.filter(p => !p.featured)];
+  }
 
   if (!filtered.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
   grid.innerHTML = filtered.map(p => cardHTML(p)).join('');
+  animateCards();
+}
+
+// ── SKELETON ─────────────────────────────────────────────────
+function showSkeleton() {
+  const grid = document.getElementById('productGrid');
+  grid.innerHTML = Array(8).fill(0).map(() => `
+    <div class="skeleton-card">
+      <div class="skel skel-img"></div>
+      <div class="skel-body">
+        <div class="skel skel-line"></div>
+        <div class="skel skel-line skel-short"></div>
+        <div class="skel skel-price"></div>
+      </div>
+      <div class="skel skel-btn"></div>
+    </div>`).join('');
+}
+
+// ── CARD ANIMATION ────────────────────────────────────────────
+function animateCards() {
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('card-visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.05 });
+  document.querySelectorAll('.product-card').forEach((card, i) => {
+    card.style.animationDelay = `${Math.min(i * 60, 500)}ms`;
+    observer.observe(card);
+  });
+}
+
+// ── SORT & PRICE FILTER ───────────────────────────────────────
+function setSortMode(val)    { currentSort = val; renderProducts(); }
+function setPriceFilter() {
+  priceMin = document.getElementById('priceMin').value !== '' ? parseFloat(document.getElementById('priceMin').value) : null;
+  priceMax = document.getElementById('priceMax').value !== '' ? parseFloat(document.getElementById('priceMax').value) : null;
+  renderProducts();
+}
+function clearPriceFilter() {
+  priceMin = null; priceMax = null;
+  document.getElementById('priceMin').value = '';
+  document.getElementById('priceMax').value = '';
+  renderProducts();
+}
+
+// ── DISCOUNT HELPER ───────────────────────────────────────────
+function getDiscount(p) {
+  if (!p.originalPrice || p.originalPrice <= p.price) return 0;
+  return Math.round((1 - p.price / p.originalPrice) * 100);
 }
 
 function cardHTML(p) {
-  const images  = getImages(p);
-  const main    = images[0] || 'https://via.placeholder.com/300x300?text=Sem+Imagem';
-  const hasMore = images.length > 1 || !!p.video;
-  const discount = p.originalPrice && p.originalPrice > p.price
-    ? Math.round((1 - p.price / p.originalPrice) * 100) : null;
+  const images   = getImages(p);
+  const main     = images[0] || 'https://via.placeholder.com/300x300?text=Sem+Imagem';
+  const hasMore  = images.length > 1 || !!p.video;
+  const discount = getDiscount(p);
+  const isNew    = p.id && (Date.now() - p.id) < 7 * 24 * 60 * 60 * 1000;
+  const isHot    = discount >= 30;
+
+  let leftBadge = '';
+  if (p.featured)    leftBadge = '<span class="badge-featured">⭐ Destaque</span>';
+  else if (isHot)    leftBadge = '<span class="badge-hot">🔥 QUENTE</span>';
+  else if (isNew)    leftBadge = '<span class="badge-new">✨ NOVO</span>';
 
   const allMedia = [...images, ...(p.video ? ['__video__'] : [])];
   const thumbsHTML = hasMore ? `
@@ -87,9 +185,9 @@ function cardHTML(p) {
 
   return `
   <div class="product-card" onclick="openProductModal(${p.id},0)">
-    ${p.featured ? '<span class="badge-featured">⭐ Destaque</span>' : ''}
+    ${leftBadge}
     ${discount   ? `<span class="badge-discount">-${discount}%</span>` : ''}
-    ${hasMore ? `<span class="badge-gallery"><i class="fas fa-images"></i> ${allMedia.length}</span>` : ''}
+    ${hasMore ? `<span class="badge-gallery"><i class="fas fa-images"></i> ${[...images, ...(p.video?['v']:[])].length}</span>` : ''}
     <div class="card-img-wrap">
       <img src="${main}" alt="${p.name}" loading="lazy"
            onerror="this.src='https://via.placeholder.com/300x300?text=Sem+Imagem'"/>
@@ -226,4 +324,5 @@ function categoryLabel(cat) {
   return map[cat] || cat;
 }
 
+initDarkMode();
 renderProducts();
