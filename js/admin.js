@@ -3,15 +3,51 @@
 // Real security is enforced via Firebase Security Rules on the console:
 // https://console.firebase.google.com → Authentication → Settings → Authorized domains
 // Ensure only melhoresdashopee.com.br and localhost are authorized.
-import { firebaseConfig } from "./config.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
-// firebaseConfig is imported from config.js (not committed to git)
+let auth = null;
+let signInWithEmailAndPassword_fn = null;
+let signOut_fn = null;
+let onAuthStateChanged_fn = null;
 
-const app  = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+// Load Firebase asynchronously - don't block if it fails
+(async () => {
+  try {
+    const { firebaseConfig } = await import("./config.js");
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const fb = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+
+    const app = initializeApp(firebaseConfig);
+    auth = fb.getAuth(app);
+    signInWithEmailAndPassword_fn = fb.signInWithEmailAndPassword;
+    signOut_fn = fb.signOut;
+    onAuthStateChanged_fn = fb.onAuthStateChanged;
+
+    console.log('[FIREBASE] ✅ Firebase loaded successfully');
+
+    // Setup auth listener
+    onAuthStateChanged_fn(auth, user => {
+      if (user) {
+        document.getElementById('loginOverlay').style.display = 'none';
+        document.getElementById('adminPanel').style.display = 'block';
+        renderAdminList();
+        renderDashboard();
+        initImageFields();
+      } else {
+        document.getElementById('loginOverlay').style.display = 'flex';
+        document.getElementById('adminPanel').style.display = 'none';
+      }
+    });
+  } catch (e) {
+    console.error('[FIREBASE] ⚠️ Firebase failed to load:', e.message);
+    console.log('[FIREBASE] Admin will work in offline mode (localStorage only)');
+    // Allow admin to work without Firebase
+    document.getElementById('loginOverlay').style.display = 'none';
+    document.getElementById('adminPanel').style.display = 'block';
+    renderAdminList();
+    renderDashboard();
+    initImageFields();
+  }
+})();
 
 // ── CONFIG ────────────────────────────────────────────────────
 const STORAGE_KEY  = 'shopee_products';
@@ -50,20 +86,8 @@ function addHistory(action, product) {
   localStorage.setItem(HISTORY_KEY, JSON.stringify(hist.slice(0, 100)));
 }
 
-// ── LOGIN ─────────────────────────────────────────────────────
-onAuthStateChanged(auth, user => {
-  if (user) {
-    document.getElementById('loginOverlay').style.display = 'none';
-    document.getElementById('adminPanel').style.display = 'block';
-    renderAdminList();
-    renderDashboard();
-    initImageFields();
-  } else {
-    document.getElementById('loginOverlay').style.display = 'flex';
-    document.getElementById('adminPanel').style.display = 'none';
-  }
-});
-
+// ── STORAGE EVENT LISTENER ────────────────────────────────────
+// Sync data across tabs when localStorage changes from another tab
 window.addEventListener('storage', (e) => {
   if (e.key === STORAGE_KEY) {
     products = JSON.parse(e.newValue || '[]');
@@ -73,9 +97,13 @@ window.addEventListener('storage', (e) => {
 });
 
 function doLogin() {
+  if (!auth || !signInWithEmailAndPassword_fn) {
+    alert('❌ Firebase não carregou. Tente novamente ou abra em modo offline.');
+    return;
+  }
   const email = document.getElementById('loginEmail').value;
   const pw    = document.getElementById('loginPassword').value;
-  signInWithEmailAndPassword(auth, email, pw)
+  signInWithEmailAndPassword_fn(auth, email, pw)
     .then(() => {
       document.getElementById('loginError').style.display = 'none';
     })
@@ -87,7 +115,11 @@ function doLogin() {
 }
 
 function doLogout() {
-  signOut(auth);
+  if (!auth || !signOut_fn) {
+    console.warn('Firebase not available');
+    return;
+  }
+  signOut_fn(auth);
 }
 
 // Expõe funções ao escopo global (necessário com type="module")
