@@ -456,6 +456,13 @@ if (allProducts.length === 0) {
   localStorage.setItem('shopee_products', JSON.stringify(allProducts));
 }
 
+window.addEventListener('storage', (e) => {
+  if (e.key === 'shopee_products') {
+    allProducts = JSON.parse(e.newValue || '[]');
+    renderProducts();
+  }
+});
+
 // ── RENDER ────────────────────────────────────────────────────
 function renderProducts() {
   const grid   = document.getElementById('productGrid');
