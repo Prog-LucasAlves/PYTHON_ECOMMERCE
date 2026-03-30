@@ -20,7 +20,7 @@ function initHeroBanner() {
       <div class="hero-static">
         <div class="hero-content">
           <h1>🔥 Ofertas Imperdíveis</h1>
-          <p>Selecao de ofertas online com links para a Shopee.</p>
+          <p>Seleção de ofertas online com links para a Shopee.</p>
         </div>
       </div>`;
     return;
