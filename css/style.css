@@ -253,6 +253,46 @@ footer {
   .telegram-fab { padding: 14px; border-radius: 50%; }
 }
 
+/* ── FOOTER ───────────────────────────────────────────────── */
+.site-footer {
+  background: #1a1a1a;
+  color: #aaa;
+  text-align: center;
+  padding: 32px 16px;
+  margin-top: 48px;
+}
+.footer-inner { max-width: 800px; margin: 0 auto; }
+.footer-badges {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.badge-ssl {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  color: #4caf50;
+  font-size: .82rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 20px;
+}
+.badge-ssl i { font-size: .85rem; }
+.footer-copy {
+  font-size: .82rem;
+  color: #666;
+  margin: 8px 0 4px;
+}
+.footer-affiliate {
+  font-size: .78rem;
+  color: #555;
+  margin: 0;
+}
+
 /* ========== CARD THUMBNAILS ========== */
 .badge-gallery {
   position: absolute; top: 8px; left: 8px;
