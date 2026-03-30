@@ -55,6 +55,10 @@ function doLogout() {
   signOut(auth);
 }
 
+// Expõe funções ao escopo global (necessário com type="module")
+window.doLogin  = doLogin;
+window.doLogout = doLogout;
+
 // ── IMAGE LIST MANAGEMENT ──────────────────────────────────────
 function initImageFields() {
   const list = document.getElementById('imagesList');
