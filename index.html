@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Melhores Ofertas Shopee 🛍️ | Produtos com Desconto</title>
+  <meta name="description" content="Encontre as melhores ofertas da Shopee com preços imperdíveis. Produtos selecionados com os maiores descontos direto pra você." />
+  <meta name="keywords" content="ofertas shopee, produtos baratos, desconto shopee, compras online, promoções" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://Prog-LucasAlves.github.io/PYTHON_ECOMMERCE/" />
+
+  <!-- Open Graph (Facebook, WhatsApp) -->
+  <meta property="og:title" content="Melhores Ofertas Shopee 🛍️" />
+  <meta property="og:description" content="Os melhores preços da Shopee, direto pra você!" />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://Prog-LucasAlves.github.io/PYTHON_ECOMMERCE/" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Melhores Ofertas Shopee 🛍️" />
+  <meta name="twitter:description" content="Os melhores preços da Shopee, direto pra você!" />
+
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee.svg/200px-Shopee.svg.png" alt="Shopee" height="32"/>
+        <span>Melhores Ofertas</span>
+      </div>
+      <div class="header-actions">
+        <input type="text" id="searchInput" placeholder="🔍 Buscar produto..." oninput="filterProducts()"/>
+        <a href="admin.html" class="btn-admin"><i class="fas fa-cog"></i></a>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO BANNER -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>🔥 Ofertas Imperdíveis</h1>
+      <p>Os melhores preços da Shopee, direto pra você!</p>
+    </div>
+  </section>
+
+  <!-- FILTROS -->
+  <section class="filters-bar">
+    <button class="filter-btn active" onclick="setCategory('todos', this)">Todos</button>
+    <button class="filter-btn" onclick="setCategory('eletronicos', this)">📱 Eletrônicos</button>
+    <button class="filter-btn" onclick="setCategory('moda', this)">👗 Moda</button>
+    <button class="filter-btn" onclick="setCategory('casa', this)">🏠 Casa</button>
+    <button class="filter-btn" onclick="setCategory('beleza', this)">💄 Beleza</button>
+    <button class="filter-btn" onclick="setCategory('esporte', this)">⚽ Esporte</button>
+    <button class="filter-btn" onclick="setCategory('outros', this)">✨ Outros</button>
+  </section>
+
+  <!-- PRODUTOS -->
+  <main>
+    <div id="productGrid" class="product-grid"></div>
+    <div id="emptyState" class="empty-state" style="display:none">
+      <i class="fas fa-box-open"></i>
+      <p>Nenhum produto encontrado.</p>
+      <a href="admin.html" class="btn-primary">Adicionar produtos</a>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>Links de afiliado Shopee · Ao clicar, você nos ajuda sem pagar nada a mais 💛</p>
+  </footer>
+
+  <!-- PRODUCT DETAIL MODAL -->
+  <div id="productModal" class="product-modal" onclick="closeModalOutside(event)">
+    <div class="modal-box">
+      <button class="modal-close" onclick="closeProductModal()">×</button>
+
+      <!-- LEFT: gallery -->
+      <div class="modal-gallery">
+        <div class="modal-main-display" id="modalMainDisplay"></div>
+        <div class="modal-thumbs-strip" id="modalThumbsStrip"></div>
+      </div>
+
+      <!-- RIGHT: info -->
+      <div class="modal-info">
+        <span class="modal-category" id="modalCategory"></span>
+        <h2 id="modalName"></h2>
+        <div class="modal-prices">
+          <span class="modal-original" id="modalOriginal"></span>
+          <span class="modal-price" id="modalPrice"></span>
+          <span class="modal-discount" id="modalDiscount"></span>
+        </div>
+        <p class="modal-desc" id="modalDesc"></p>
+        <a id="modalBuyBtn" href="#" target="_blank" rel="noopener" class="modal-buy-btn">
+          <i class="fas fa-shopping-cart"></i> Comprar na Shopee
+        </a>
+        <p class="modal-affiliate-note">🔗 Link de afiliado · Você nos ajuda sem pagar nada a mais</p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/app.js"></script>
+</body>
+</html>
