@@ -1,3 +1,223 @@
+﻿// ── HERO BANNER CAROUSEL ─────────────────────────────────────
+let heroCurrent  = 0;
+let heroTimer    = null;
+const HERO_INTERVAL = 5000;
+
+function initHeroBanner() {
+  const slidesEl = document.getElementById('heroSlides');
+  const dotsEl   = document.getElementById('heroDots');
+  if (!slidesEl) return;
+
+  const featured = allProducts.filter(p => p.featured).slice(0, 6);
+  const slides   = featured.length >= 2 ? featured : allProducts.slice(0, Math.min(5, allProducts.length));
+
+  if (!slides.length) {
+    document.getElementById('heroBanner').innerHTML = `
+      <div class="hero-static">
+        <div class="hero-content">
+          <h1>🔥 Ofertas Imperdíveis</h1>
+          <p>Os melhores preços da Shopee, direto pra você!</p>
+        </div>
+      </div>`;
+    return;
+  }
+
+  slidesEl.innerHTML = slides.map((p, i) => {
+    const img      = getImages(p)[0] || '';
+    const discount = getDiscount(p);
+    return `<div class="hero-slide ${i === 0 ? 'active' : ''}" onclick="openProductModal(${p.id},0)">
+      ${img ? `<div class="hero-slide-bg" style="background-image:url('${img}')"></div>` : ''}
+      <div class="hero-slide-overlay"></div>
+      <div class="hero-slide-content">
+        ${discount ? `<span class="hero-badge">-${discount}%</span>` : ''}
+        <h2>${p.name}</h2>
+        <p class="hero-slide-price">R$ ${Number(p.price).toFixed(2).replace('.',',')}</p>
+        <span class="hero-cta">Ver oferta →</span>
+      </div>
+    </div>`;
+  }).join('');
+
+  dotsEl.innerHTML = slides.map((_, i) =>
+    `<button class="hero-dot ${i===0?'active':''}" onclick="goHeroSlide(${i})"></button>`
+  ).join('');
+
+  if (heroTimer) clearInterval(heroTimer);
+  heroTimer = setInterval(heroNext, HERO_INTERVAL);
+}
+
+function goHeroSlide(n) {
+  const slides = document.querySelectorAll('.hero-slide');
+  const dots   = document.querySelectorAll('.hero-dot');
+  if (!slides.length) return;
+  slides[heroCurrent].classList.remove('active');
+  dots[heroCurrent]?.classList.remove('active');
+  heroCurrent = (n + slides.length) % slides.length;
+  slides[heroCurrent].classList.add('active');
+  dots[heroCurrent]?.classList.add('active');
+}
+
+function heroNext() { goHeroSlide(heroCurrent + 1); }
+function heroPrev() { goHeroSlide(heroCurrent - 1); }
+
+window.goHeroSlide = goHeroSlide;
+window.heroNext    = heroNext;
+window.heroPrev    = heroPrev;
+
+// ── COUNTDOWN TIMER ──────────────────────────────────────────
+let cdInterval = null;
+
+function renderCountdownStr(target) {
+  const diff = target - Date.now();
+  if (diff <= 0) return null;
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+  if (h >= 48) { const d = Math.floor(h / 24); return `${d}d ${h % 24}h`; }
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+function startCountdownTimers() {
+  if (cdInterval) clearInterval(cdInterval);
+  cdInterval = setInterval(() => {
+    document.querySelectorAll('[data-countdown]').forEach(el => {
+      const t   = parseInt(el.dataset.countdown);
+      const str = renderCountdownStr(t);
+      if (str) {
+        el.textContent = `⏰ Oferta encerra em: ${str}`;
+      } else {
+        el.closest('.card-countdown-wrap')?.remove();
+        el.style.display = 'none';
+      }
+    });
+  }, 1000);
+}
+
+// ── RELATED PRODUCTS ─────────────────────────────────────────
+function renderRelated(p) {
+  const el     = document.getElementById('modalRelated');
+  const listEl = document.getElementById('modalRelatedList');
+  if (!el || !listEl) return;
+  const related = allProducts.filter(x => x.category === p.category && x.id !== p.id).slice(0, 6);
+  if (!related.length) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  listEl.innerHTML = related.map(r => {
+    const img = getImages(r)[0] || '';
+    return `<div class="related-item" onclick="openProductModal(${r.id},0)">
+      <img src="${img}" alt="${r.name}" loading="lazy"
+           onerror="this.src='https://via.placeholder.com/80x80?text=?'"/>
+      <div class="related-name">${r.name.substring(0,40)}${r.name.length>40?'…':''}</div>
+      <div class="related-price">R$ ${Number(r.price).toFixed(2).replace('.',',')}</div>
+    </div>`;
+  }).join('');
+}
+
+// ── COMPARE PRODUCTS ─────────────────────────────────────────
+let compareList = [];
+
+function toggleCompare(id, e) {
+  e.stopPropagation();
+  const idx = compareList.indexOf(id);
+  if (idx === -1) {
+    if (compareList.length >= 3) { showCompareToast(); return; }
+    compareList.push(id);
+  } else {
+    compareList.splice(idx, 1);
+  }
+  renderCompareBar();
+  document.querySelectorAll('.card-compare-btn').forEach(btn => {
+    btn.classList.toggle('active', compareList.includes(parseInt(btn.dataset.pid)));
+  });
+}
+
+function showCompareToast() {
+  let t = document.getElementById('compareToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'compareToast';
+    t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#333;color:#fff;padding:8px 18px;border-radius:8px;font-size:.85rem;z-index:9999;pointer-events:none;';
+    document.body.appendChild(t);
+  }
+  t.textContent = 'Máximo 3 produtos para comparar';
+  t.style.opacity = '1';
+  setTimeout(() => { t.style.opacity = '0'; }, 2000);
+}
+
+function renderCompareBar() {
+  const bar   = document.getElementById('compareBar');
+  const slots = document.getElementById('compareSlots');
+  const btn   = document.getElementById('btnCompareNow');
+  if (!bar) return;
+  if (!compareList.length) { bar.style.display = 'none'; return; }
+  bar.style.display = 'flex';
+  btn.disabled      = compareList.length < 2;
+  slots.innerHTML   = compareList.map(id => {
+    const p   = allProducts.find(x => x.id === id);
+    if (!p) return '';
+    const img = getImages(p)[0] || '';
+    return `<div class="compare-slot">
+      ${img ? `<img src="${img}" alt=""/>` : '<div class="compare-slot-placeholder"></div>'}
+      <span>${p.name.substring(0,22)}${p.name.length>22?'…':''}</span>
+      <button onclick="toggleCompare(${p.id},event)" title="Remover"><i class="fas fa-times"></i></button>
+    </div>`;
+  }).join('');
+}
+
+function clearCompare() {
+  compareList = [];
+  renderCompareBar();
+  document.querySelectorAll('.card-compare-btn').forEach(b => b.classList.remove('active'));
+}
+
+function openCompareModal() {
+  if (compareList.length < 2) return;
+  const modal = document.getElementById('compareModal');
+  const table = document.getElementById('compareTable');
+  const prods = compareList.map(id => allProducts.find(x => x.id === id)).filter(Boolean);
+
+  const rows = [
+    { label: 'Imagem',     fn: p => `<img src="${getImages(p)[0]||''}" alt="" onerror="this.src='https://via.placeholder.com/90x90?text=?'"/>` },
+    { label: 'Nome',       fn: p => p.name },
+    { label: 'Categoria',  fn: p => categoryLabel(p.category) },
+    { label: 'Preço',      fn: p => `<strong style="color:#ee4d2d">R$ ${Number(p.price).toFixed(2).replace('.',',')}</strong>` },
+    { label: 'Original',   fn: p => p.originalPrice ? `<s>R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}</s>` : '–' },
+    { label: 'Desconto',   fn: p => { const d=getDiscount(p); return d ? `<span class="badge-discount">-${d}%</span>` : '–'; } },
+    { label: 'Avaliação',  fn: p => p.rating    ? starsHTML(p.rating) : '–' },
+    { label: 'Vendidos',   fn: p => p.soldCount ? `${p.soldCount}+`   : '–' },
+    { label: '',           fn: p => `<a href="${p.link}" target="_blank" rel="noopener" class="modal-buy-btn" style="font-size:.78rem;padding:7px 12px"><i class="fas fa-shopping-cart"></i> Comprar</a>` },
+  ];
+
+  table.innerHTML = `<table class="compare-tbl">
+    <thead><tr>
+      <th></th>
+      ${prods.map(p => `<th>${p.name.substring(0,28)}${p.name.length>28?'…':''}</th>`).join('')}
+    </tr></thead>
+    <tbody>
+      ${rows.map(row => `<tr>
+        <td class="compare-row-label">${row.label}</td>
+        ${prods.map(p => `<td>${row.fn(p)}</td>`).join('')}
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeCompareModal() {
+  document.getElementById('compareModal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeCompareOutside(e) {
+  if (e.target.id === 'compareModal') closeCompareModal();
+}
+
+window.toggleCompare      = toggleCompare;
+window.clearCompare       = clearCompare;
+window.openCompareModal   = openCompareModal;
+window.closeCompareModal  = closeCompareModal;
+window.closeCompareOutside = closeCompareOutside;
+
 // ── FAVORITES ────────────────────────────────────────────────
 let favorites = JSON.parse(localStorage.getItem('shopee_favs') || '[]');
 
@@ -253,6 +473,8 @@ function renderProducts() {
 
 function _renderFiltered(grid, empty, search) {
   let filtered = [...allProducts];
+  // Hide products scheduled for the future
+  filtered = filtered.filter(p => !p.publishDate || new Date(p.publishDate) <= new Date());
   if (currentCategory !== 'todos') filtered = filtered.filter(p => p.category === currentCategory);
   if (search) filtered = filtered.filter(p => p.name.toLowerCase().includes(search));
   if (priceMin !== null) filtered = filtered.filter(p => p.price >= priceMin);
@@ -270,6 +492,7 @@ function _renderFiltered(grid, empty, search) {
   empty.style.display = 'none';
   grid.innerHTML = filtered.map(p => cardHTML(p)).join('');
   animateCards();
+  startCountdownTimers();
 }
 
 // ── SKELETON ─────────────────────────────────────────────────
@@ -374,7 +597,12 @@ function cardHTML(p) {
         <div class="card-price">R$ ${Number(p.price).toFixed(2).replace('.',',')}</div>
       </div>
     </div>
-    <div class="card-btn">�� Comprar na Shopee</div>
+        <div class="card-btn">🛒 Comprar na Shopee</div>
+    ${(() => { const t = p.countdown ? new Date(p.countdown).getTime() : null; const s = t ? renderCountdownStr(t) : null; return s ? `<div class="card-countdown-wrap"><span class="card-countdown" data-countdown="${t}">⏰ Oferta encerra em: ${s}</span></div>` : ''; })()}
+    <button class="card-compare-btn ${compareList.includes(p.id)?'active':''}" data-pid="${p.id}"
+      onclick="toggleCompare(${p.id},event)" title="Adicionar para comparar">
+      <i class="fas fa-columns"></i>
+    </button>
   </div>`;
 }
 
@@ -395,6 +623,10 @@ let modalIndex   = 0;
 function openProductModal(id, startIdx) {
   const p = allProducts.find(x => x.id === id);
   if (!p) return;
+  // Track click
+  const clicks = JSON.parse(localStorage.getItem('shopee_clicks') || '{}');
+  clicks[id] = (clicks[id] || 0) + 1;
+  localStorage.setItem('shopee_clicks', JSON.stringify(clicks));
   modalProduct = p;
   const images = getImages(p);
   const allMedia = [...images, ...(p.video ? ['__video__'] : [])];
@@ -432,6 +664,17 @@ function openProductModal(id, startIdx) {
 
   renderModalMedia(allMedia);
   renderModalThumbs(allMedia);
+
+  // Countdown
+  const cdEl     = document.getElementById('modalCountdown');
+  const cdTarget = p.countdown ? new Date(p.countdown).getTime() : null;
+  const cdStr    = cdTarget ? renderCountdownStr(cdTarget) : null;
+  if (cdEl) {
+    if (cdStr) { cdEl.textContent = `⏰ Oferta encerra em: ${cdStr}`; cdEl.style.display = ''; }
+    else        { cdEl.style.display = 'none'; }
+  }
+
+  renderRelated(p);
 
   document.getElementById('productModal').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -518,3 +761,4 @@ function categoryLabel(cat) {
 initDarkMode();
 updateFavFab();
 renderProducts();
+initHeroBanner();

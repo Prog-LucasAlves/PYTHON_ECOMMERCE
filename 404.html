@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Página não encontrada · Melhores Ofertas Shopee</title>
+  <meta name="robots" content="noindex, follow" />
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    .page-404 {
+      min-height: 80vh;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 40px 20px;
+    }
+    .page-404 .err-code {
+      font-size: 7rem; font-weight: 900; color: #ee4d2d;
+      line-height: 1; margin-bottom: 8px;
+      text-shadow: 4px 4px 0 rgba(238,77,45,.15);
+    }
+    .page-404 h2 { font-size: 1.5rem; margin-bottom: 10px; color: #333; }
+    .page-404 p  { color: #888; margin-bottom: 28px; font-size: 1rem; }
+    .page-404 .btn-home {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: #ee4d2d; color: #fff; padding: 13px 28px;
+      border-radius: 8px; font-weight: 700; font-size: 1rem;
+      text-decoration: none; transition: background .2s, transform .1s;
+    }
+    .page-404 .btn-home:hover { background: #d4401f; transform: translateY(-2px); }
+    .featured-section { max-width: 1100px; margin: 40px auto; padding: 0 16px; }
+    .featured-section h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; color: #333; }
+    [data-theme="dark"] .page-404 h2 { color: #e0e0e0; }
+    [data-theme="dark"] .featured-section h3 { color: #e0e0e0; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/f/fe/Shopee.svg/200px-Shopee.svg.png" alt="Shopee" height="32"/>
+        <span>Melhores Ofertas</span>
+      </div>
+      <div class="header-actions">
+        <a href="index.html" class="btn-secondary"><i class="fas fa-home"></i> Início</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="page-404">
+    <div class="err-code">404</div>
+    <h2>Ops! Página não encontrada 😕</h2>
+    <p>O endereço que você acessou não existe ou foi removido.</p>
+    <a href="index.html" class="btn-home">
+      <i class="fas fa-home"></i> Voltar às ofertas
+    </a>
+  </section>
+
+  <section class="featured-section">
+    <h3>🔥 Confira algumas ofertas enquanto isso:</h3>
+    <div id="featuredGrid" class="product-grid"></div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-badges">
+        <span class="badge-ssl"><i class="fas fa-lock"></i> Site Seguro · SSL</span>
+        <span class="badge-ssl"><i class="fas fa-shield-alt"></i> Compra Protegida</span>
+        <span class="badge-ssl"><i class="fas fa-tag"></i> Links Oficiais Shopee</span>
+      </div>
+      <p class="footer-copy">© 2025 MelhoresDaShopee · Todos os direitos reservados</p>
+    </div>
+  </footer>
+
+  <script>
+    // Show up to 4 featured products from localStorage
+    (function() {
+      try {
+        const products = JSON.parse(localStorage.getItem('shopee_products') || '[]');
+        const featured = [...products.filter(p => p.featured), ...products.filter(p => !p.featured)]
+          .slice(0, 4);
+        const grid = document.getElementById('featuredGrid');
+        if (!featured.length) { grid.closest('section').style.display = 'none'; return; }
+        grid.innerHTML = featured.map(p => {
+          const img = (p.images && p.images[0]) || '';
+          const disc = p.originalPrice && p.originalPrice > p.price
+            ? Math.round((1 - p.price / p.originalPrice) * 100) : 0;
+          return `<div class="product-card" onclick="location.href='index.html'" style="cursor:pointer">
+            ${disc ? `<span class="badge-discount">-${disc}%</span>` : ''}
+            <div class="card-img-wrap">
+              <img src="${img}" alt="${p.name}" loading="lazy"
+                   onerror="this.src='https://via.placeholder.com/300x300?text=?'"/>
+            </div>
+            <div class="card-body">
+              <div class="card-name">${p.name}</div>
+              <div class="card-prices">
+                ${p.originalPrice && p.originalPrice > p.price
+                  ? `<div class="card-original">R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}</div>` : ''}
+                <div class="card-price">R$ ${Number(p.price).toFixed(2).replace('.',',')}</div>
+              </div>
+            </div>
+            <div class="card-btn">🛒 Ver oferta</div>
+          </div>`;
+        }).join('');
+      } catch(e) {}
+    })();
+
+    // Dark mode sync
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    }
+  </script>
+</body>
+</html>
