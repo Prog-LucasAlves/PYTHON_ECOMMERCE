@@ -791,3 +791,24 @@ initDarkMode();
 updateFavFab();
 renderProducts();
 initHeroBanner();
+initLGPD();
+
+// ── LGPD CONSENT ──────────────────────────────────────────────
+function initLGPD() {
+  const consent = localStorage.getItem('lgpd_consent');
+  if (consent) return; // already decided
+  const banner = document.getElementById('lgpdBanner');
+  if (banner) banner.style.display = 'flex';
+
+  document.getElementById('lgpdAccept')?.addEventListener('click', () => {
+    localStorage.setItem('lgpd_consent', 'accepted');
+    if (banner) banner.style.display = 'none';
+  });
+  document.getElementById('lgpdDecline')?.addEventListener('click', () => {
+    localStorage.setItem('lgpd_consent', 'declined');
+    // Clear tracking data on decline
+    localStorage.removeItem('shopee_search_history');
+    localStorage.removeItem('shopee_clicks');
+    if (banner) banner.style.display = 'none';
+  });
+}

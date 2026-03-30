@@ -1,4 +1,8 @@
-// ── FIREBASE CONFIG ───────────────────────────────────────────
+﻿// ── FIREBASE CONFIG ───────────────────────────────────────────
+// SECURITY NOTE: Firebase API keys for web apps are intentionally public.
+// Real security is enforced via Firebase Security Rules on the console:
+// https://console.firebase.google.com → Authentication → Settings → Authorized domains
+// Ensure only melhoresdashopee.com.br and localhost are authorized.
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
