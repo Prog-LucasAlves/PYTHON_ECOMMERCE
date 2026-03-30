@@ -44,6 +44,14 @@ onAuthStateChanged(auth, user => {
   }
 });
 
+window.addEventListener('storage', (e) => {
+  if (e.key === STORAGE_KEY) {
+    products = JSON.parse(e.newValue || '[]');
+    renderAdminList();
+    renderDashboard();
+  }
+});
+
 function doLogin() {
   const email = document.getElementById('loginEmail').value;
   const pw    = document.getElementById('loginPassword').value;
