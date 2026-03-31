@@ -84,7 +84,7 @@ let orderBy_fn = null;
 const STORAGE_KEY  = 'shopee_products';
 const HISTORY_KEY  = 'shopee_history';
 const CLICKS_KEY   = 'shopee_clicks';
-const DEFAULT_DESC  = '<strong>Frete grátis</strong> com cupom - Produto original - Entrega rápida - Preço promocional sujeito a alteração sem aviso prévio.';
+const DEFAULT_DESC  = 'Frete grátis com cupom - Produto original - Entrega rápida -\nPreço promocional sujeito a alteração sem aviso prévio.';
 const ADMIN_EMAIL   = 'lucasalves01@bol.com.br';
 const SHOPEE_URL_RE = /\/(?:product|[^/?#]+)\/(\d+)\/(\d+)|[?&](?:vShopId|shopId)=(\d+).*?[?&](?:vItemId|itemId)=(\d+)/i;
 
@@ -295,7 +295,12 @@ function previewVideo() {
 }
 
 function stripHtml(text) {
-  return (text || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+  return (text || '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]*>/g, '')
+    .replace(/\s+\n/g, '\n')
+    .replace(/\n\s+/g, '\n')
+    .trim();
 }
 
 function parseSoldCount(value) {
