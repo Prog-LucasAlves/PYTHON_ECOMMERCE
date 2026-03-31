@@ -53,7 +53,7 @@ let onAuthStateChanged_fn = null;
 const STORAGE_KEY  = 'shopee_products';
 const HISTORY_KEY  = 'shopee_history';
 const CLICKS_KEY   = 'shopee_clicks';
-const DEFAULT_DESC  = 'Frete grátis - Produto original - Entrega rápida - Preço promocional sujeito a alteração sem aviso prévio.';
+const DEFAULT_DESC  = '<strong>Frete grátis</strong> com cupom - Produto original - Entrega rápida - Preço promocional sujeito a alteração sem aviso prévio.';
 
 // Test if localStorage is available and working
 function testLocalStorage() {
@@ -221,6 +221,14 @@ function previewVideo() {
     cont.innerHTML = `<video src="${url}" controls style="max-height:100px;border-radius:6px"></video>`;
   }
   box.style.display = 'block';
+}
+
+function stripHtml(text) {
+  return (text || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+}
+
+function stripHtml(text) {
+  return (text || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
 }
 
 // ── SAVE PRODUCT ───────────────────────────────────────────────
@@ -413,17 +421,11 @@ function shareTelegramAdmin(id) {
     : `*R$ ${Number(p.price).toFixed(2).replace('.',',')}*`;
   const summary = [
     `🔥 *${p.name}*`,
-
     `📂 ${categoryLabel(p.category)}`,
-
     discount ? `🏷️ Economia de *${discount}%*` : null,
-
     `💰 ${priceLine}`,
-
     `⚠️ Preço promocional sujeito a alteração sem aviso prévio.`,
-
-    p.desc ? `📝 ${p.desc}` : null,
-
+    p.desc ? `📝 ${stripHtml(p.desc)}` : null,
     `🛒 Confira na Shopee: ${p.link}`,
   ].filter(Boolean).join('\n');
   const url = `https://t.me/share/url?url=${encodeURIComponent(p.link)}&text=${encodeURIComponent(summary)}`;
