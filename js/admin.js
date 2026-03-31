@@ -227,10 +227,6 @@ function stripHtml(text) {
   return (text || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
 }
 
-function stripHtml(text) {
-  return (text || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-}
-
 // ── SAVE PRODUCT ───────────────────────────────────────────────
 function saveProduct(e) {
   e.preventDefault();
