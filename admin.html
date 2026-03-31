@@ -45,7 +45,7 @@
             <button class="btn-secondary" id="csvImportBtn">
               <i class="fas fa-file-csv"></i> Importar CSV
             </button>
-            <input type="file" id="csvFileInput" accept=".csv" class="hidden-file-input" onchange="importCSV(event)"/>
+            <input type="file" id="csvFileInput" accept=".csv" class="hidden-file-input"/>
           </div>
         </div>
         <div id="dashboardSection"></div>
@@ -54,7 +54,7 @@
       <!-- FORM -->
       <section class="admin-form-card">
         <h2 id="formTitle"><i class="fas fa-plus-circle"></i> Adicionar Produto</h2>
-        <form id="productForm" onsubmit="saveProduct(event)">
+        <form id="productForm">
           <input type="hidden" id="editId"/>
           <div class="form-grid">
             <div class="form-group">

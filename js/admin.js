@@ -174,10 +174,13 @@ function initAdminBindings() {
   const adminSearch = document.getElementById('adminSearch');
   const adminProductList = document.getElementById('adminProductList');
   const imagesList = document.getElementById('imagesList');
+  const productForm = document.getElementById('productForm');
+  const csvFileInput = document.getElementById('csvFileInput');
 
   loginBtn?.addEventListener('click', doLogin);
   logoutBtn?.addEventListener('click', doLogout);
   csvImportBtn?.addEventListener('click', triggerCSVImport);
+  csvFileInput?.addEventListener('change', importCSV);
   addImageBtn?.addEventListener('click', () => addImageField());
   resetFormBtn?.addEventListener('click', resetForm);
   shareCloseBtn?.addEventListener('click', () => {
@@ -191,6 +194,7 @@ function initAdminBindings() {
   adminProductList?.addEventListener('click', handleAdminListClick);
   imagesList?.addEventListener('click', handleImageListClick);
   imagesList?.addEventListener('input', handleImageListInput);
+  productForm?.addEventListener('submit', saveProduct);
 }
 
 document.addEventListener('DOMContentLoaded', initAdminBindings);
