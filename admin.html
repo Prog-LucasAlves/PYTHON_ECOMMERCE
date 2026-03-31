@@ -4,7 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Painel Admin · Melhores Ofertas</title>
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; script-src 'self' https://www.gstatic.com https://cdnjs.cloudflare.com; connect-src 'self' https://www.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.gstatic.com; font-src 'self' https://cdnjs.cloudflare.com data:; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; script-src 'self' https://www.gstatic.com; connect-src 'self' https://www.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.gstatic.com; font-src 'self' https://cdnjs.cloudflare.com data:; upgrade-insecure-requests">
   <link rel="stylesheet" href="css/style.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
 </head>
@@ -13,17 +13,17 @@
   <!-- LOGIN OVERLAY -->
     <div id="loginOverlay" class="login-overlay">
     <div class="login-box">
-      <div class="logo" style="justify-content:center;margin-bottom:12px"><img src="img/logo-01-icon.svg" alt="Melhores Ofertas" class="site-logo site-logo-icon"/></div>
+      <div class="logo admin-login-logo"><img src="img/logo-01-icon.svg" alt="Melhores Ofertas" class="site-logo site-logo-icon"/></div>
       <h2>Painel Admin</h2>
-      <input type="email" id="loginEmail" placeholder="E-mail" style="margin-bottom:8px"/>
+      <input type="email" id="loginEmail" placeholder="E-mail" class="login-input-spacer"/>
       <input type="password" id="loginPassword" placeholder="Senha"/>
       <button id="loginBtn" class="btn-primary">Entrar</button>
-      <p id="loginError" style="color:red;margin-top:8px;display:none">E-mail ou senha incorretos.</p>
+      <p id="loginError" class="login-error">E-mail ou senha incorretos.</p>
     </div>
   </div>
 
   <!-- ADMIN PANEL -->
-  <div id="adminPanel" style="display:none">
+  <div id="adminPanel" class="admin-panel-hidden">
     <header>
       <div class="header-inner">
         <div class="logo">
@@ -38,14 +38,14 @@
 
     <main class="admin-main">
       <!-- DASHBOARD -->
-      <section class="admin-form-card" style="padding:20px">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+      <section class="admin-form-card admin-form-pad">
+        <div class="admin-dashboard-head">
           <h2><i class="fas fa-chart-bar"></i> Dashboard</h2>
-          <div style="display:flex;gap:10px;align-items:center">
+          <div class="admin-dashboard-actions">
             <button class="btn-secondary" id="csvImportBtn">
               <i class="fas fa-file-csv"></i> Importar CSV
             </button>
-            <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="importCSV(event)"/>
+            <input type="file" id="csvFileInput" accept=".csv" class="hidden-file-input" onchange="importCSV(event)"/>
           </div>
         </div>
         <div id="dashboardSection"></div>
@@ -116,7 +116,7 @@
 
             <!-- MULTI-IMAGE SECTION -->
             <div class="form-group full-width">
-              <label>🖼️ Imagens do Produto * <span style="font-weight:400;color:#aaa">(adicione quantas quiser)</span></label>
+              <label>🖼️ Imagens do Produto * <span class="helper-note">(adicione quantas quiser)</span></label>
               <div id="imagesList"></div>
               <button type="button" class="btn-add-image" id="addImageBtn">
                 <i class="fas fa-plus"></i> Adicionar Imagem
@@ -124,23 +124,23 @@
             </div>
 
             <!-- IMAGE PREVIEWS -->
-            <div class="form-group full-width" id="imagesPreviewBox" style="display:none">
+            <div class="form-group full-width hidden-block" id="imagesPreviewBox">
               <label>Preview das Imagens</label>
               <div id="imagesPreviewStrip" class="admin-preview-strip"></div>
             </div>
 
             <!-- VIDEO SECTION -->
             <div class="form-group full-width">
-              <label>🎬 Vídeo do Produto <span style="font-weight:400;color:#aaa">(opcional · YouTube ou link direto)</span></label>
+              <label>🎬 Vídeo do Produto <span class="helper-note">(opcional · YouTube ou link direto)</span></label>
               <input type="text" id="prodVideo" placeholder="https://www.youtube.com/watch?v=... ou link .mp4"/>
-              <div id="videoPreviewBox" style="display:none;margin-top:8px">
+              <div id="videoPreviewBox" class="hidden-block video-preview-gap">
                 <div id="videoPreviewContent"></div>
               </div>
             </div>
             <div class="form-group full-width">
               <label>Descrição curta</label>
               <textarea id="prodDesc" rows="2"><strong>Frete grátis</strong> com cupom - Produto original - Entrega rápida - <br>Preço promocional sujeito a alteração sem aviso prévio.</textarea>
-              <small style="color:#aaa">Você pode editar esse texto antes de salvar.</small>
+              <small class="helper-note">Você pode editar esse texto antes de salvar.</small>
             </div>
             <div class="form-group">
               <label>⭐ Avaliação (1.0 – 5.0)</label>
@@ -161,12 +161,12 @@
             <div class="form-group">
               <label>⏰ Oferta até (data/hora)</label>
               <input type="datetime-local" id="prodCountdown"/>
-              <small style="color:#aaa">Deixe em branco se não tiver prazo.</small>
+              <small class="helper-note">Deixe em branco se não tiver prazo.</small>
             </div>
             <div class="form-group">
               <label>🗓️ Publicar em (agendar)</label>
               <input type="datetime-local" id="prodPublishDate"/>
-              <small style="color:#aaa">Produto ficará oculto até essa data/hora.</small>
+              <small class="helper-note">Produto ficará oculto até essa data/hora.</small>
             </div>
           </div>
           <div class="form-actions">
@@ -174,12 +174,12 @@
             <button type="button" class="btn-secondary" id="resetFormBtn"><i class="fas fa-times"></i> Cancelar</button>
           </div>
           <!-- Compartilhar após salvar -->
-          <div id="shareAfterSave" style="display:none; margin-top:12px; padding:12px 14px; background:#e8f5e9; border-radius:8px; border:1.5px solid #a5d6a7; display:flex!important; align-items:center; gap:12px; flex-wrap:wrap;">
-            <span style="font-size:.88rem; color:#2e7d32; font-weight:600;"><i class="fas fa-check-circle"></i> Produto salvo!</span>
-            <button id="btnShareTgAfterSave" class="btn-tg-share" style="display:inline-flex; align-items:center; gap:6px; padding:7px 16px; width:auto; height:auto; font-size:.82rem; font-weight:600;">
+          <div id="shareAfterSave" class="share-banner hidden-block">
+            <span class="share-banner-text"><i class="fas fa-check-circle"></i> Produto salvo!</span>
+            <button id="btnShareTgAfterSave" class="btn-tg-share share-banner-btn">
               <i class="fab fa-telegram-plane"></i> Compartilhar no Telegram
             </button>
-            <button id="shareAfterSaveClose" style="background:none;border:none;color:#888;cursor:pointer;font-size:1rem; margin-left:auto;"><i class="fas fa-times"></i></button>
+            <button id="shareAfterSaveClose" class="share-banner-close"><i class="fas fa-times"></i></button>
           </div>
         </form>
       </section>
@@ -196,6 +196,6 @@
   </div>
 
   <!-- Firebase SDK -->
-  <script type="module" src="js/admin.js"></script>
+  <script type="module" src="js/admin.js" defer></script>
 </body>
 </html>

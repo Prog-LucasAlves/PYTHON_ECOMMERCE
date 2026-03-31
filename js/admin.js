@@ -43,7 +43,7 @@ let orderBy_fn = null;
 
     // Setup auth listener
     onAuthStateChanged_fn(auth, user => {
-      if (user) {
+      if (user && user.email === ADMIN_EMAIL) {
         document.getElementById('loginOverlay').style.display = 'none';
         document.getElementById('adminPanel').style.display = 'block';
         loadProductsFromFirestore()
@@ -54,6 +54,15 @@ let orderBy_fn = null;
             initImageFields();
           });
       } else {
+        if (user) {
+          signOut_fn(auth).catch(() => {});
+          const errorBox = document.getElementById('loginError');
+          if (errorBox) {
+            errorBox.textContent = 'Esta conta não tem acesso ao painel admin.';
+            errorBox.style.display = 'block';
+            errorBox.style.color = '#b00020';
+          }
+        }
         document.getElementById('loginOverlay').style.display = 'flex';
         document.getElementById('adminPanel').style.display = 'none';
       }
@@ -76,6 +85,7 @@ const STORAGE_KEY  = 'shopee_products';
 const HISTORY_KEY  = 'shopee_history';
 const CLICKS_KEY   = 'shopee_clicks';
 const DEFAULT_DESC  = '<strong>Frete grátis</strong> com cupom - Produto original - Entrega rápida - Preço promocional sujeito a alteração sem aviso prévio.';
+const ADMIN_EMAIL   = 'lucasalves01@bol.com.br';
 
 // Test if localStorage is available and working
 function testLocalStorage() {
