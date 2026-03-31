@@ -279,7 +279,7 @@ header {
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
 }
 .results-bar + .controls-bar {
-  margin-top: 6px;
+  margin-top: 4px;
   background: transparent;
   border-bottom: none;
 }
@@ -295,7 +295,7 @@ header {
 main {
   width: 100%;
   max-width: 1200px;
-  margin: 20px auto 40px;
+  margin: 12px auto 32px;
   padding: 0 16px;
 }
 .product-grid {
