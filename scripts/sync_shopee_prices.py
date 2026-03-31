@@ -135,6 +135,42 @@ def pick_variant_price(product: dict[str, Any]) -> tuple[float | None, float | N
     return to_float(product.get("priceMin")), to_float(product.get("priceMax"))
 
 
+def log_product(event: str, doc_id: str, data: dict[str, Any], product: dict[str, Any] | None = None) -> None:
+    item_id = data.get("itemId") or data.get("affiliate", {}).get("itemId") or "-"
+    shop_id = data.get("shopId") or data.get("affiliate", {}).get("shopId") or "-"
+    name = (product or {}).get("productName") or data.get("name") or data.get("affiliate", {}).get("productName") or doc_id
+    if product:
+        price_min, price_max = pick_variant_price(product)
+        print(
+            json.dumps(
+                {
+                    "event": event,
+                    "docId": doc_id,
+                    "name": name,
+                    "itemId": item_id,
+                    "shopId": shop_id,
+                    "priceMin": price_min,
+                    "priceMax": price_max,
+                    "priceChanged": data.get("priceChanged"),
+                },
+                ensure_ascii=False,
+            ),
+        )
+    else:
+        print(
+            json.dumps(
+                {
+                    "event": event,
+                    "docId": doc_id,
+                    "name": name,
+                    "itemId": item_id,
+                    "shopId": shop_id,
+                },
+                ensure_ascii=False,
+            ),
+        )
+
+
 def init_firestore() -> firestore.Client:
     service_account_json = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON")
     if not service_account_json:
@@ -224,12 +260,32 @@ def main() -> int:
 
     db = init_firestore()
     products = find_products_to_sync(db)
-    summary = {"checked": 0, "updated": 0, "missing": 0}
+    summary = {
+        "checked": 0,
+        "updated": 0,
+        "missing": 0,
+        "resolved_ids": 0,
+        "not_found": 0,
+        "missing_ids": 0,
+    }
+    status_order = ("resolved_ids", "updated", "not_found", "missing_ids")
+    status_labels = {
+        "resolved_ids": "IDs resolvidos",
+        "updated": "Atualizados",
+        "not_found": "Não encontrados",
+        "missing_ids": "Sem IDs",
+    }
+    print("Shopee sync summary")
+    print(json.dumps({key: summary[key] for key in ("checked", "updated", "missing")}, ensure_ascii=False, indent=2))
+    print("By status")
+    for key in status_order:
+        print(f"- {status_labels[key]}: 0")
 
     for doc_id, data in products:
         item_id = data.get("itemId") or data.get("affiliate", {}).get("itemId")
         shop_id = data.get("shopId") or data.get("affiliate", {}).get("shopId")
         offer_link = data.get("offerLink") or data.get("affiliate", {}).get("offerLink")
+        log_product("checking", doc_id, data)
         if (not item_id or not shop_id) and offer_link:
             try:
                 final_url = resolve_offer_url(str(offer_link))
@@ -243,6 +299,8 @@ def main() -> int:
             shop_id_int = int(str(shop_id)) if shop_id else None
         except ValueError:
             summary["missing"] += 1
+            summary["missing_ids"] += 1
+            log_product("missing_ids", doc_id, data)
             continue
         if (data.get("itemId") != item_id_int or data.get("shopId") != shop_id_int) and not args.dry_run:
             db.collection("products").document(doc_id).set(
@@ -253,18 +311,26 @@ def main() -> int:
                 },
                 merge=True,
             )
+            summary["resolved_ids"] += 1
 
         resolved = resolve_affiliate_product(item_id_int, shop_id_int, app_id, app_secret)
         summary["checked"] += 1
         if not resolved:
             summary["missing"] += 1
+            summary["not_found"] += 1
+            log_product("not_found", doc_id, data)
             continue
 
         if not args.dry_run:
             update_product(db, doc_id, {"shopId": shop_id_int}, resolved)
             summary["updated"] += 1
+        log_product("updated", doc_id, data, resolved)
 
+    print("Final summary")
     print(json.dumps(summary, ensure_ascii=False, indent=2))
+    print("By status")
+    for key in status_order:
+        print(f"- {status_labels[key]}: {summary[key]}")
     return 0
 
 
