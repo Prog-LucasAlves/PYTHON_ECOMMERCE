@@ -46,11 +46,13 @@ let orderBy_fn = null;
       if (user) {
         document.getElementById('loginOverlay').style.display = 'none';
         document.getElementById('adminPanel').style.display = 'block';
-        loadProductsFromFirestore().finally(() => {
-          renderAdminList();
-          renderDashboard();
-          initImageFields();
-        });
+        loadProductsFromFirestore()
+          .then(migrateLocalStorageProductsToFirestore)
+          .finally(() => {
+            renderAdminList();
+            renderDashboard();
+            initImageFields();
+          });
       } else {
         document.getElementById('loginOverlay').style.display = 'flex';
         document.getElementById('adminPanel').style.display = 'none';
@@ -460,6 +462,28 @@ async function loadProductsFromFirestore() {
     }
   } catch (e) {
     console.warn('[FIRESTORE] Failed to load products:', e.message);
+  }
+}
+
+async function migrateLocalStorageProductsToFirestore() {
+  if (!db || !collection_fn || !doc_fn || !setDoc_fn) return;
+  try {
+    const localProducts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    if (!localProducts.length) return;
+
+    const remoteIds = new Set(products.map(p => String(p.id)));
+    const legacy = localProducts.filter(p => !remoteIds.has(String(p.id)));
+    if (!legacy.length) return;
+
+    const col = collection_fn(db, 'products');
+    await Promise.all(legacy.map(product =>
+      setDoc_fn(doc_fn(col, String(product.id)), { ...product, updatedAt: Date.now() }, { merge: true })
+    ));
+    products = [...legacy, ...products];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+    console.log('[FIRESTORE] ✅ Migrated', legacy.length, 'legacy products from localStorage');
+  } catch (e) {
+    console.warn('[FIRESTORE] Migration skipped:', e.message);
   }
 }
 

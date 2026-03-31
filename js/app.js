@@ -477,6 +477,9 @@ window.addEventListener('storage', (e) => {
     if (remote.length) {
       allProducts = remote;
       localStorage.setItem('shopee_products', JSON.stringify(remote));
+    } else if (allProducts.length) {
+      // If Firestore is empty, keep showing the last local snapshot.
+      console.log('[FIRESTORE] No remote products yet; using localStorage snapshot');
     }
     firestoreReady = true;
     renderProducts();
