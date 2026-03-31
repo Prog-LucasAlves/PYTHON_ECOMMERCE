@@ -86,6 +86,7 @@ const HISTORY_KEY  = 'shopee_history';
 const CLICKS_KEY   = 'shopee_clicks';
 const DEFAULT_DESC  = '<strong>Frete grátis</strong> com cupom - Produto original - Entrega rápida - Preço promocional sujeito a alteração sem aviso prévio.';
 const ADMIN_EMAIL   = 'lucasalves01@bol.com.br';
+const SHOPEE_URL_RE = /\/(?:product|[^/?#]+)\/(\d+)\/(\d+)|[?&](?:vShopId|shopId)=(\d+).*?[?&](?:vItemId|itemId)=(\d+)/i;
 
 // Test if localStorage is available and working
 function testLocalStorage() {
@@ -320,6 +321,21 @@ function validateProductPayload(product) {
   return null;
 }
 
+function normalizeAffiliateLink(link) {
+  const raw = (link || '').trim();
+  if (!raw) return { offerLink: '', productLink: '', itemId: null, shopId: null };
+
+  const match = raw.match(SHOPEE_URL_RE);
+  const shopId = match?.[1] || match?.[3] || null;
+  const itemId = match?.[2] || match?.[4] || null;
+  return {
+    offerLink: raw,
+    productLink: raw,
+    itemId: itemId ? String(itemId) : null,
+    shopId: shopId ? String(shopId) : null,
+  };
+}
+
 // ── SAVE PRODUCT ───────────────────────────────────────────────
 async function saveProduct(e) {
   e.preventDefault();
@@ -342,6 +358,16 @@ async function saveProduct(e) {
     countdown:     document.getElementById('prodCountdown')?.value || null,
     publishDate:   document.getElementById('prodPublishDate')?.value || null,
   };
+
+  const affiliate = normalizeAffiliateLink(product.link);
+  product.offerLink = affiliate.offerLink;
+  product.productLink = affiliate.productLink;
+  product.itemId = affiliate.itemId;
+  product.shopId = affiliate.shopId;
+  const itemIdInput = document.getElementById('prodItemId');
+  const shopIdInput = document.getElementById('prodShopId');
+  if (itemIdInput) itemIdInput.value = affiliate.itemId || '';
+  if (shopIdInput) shopIdInput.value = affiliate.shopId || '';
 
   const validationError = validateProductPayload(product);
   if (validationError) {
@@ -387,6 +413,8 @@ function editProduct(id) {
   document.getElementById('prodOriginalPrice').value = p.originalPrice || '';
   document.getElementById('prodPrice').value         = p.price;
   document.getElementById('prodLink').value          = p.link;
+  if (document.getElementById('prodItemId')) document.getElementById('prodItemId').value = p.itemId || '';
+  if (document.getElementById('prodShopId')) document.getElementById('prodShopId').value = p.shopId || '';
   document.getElementById('prodDesc').value          = p.desc || '';
   document.getElementById('prodFeatured').checked    = p.featured || false;
   if (document.getElementById('prodRating'))
@@ -436,6 +464,8 @@ function resetForm() {
   document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save"></i> Salvar Produto';
   const desc = document.getElementById('prodDesc');
   if (desc) desc.value = DEFAULT_DESC;
+  if (document.getElementById('prodItemId')) document.getElementById('prodItemId').value = '';
+  if (document.getElementById('prodShopId')) document.getElementById('prodShopId').value = '';
   document.getElementById('imagesPreviewBox').style.display = 'none';
   if (document.getElementById('videoPreviewBox'))
     document.getElementById('videoPreviewBox').style.display = 'none';
