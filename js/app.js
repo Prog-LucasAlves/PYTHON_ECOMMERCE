@@ -225,76 +225,6 @@ window.openCompareModal   = openCompareModal;
 window.closeCompareModal  = closeCompareModal;
 window.closeCompareOutside = closeCompareOutside;
 
-// ── FAVORITES ────────────────────────────────────────────────
-let favorites = JSON.parse(localStorage.getItem('shopee_favs') || '[]');
-
-function saveFavorites() { localStorage.setItem('shopee_favs', JSON.stringify(favorites)); }
-
-function toggleFavorite() {
-  if (!modalProduct) return;
-  const id  = modalProduct.id;
-  const idx = favorites.findIndex(x => sameId(x, id));
-  if (idx === -1) { favorites.push(id); }
-  else            { favorites.splice(idx, 1); }
-  saveFavorites();
-  updateFavBtn();
-  updateFavFab();
-}
-
-function isFav(id) { return favorites.some(x => sameId(x, id)); }
-
-function updateFavBtn() {
-  const btn  = document.getElementById('modalFavBtn');
-  const text = document.getElementById('modalFavText');
-  if (!btn || !modalProduct) return;
-  const faved = isFav(modalProduct.id);
-  btn.classList.toggle('active', faved);
-  text.textContent = faved ? 'Favoritado' : 'Favoritar';
-}
-
-function updateFavFab() {
-  const fab   = document.getElementById('favFab');
-  const count = document.getElementById('favCount');
-  if (!fab) return;
-  fab.style.display  = favorites.length > 0 ? 'flex' : 'none';
-  count.textContent  = favorites.length;
-}
-
-function openFavPanel() {
-  const panel   = document.getElementById('favPanel');
-  const listEl  = document.getElementById('favList');
-  const favProds = allProducts.filter(p => favorites.some(id => sameId(id, p.id)));
-  if (!favProds.length) {
-    listEl.innerHTML = '<p class="fav-empty">Nenhum favorito ainda.</p>';
-  } else {
-    listEl.innerHTML = favProds.map(p => {
-      const img = getImages(p)[0] || '';
-      return `<div class="fav-item" onclick="closeFavPanel();openProductModal(${p.id},0)">
-        <img src="${img}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/60x60?text=?'"/>
-        <div class="fav-item-info">
-          <div class="fav-name">${p.name}</div>
-          <div class="fav-price">R$ ${Number(p.price).toFixed(2).replace('.',',')}</div>
-        </div>
-        <button class="fav-remove" onclick="event.stopPropagation();removeFav(${p.id})">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>`;
-    }).join('');
-  }
-  panel.style.display = 'flex';
-}
-
-function closeFavPanel() {
-  document.getElementById('favPanel').style.display = 'none';
-}
-
-function removeFav(id) {
-  favorites = favorites.filter(f => !sameId(f, id));
-  saveFavorites();
-  updateFavFab();
-  openFavPanel();
-}
-
 // ── SHARE ─────────────────────────────────────────────────────
 function shareWhatsApp() {
   if (!modalProduct) return;
@@ -731,9 +661,6 @@ function openProductModal(id, startIdx) {
   starsEl.innerHTML  = p.rating ? starsHTML(p.rating) : '';
   soldEl.textContent = p.soldCount ? `🛒 ${p.soldCount}+ vendidos` : '';
 
-  // Favorite button
-  updateFavBtn();
-
   const priceEl    = document.getElementById('modalPrice');
   const origEl     = document.getElementById('modalOriginal');
   const discEl     = document.getElementById('modalDiscount');
@@ -956,16 +883,12 @@ function initAppBindings() {
   const priceMaxEl = document.getElementById('priceMax');
   const productModal = document.getElementById('productModal');
   const modalCloseBtn = document.getElementById('modalCloseBtn');
-  const modalFavBtn = document.getElementById('modalFavBtn');
   const shareWhatsAppBtn = document.getElementById('shareWhatsAppBtn');
   const shareTelegramBtn = document.getElementById('shareTelegramBtn');
   const btnCompareNow = document.getElementById('btnCompareNow');
   const compareClearBtn = document.getElementById('compareClearBtn');
   const compareModal = document.getElementById('compareModal');
   const compareCloseBtn = document.getElementById('compareCloseBtn');
-  const favPanel = document.getElementById('favPanel');
-  const favPanelCloseBtn = document.getElementById('favPanelCloseBtn');
-  const favFab = document.getElementById('favFab');
 
   searchInput?.addEventListener('input', () => { filterProducts(); updateSearchSuggestions(); });
   searchInput?.addEventListener('focus', showSearchHistory);
@@ -982,17 +905,13 @@ function initAppBindings() {
   priceMinEl?.addEventListener('input', setPriceFilter);
   priceMaxEl?.addEventListener('input', setPriceFilter);
   modalCloseBtn?.addEventListener('click', closeProductModal);
-  modalFavBtn?.addEventListener('click', toggleFavorite);
   shareWhatsAppBtn?.addEventListener('click', shareWhatsApp);
   shareTelegramBtn?.addEventListener('click', shareTelegram);
   btnCompareNow?.addEventListener('click', openCompareModal);
   compareClearBtn?.addEventListener('click', clearCompare);
   compareCloseBtn?.addEventListener('click', closeCompareModal);
-  favPanelCloseBtn?.addEventListener('click', closeFavPanel);
-  favFab?.addEventListener('click', openFavPanel);
   productModal?.addEventListener('click', e => { if (e.target === productModal) closeProductModal(); });
   compareModal?.addEventListener('click', e => { if (e.target === compareModal) closeCompareModal(); });
-  favPanel?.addEventListener('click', e => { if (e.target === favPanel) closeFavPanel(); });
 
   document.querySelectorAll('.cat-item[data-cat]').forEach(btn => {
     btn.addEventListener('click', () => setCategory(btn.dataset.cat, btn));
@@ -1000,7 +919,6 @@ function initAppBindings() {
 }
 
 initDarkMode();
-updateFavFab();
 renderProducts();
 initHeroBanner();
 initLGPD();
