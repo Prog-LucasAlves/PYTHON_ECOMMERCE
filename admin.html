@@ -15,9 +15,9 @@
     <div class="login-box">
       <div class="logo" style="justify-content:center;margin-bottom:12px"><img src="img/logo-01-icon.svg" alt="Melhores Ofertas" class="site-logo site-logo-icon"/></div>
       <h2>Painel Admin</h2>
-      <input type="email" id="loginEmail" placeholder="E-mail" style="margin-bottom:8px" onkeydown="if(event.key==='Enter')doLogin()"/>
-      <input type="password" id="loginPassword" placeholder="Senha" onkeydown="if(event.key==='Enter')doLogin()"/>
-      <button onclick="doLogin()" class="btn-primary">Entrar</button>
+      <input type="email" id="loginEmail" placeholder="E-mail" style="margin-bottom:8px"/>
+      <input type="password" id="loginPassword" placeholder="Senha"/>
+      <button id="loginBtn" class="btn-primary">Entrar</button>
       <p id="loginError" style="color:red;margin-top:8px;display:none">E-mail ou senha incorretos.</p>
     </div>
   </div>
@@ -31,7 +31,7 @@
         </div>
         <div class="header-actions">
           <a href="index.html" class="btn-secondary"><i class="fas fa-eye"></i> Ver site</a>
-          <button onclick="doLogout()" class="btn-admin"><i class="fas fa-sign-out-alt"></i></button>
+          <button id="logoutBtn" class="btn-admin"><i class="fas fa-sign-out-alt"></i></button>
         </div>
       </div>
     </header>
@@ -42,7 +42,7 @@
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
           <h2><i class="fas fa-chart-bar"></i> Dashboard</h2>
           <div style="display:flex;gap:10px;align-items:center">
-            <button class="btn-secondary" onclick="triggerCSVImport()">
+            <button class="btn-secondary" id="csvImportBtn">
               <i class="fas fa-file-csv"></i> Importar CSV
             </button>
             <input type="file" id="csvFileInput" accept=".csv" style="display:none" onchange="importCSV(event)"/>
@@ -118,7 +118,7 @@
             <div class="form-group full-width">
               <label>🖼️ Imagens do Produto * <span style="font-weight:400;color:#aaa">(adicione quantas quiser)</span></label>
               <div id="imagesList"></div>
-              <button type="button" class="btn-add-image" onclick="addImageField()">
+              <button type="button" class="btn-add-image" id="addImageBtn">
                 <i class="fas fa-plus"></i> Adicionar Imagem
               </button>
             </div>
@@ -132,7 +132,7 @@
             <!-- VIDEO SECTION -->
             <div class="form-group full-width">
               <label>🎬 Vídeo do Produto <span style="font-weight:400;color:#aaa">(opcional · YouTube ou link direto)</span></label>
-              <input type="text" id="prodVideo" placeholder="https://www.youtube.com/watch?v=... ou link .mp4" oninput="previewVideo()"/>
+              <input type="text" id="prodVideo" placeholder="https://www.youtube.com/watch?v=... ou link .mp4"/>
               <div id="videoPreviewBox" style="display:none;margin-top:8px">
                 <div id="videoPreviewContent"></div>
               </div>
@@ -171,7 +171,7 @@
           </div>
           <div class="form-actions">
             <button type="submit" class="btn-primary" id="submitBtn"><i class="fas fa-save"></i> Salvar Produto</button>
-            <button type="button" class="btn-secondary" onclick="resetForm()"><i class="fas fa-times"></i> Cancelar</button>
+            <button type="button" class="btn-secondary" id="resetFormBtn"><i class="fas fa-times"></i> Cancelar</button>
           </div>
           <!-- Compartilhar após salvar -->
           <div id="shareAfterSave" style="display:none; margin-top:12px; padding:12px 14px; background:#e8f5e9; border-radius:8px; border:1.5px solid #a5d6a7; display:flex!important; align-items:center; gap:12px; flex-wrap:wrap;">
@@ -179,7 +179,7 @@
             <button id="btnShareTgAfterSave" class="btn-tg-share" style="display:inline-flex; align-items:center; gap:6px; padding:7px 16px; width:auto; height:auto; font-size:.82rem; font-weight:600;" onclick="">
               <i class="fab fa-telegram-plane"></i> Compartilhar no Telegram
             </button>
-            <button onclick="document.getElementById('shareAfterSave').style.display='none'" style="background:none;border:none;color:#888;cursor:pointer;font-size:1rem; margin-left:auto;"><i class="fas fa-times"></i></button>
+            <button id="shareAfterSaveClose" style="background:none;border:none;color:#888;cursor:pointer;font-size:1rem; margin-left:auto;"><i class="fas fa-times"></i></button>
           </div>
         </form>
       </section>
@@ -188,7 +188,7 @@
       <section class="admin-list-card">
         <div class="list-header">
           <h2><i class="fas fa-list"></i> Produtos Cadastrados <span id="prodCount" class="badge">0</span></h2>
-          <input type="text" id="adminSearch" placeholder="🔍 Filtrar..." oninput="renderAdminList()"/>
+          <input type="text" id="adminSearch" placeholder="🔍 Filtrar..."/>
         </div>
         <div id="adminProductList" class="admin-list"></div>
       </section>

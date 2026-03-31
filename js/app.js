@@ -942,12 +942,46 @@ function updateStructuredData(filtered) {
   if (!existing) document.head.appendChild(script);
 }
 
+function initAppBindings() {
+  const searchInput = document.getElementById('searchInput');
+  const darkToggle = document.getElementById('darkToggle');
+  const heroPrevBtn = document.getElementById('heroPrevBtn');
+  const heroNextBtn = document.getElementById('heroNextBtn');
+  const catLeft = document.getElementById('catLeft');
+  const catRight = document.getElementById('catRight');
+  const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+  const clearPriceBtn = document.getElementById('clearPriceBtn');
+  const clearAllBtn = document.getElementById('clearAllBtn');
+  const priceMinEl = document.getElementById('priceMin');
+  const priceMaxEl = document.getElementById('priceMax');
+
+  searchInput?.addEventListener('input', () => { filterProducts(); updateSearchSuggestions(); });
+  searchInput?.addEventListener('focus', showSearchHistory);
+  searchInput?.addEventListener('blur', hideSearchDropdown);
+  searchInput?.addEventListener('keydown', handleSearchKey);
+  darkToggle?.addEventListener('click', toggleDarkMode);
+  heroPrevBtn?.addEventListener('click', heroPrev);
+  heroNextBtn?.addEventListener('click', heroNext);
+  catLeft?.addEventListener('click', () => scrollCat(-1));
+  catRight?.addEventListener('click', () => scrollCat(1));
+  clearFiltersBtn?.addEventListener('click', clearAllFilters);
+  clearPriceBtn?.addEventListener('click', clearPriceFilter);
+  clearAllBtn?.addEventListener('click', clearAllFilters);
+  priceMinEl?.addEventListener('input', setPriceFilter);
+  priceMaxEl?.addEventListener('input', setPriceFilter);
+
+  document.querySelectorAll('.cat-item[data-cat]').forEach(btn => {
+    btn.addEventListener('click', () => setCategory(btn.dataset.cat, btn));
+  });
+}
+
 initDarkMode();
 updateFavFab();
 renderProducts();
 initHeroBanner();
 initLGPD();
 window.clearAllFilters = clearAllFilters;
+document.addEventListener('DOMContentLoaded', initAppBindings);
 
 // ── LGPD CONSENT ──────────────────────────────────────────────
 function initLGPD() {

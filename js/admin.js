@@ -149,6 +149,34 @@ function doLogout() {
   signOut_fn(auth);
 }
 
+function initAdminBindings() {
+  const loginBtn = document.getElementById('loginBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  const csvImportBtn = document.getElementById('csvImportBtn');
+  const addImageBtn = document.getElementById('addImageBtn');
+  const resetFormBtn = document.getElementById('resetFormBtn');
+  const shareCloseBtn = document.getElementById('shareAfterSaveClose');
+  const loginEmail = document.getElementById('loginEmail');
+  const loginPassword = document.getElementById('loginPassword');
+  const prodVideo = document.getElementById('prodVideo');
+  const adminSearch = document.getElementById('adminSearch');
+
+  loginBtn?.addEventListener('click', doLogin);
+  logoutBtn?.addEventListener('click', doLogout);
+  csvImportBtn?.addEventListener('click', triggerCSVImport);
+  addImageBtn?.addEventListener('click', () => addImageField());
+  resetFormBtn?.addEventListener('click', resetForm);
+  shareCloseBtn?.addEventListener('click', () => {
+    document.getElementById('shareAfterSave').style.display = 'none';
+  });
+  loginEmail?.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  loginPassword?.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  prodVideo?.addEventListener('input', previewVideo);
+  adminSearch?.addEventListener('input', renderAdminList);
+}
+
+document.addEventListener('DOMContentLoaded', initAdminBindings);
+
 // Expõe funções ao escopo global (necessário com type="module")
 window.doLogin            = doLogin;
 window.doLogout           = doLogout;
