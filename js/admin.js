@@ -43,7 +43,7 @@ let orderBy_fn = null;
 
     // Setup auth listener
     onAuthStateChanged_fn(auth, user => {
-      if (user) {
+      if (user && user.email === ADMIN_EMAIL) {
         document.getElementById('loginOverlay').style.display = 'none';
         document.getElementById('adminPanel').style.display = 'block';
         loadProductsFromFirestore()
@@ -54,6 +54,15 @@ let orderBy_fn = null;
             initImageFields();
           });
       } else {
+        if (user) {
+          signOut_fn(auth).catch(() => {});
+          const errorBox = document.getElementById('loginError');
+          if (errorBox) {
+            errorBox.textContent = 'Esta conta não tem acesso ao painel admin.';
+            errorBox.style.display = 'block';
+            errorBox.style.color = '#b00020';
+          }
+        }
         document.getElementById('loginOverlay').style.display = 'flex';
         document.getElementById('adminPanel').style.display = 'none';
       }
@@ -76,6 +85,7 @@ const STORAGE_KEY  = 'shopee_products';
 const HISTORY_KEY  = 'shopee_history';
 const CLICKS_KEY   = 'shopee_clicks';
 const DEFAULT_DESC  = '<strong>Frete grátis</strong> com cupom - Produto original - Entrega rápida - Preço promocional sujeito a alteração sem aviso prévio.';
+const ADMIN_EMAIL   = 'lucasalves01@bol.com.br';
 
 // Test if localStorage is available and working
 function testLocalStorage() {
@@ -291,6 +301,21 @@ function formatSoldCount(value) {
   return n.toLocaleString('pt-BR');
 }
 
+function validateProductPayload(product) {
+  if (!product.name || product.name.length < 3) return 'Nome do produto inválido.';
+  if (!product.category) return 'Categoria é obrigatória.';
+  if (!Number.isFinite(product.price) || product.price <= 0) return 'Preço com desconto deve ser maior que zero.';
+  if (!product.link || !/^https?:\/\//i.test(product.link)) return 'Link de afiliado inválido.';
+  if (!Array.isArray(product.images) || !product.images.length) return 'Adicione pelo menos uma imagem.';
+  if (product.originalPrice !== null && (!Number.isFinite(product.originalPrice) || product.originalPrice < 0)) {
+    return 'Preço original inválido.';
+  }
+  if (product.soldCount !== null && (!Number.isInteger(product.soldCount) || product.soldCount < 0)) {
+    return 'Campo vendidos inválido.';
+  }
+  return null;
+}
+
 // ── SAVE PRODUCT ───────────────────────────────────────────────
 async function saveProduct(e) {
   e.preventDefault();
@@ -313,6 +338,12 @@ async function saveProduct(e) {
     countdown:     document.getElementById('prodCountdown')?.value || null,
     publishDate:   document.getElementById('prodPublishDate')?.value || null,
   };
+
+  const validationError = validateProductPayload(product);
+  if (validationError) {
+    alert(validationError);
+    return;
+  }
 
   if (editingId) {
     const idx = products.findIndex(p => sameId(p.id, editingId));

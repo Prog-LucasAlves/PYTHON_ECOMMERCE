@@ -954,6 +954,18 @@ function initAppBindings() {
   const clearAllBtn = document.getElementById('clearAllBtn');
   const priceMinEl = document.getElementById('priceMin');
   const priceMaxEl = document.getElementById('priceMax');
+  const productModal = document.getElementById('productModal');
+  const modalCloseBtn = document.getElementById('modalCloseBtn');
+  const modalFavBtn = document.getElementById('modalFavBtn');
+  const shareWhatsAppBtn = document.getElementById('shareWhatsAppBtn');
+  const shareTelegramBtn = document.getElementById('shareTelegramBtn');
+  const btnCompareNow = document.getElementById('btnCompareNow');
+  const compareClearBtn = document.getElementById('compareClearBtn');
+  const compareModal = document.getElementById('compareModal');
+  const compareCloseBtn = document.getElementById('compareCloseBtn');
+  const favPanel = document.getElementById('favPanel');
+  const favPanelCloseBtn = document.getElementById('favPanelCloseBtn');
+  const favFab = document.getElementById('favFab');
 
   searchInput?.addEventListener('input', () => { filterProducts(); updateSearchSuggestions(); });
   searchInput?.addEventListener('focus', showSearchHistory);
@@ -969,6 +981,18 @@ function initAppBindings() {
   clearAllBtn?.addEventListener('click', clearAllFilters);
   priceMinEl?.addEventListener('input', setPriceFilter);
   priceMaxEl?.addEventListener('input', setPriceFilter);
+  modalCloseBtn?.addEventListener('click', closeProductModal);
+  modalFavBtn?.addEventListener('click', toggleFavorite);
+  shareWhatsAppBtn?.addEventListener('click', shareWhatsApp);
+  shareTelegramBtn?.addEventListener('click', shareTelegram);
+  btnCompareNow?.addEventListener('click', openCompareModal);
+  compareClearBtn?.addEventListener('click', clearCompare);
+  compareCloseBtn?.addEventListener('click', closeCompareModal);
+  favPanelCloseBtn?.addEventListener('click', closeFavPanel);
+  favFab?.addEventListener('click', openFavPanel);
+  productModal?.addEventListener('click', e => { if (e.target === productModal) closeProductModal(); });
+  compareModal?.addEventListener('click', e => { if (e.target === compareModal) closeCompareModal(); });
+  favPanel?.addEventListener('click', e => { if (e.target === favPanel) closeFavPanel(); });
 
   document.querySelectorAll('.cat-item[data-cat]').forEach(btn => {
     btn.addEventListener('click', () => setCategory(btn.dataset.cat, btn));

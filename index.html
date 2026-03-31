@@ -8,7 +8,7 @@
   <meta name="keywords" content="ofertas na shopee, desconto shopee, produtos com cupom, frete grátis shopee, compras online" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://melhoresdashopee.com.br/" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline' https://www.gstatic.com https://cdnjs.cloudflare.com; connect-src 'self' https://www.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.gstatic.com; font-src 'self' https://cdnjs.cloudflare.com data:; manifest-src 'self'; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; script-src 'self' https://www.gstatic.com; connect-src 'self' https://www.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.gstatic.com; font-src 'self' https://cdnjs.cloudflare.com data:; manifest-src 'self'; upgrade-insecure-requests">
 
   <!-- Open Graph (Facebook, WhatsApp) -->
   <meta property="og:title" content="Melhores Ofertas Online 🛍️" />
@@ -80,7 +80,7 @@
         <div class="search-wrap">
           <input type="text" id="searchInput" placeholder="🔍 Buscar produto..."
             autocomplete="off"/>
-          <div id="searchDropdown" class="search-dropdown" style="display:none"></div>
+          <div id="searchDropdown" class="search-dropdown hidden-block"></div>
         </div>
         <button class="btn-dark-mode" id="darkToggle" title="Modo escuro">
           <i class="fas fa-moon" id="darkIcon"></i>
@@ -256,7 +256,7 @@
   <!-- PRODUTOS -->
   <main id="mainContent">
     <div id="productGrid" class="product-grid"></div>
-    <div id="emptyState" class="empty-state" style="display:none" aria-live="polite">
+    <div id="emptyState" class="empty-state hidden-block" aria-live="polite">
       <i class="fas fa-box-open"></i>
       <p>Nenhum produto encontrado com os filtros atuais.</p>
       <span>Tente outra busca, amplie a faixa de preço ou volte para todas as categorias.</span>
@@ -317,9 +317,9 @@
   </section>
 
   <!-- PRODUCT DETAIL MODAL -->
-  <div id="productModal" class="product-modal" onclick="closeModalOutside(event)">
+  <div id="productModal" class="product-modal">
     <div class="modal-box">
-      <button class="modal-close" onclick="closeProductModal()">×</button>
+      <button class="modal-close" id="modalCloseBtn">×</button>
 
       <!-- LEFT: gallery -->
       <div class="modal-gallery">
@@ -338,24 +338,24 @@
           <span class="modal-price" id="modalPrice"></span>
           <span class="modal-discount" id="modalDiscount"></span>
         </div>
-        <div id="modalCountdown" class="modal-countdown" style="display:none"></div>
+        <div id="modalCountdown" class="modal-countdown hidden-block"></div>
         <p class="modal-desc" id="modalDesc"></p>
         <a id="modalBuyBtn" href="#" target="_blank" rel="noopener" class="modal-buy-btn">
           <i class="fas fa-shopping-cart"></i> Ver na Shopee
         </a>
         <div class="modal-actions-row">
-          <button class="modal-fav-btn" id="modalFavBtn" onclick="toggleFavorite()">
+          <button class="modal-fav-btn" id="modalFavBtn">
             <i class="fas fa-heart"></i> <span id="modalFavText">Favoritar</span>
           </button>
-          <button class="modal-share-btn" onclick="shareWhatsApp()">
+          <button class="modal-share-btn" id="shareWhatsAppBtn">
             <i class="fab fa-whatsapp"></i>
           </button>
-          <button class="modal-share-btn telegram" onclick="shareTelegram()">
+          <button class="modal-share-btn telegram" id="shareTelegramBtn">
             <i class="fab fa-telegram-plane"></i>
           </button>
         </div>
         <p class="modal-affiliate-note">🔗 Link de afiliado · Você nos ajuda sem pagar nada a mais · <em>Preço promocional sujeito a alteração sem aviso prévio.</em></p>
-        <div id="modalRelated" class="modal-related-section" style="display:none">
+        <div id="modalRelated" class="modal-related-section hidden-block">
           <h4>Produtos Relacionados</h4>
           <div class="modal-related-list" id="modalRelatedList"></div>
         </div>
@@ -363,66 +363,41 @@
     </div>
   </div>
 
-  <script src="js/app.js"></script>
-  <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      // Service Worker registration
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('/sw.js').catch(() => {});
-      }
-      // PWA install prompt
-      let deferredPrompt;
-      window.addEventListener('beforeinstallprompt', e => {
-        e.preventDefault();
-        deferredPrompt = e;
-        const banner = document.getElementById('pwaBanner');
-        if (banner && !localStorage.getItem('pwa_dismissed')) banner.style.display = 'flex';
-      });
-
-      const banner = document.getElementById('pwaBanner');
-      document.getElementById('pwaBtnInstall')?.addEventListener('click', () => {
-        if (banner) banner.style.display = 'none';
-        if (deferredPrompt) { deferredPrompt.prompt(); deferredPrompt = null; }
-      });
-      document.getElementById('pwaBtnClose')?.addEventListener('click', () => {
-        if (banner) banner.style.display = 'none';
-        localStorage.setItem('pwa_dismissed', '1');
-      });
-    });
-  </script>
+  <script src="js/app.js" defer></script>
+  <script src="js/pwa.js" defer></script>
 
   <!-- BARRA DE COMPARAÇÃO -->
   <div id="compareBar" class="compare-bar">
     <div class="compare-bar-inner">
       <span class="compare-title"><i class="fas fa-columns"></i> Comparar</span>
       <div class="compare-slots" id="compareSlots"></div>
-      <button class="btn-compare-now" onclick="openCompareModal()" id="btnCompareNow" disabled>Comparar agora</button>
-      <button class="compare-clear" onclick="clearCompare()" title="Limpar"><i class="fas fa-times"></i></button>
+      <button class="btn-compare-now" id="btnCompareNow" disabled>Comparar agora</button>
+      <button class="compare-clear" id="compareClearBtn" title="Limpar"><i class="fas fa-times"></i></button>
     </div>
   </div>
 
   <!-- MODAL DE COMPARAÇÃO -->
-  <div id="compareModal" class="compare-modal" onclick="closeCompareOutside(event)">
+  <div id="compareModal" class="compare-modal">
     <div class="compare-box">
       <div class="compare-header">
         <h2><i class="fas fa-columns"></i> Comparar Produtos</h2>
-        <button onclick="closeCompareModal()"><i class="fas fa-times"></i></button>
+        <button id="compareCloseBtn"><i class="fas fa-times"></i></button>
       </div>
       <div id="compareTable" class="compare-table"></div>
     </div>
   </div>
 
   <!-- PAINEL DE FAVORITOS -->
-  <div id="favPanel" class="fav-panel" style="display:none">
+  <div id="favPanel" class="fav-panel hidden-block">
     <div class="fav-panel-inner">
       <div class="fav-panel-header">
         <h3>❤️ Favoritos</h3>
-        <button onclick="closeFavPanel()"><i class="fas fa-times"></i></button>
+        <button id="favPanelCloseBtn"><i class="fas fa-times"></i></button>
       </div>
       <div id="favList" class="fav-list"></div>
     </div>
   </div>
-  <button class="fav-fab" id="favFab" onclick="openFavPanel()" style="display:none" title="Meus favoritos">
+  <button class="fav-fab hidden-block" id="favFab" title="Meus favoritos">
     <i class="fas fa-heart"></i>
     <span class="fav-count" id="favCount">0</span>
   </button>
@@ -434,7 +409,7 @@
   </a>
 
   <!-- PWA Install Banner -->
-  <div id="pwaBanner" class="pwa-banner" style="display:none">
+  <div id="pwaBanner" class="pwa-banner hidden-block">
     <div class="pwa-banner-inner">
       <i class="fas fa-mobile-alt pwa-icon"></i>
       <div>
@@ -464,7 +439,7 @@
     </div>
   </footer>
   <!-- LGPD Consent Banner -->
-  <div id="lgpdBanner" class="lgpd-banner" style="display:none">
+  <div id="lgpdBanner" class="lgpd-banner hidden-block">
     <div class="lgpd-inner">
       <p>🍪 Este site salva favoritos e histórico de busca localmente no seu dispositivo para melhorar sua experiência. Nenhum dado é enviado a servidores. <a href="/politica-privacidade.html" target="_blank">Saiba mais</a>.</p>
       <div class="lgpd-btns">
