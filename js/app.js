@@ -543,13 +543,23 @@ function _renderFiltered(grid, empty, search) {
 
   lastRenderAt = Date.now();
   updateResultsSummary(filtered, search);
-  updateStructuredData(filtered);
+  try {
+    updateStructuredData(filtered);
+  } catch (err) {
+    console.warn('[SEO] Structured data skipped:', err);
+  }
 
   if (!filtered.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
-  grid.innerHTML = filtered.map(p => cardHTML(p)).join('');
-  animateCards();
-  startCountdownTimers();
+  try {
+    grid.innerHTML = filtered.map(p => cardHTML(p)).join('');
+    animateCards();
+    startCountdownTimers();
+  } catch (err) {
+    console.error('[RENDER] Card generation failed:', err);
+    grid.innerHTML = '<p class="empty-state">Não foi possível renderizar os produtos agora.</p>';
+    empty.style.display = 'none';
+  }
 }
 
 // ── SKELETON ─────────────────────────────────────────────────
@@ -569,6 +579,7 @@ function showSkeleton() {
 
 // ── CARD ANIMATION ────────────────────────────────────────────
 function animateCards() {
+  if (typeof IntersectionObserver === 'undefined') return;
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(e => {
       if (e.isIntersecting) {
