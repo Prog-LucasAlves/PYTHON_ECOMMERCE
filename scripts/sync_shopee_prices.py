@@ -260,7 +260,26 @@ def main() -> int:
 
     db = init_firestore()
     products = find_products_to_sync(db)
-    summary = {"checked": 0, "updated": 0, "missing": 0}
+    summary = {
+        "checked": 0,
+        "updated": 0,
+        "missing": 0,
+        "resolved_ids": 0,
+        "not_found": 0,
+        "missing_ids": 0,
+    }
+    status_order = ("resolved_ids", "updated", "not_found", "missing_ids")
+    status_labels = {
+        "resolved_ids": "IDs resolvidos",
+        "updated": "Atualizados",
+        "not_found": "Não encontrados",
+        "missing_ids": "Sem IDs",
+    }
+    print("Shopee sync summary")
+    print(json.dumps({key: summary[key] for key in ("checked", "updated", "missing")}, ensure_ascii=False, indent=2))
+    print("By status")
+    for key in status_order:
+        print(f"- {status_labels[key]}: 0")
 
     for doc_id, data in products:
         item_id = data.get("itemId") or data.get("affiliate", {}).get("itemId")
@@ -280,6 +299,7 @@ def main() -> int:
             shop_id_int = int(str(shop_id)) if shop_id else None
         except ValueError:
             summary["missing"] += 1
+            summary["missing_ids"] += 1
             log_product("missing_ids", doc_id, data)
             continue
         if (data.get("itemId") != item_id_int or data.get("shopId") != shop_id_int) and not args.dry_run:
@@ -291,11 +311,13 @@ def main() -> int:
                 },
                 merge=True,
             )
+            summary["resolved_ids"] += 1
 
         resolved = resolve_affiliate_product(item_id_int, shop_id_int, app_id, app_secret)
         summary["checked"] += 1
         if not resolved:
             summary["missing"] += 1
+            summary["not_found"] += 1
             log_product("not_found", doc_id, data)
             continue
 
@@ -304,7 +326,11 @@ def main() -> int:
             summary["updated"] += 1
         log_product("updated", doc_id, data, resolved)
 
+    print("Final summary")
     print(json.dumps(summary, ensure_ascii=False, indent=2))
+    print("By status")
+    for key in status_order:
+        print(f"- {status_labels[key]}: {summary[key]}")
     return 0
 
 
