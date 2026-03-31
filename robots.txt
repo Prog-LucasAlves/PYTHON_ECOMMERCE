@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://melhoresdashopee.com.br/sitemap.xml

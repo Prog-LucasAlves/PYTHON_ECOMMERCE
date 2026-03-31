@@ -174,7 +174,7 @@ header {
   border-radius: 18px; background: linear-gradient(180deg, rgba(255,248,229,.96), rgba(247,236,208,.88));
   border: 1px solid rgba(212,160,23,.16);
 }
-.intro-chip strong { font-size: 1.02rem; color: #20170a; }
+.intro-chip strong { font-size: 1rem; color: #20170a; line-height: 1.2; }
 .intro-chip span { font-size: .84rem; color: #6c624f; line-height: 1.5; }
 @media (max-width: 600px) {
   .hero-banner { height: 200px; }
@@ -263,7 +263,7 @@ header {
 [data-theme="dark"] .cat-item.active .cat-label { color: #ff7a5c; }
 
 .results-bar {
-  padding: 8px 16px 0;
+  padding: 0 16px 0;
   background: transparent;
 }
 .results-inner {
@@ -279,7 +279,7 @@ header {
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
 }
 .results-bar + .controls-bar {
-  margin-top: 8px;
+  margin-top: 6px;
   background: transparent;
   border-bottom: none;
 }

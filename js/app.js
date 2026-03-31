@@ -310,17 +310,11 @@ function shareTelegram() {
     : `*R$ ${Number(modalProduct.price).toFixed(2).replace('.',',')}*`;
   const text = [
     `🔥 *${modalProduct.name}*`,
-
     `📂 ${categoryLabel(modalProduct.category)}`,
-
     discount ? `🏷️ Economia de *${discount}%*` : null,
-
     `💰 ${priceLine}`,
-
     `⚠️ Preço promocional sujeito a alteração sem aviso prévio.`,
-
-    modalProduct.desc ? `📝 ${modalProduct.desc}` : null,
-
+    modalProduct.desc ? `📝 ${stripHtml(modalProduct.desc)}` : null,
     `🛒 Confira na Shopee: ${modalProduct.link}`,
   ].filter(Boolean).join('\n');
   window.open(`https://t.me/share/url?url=${encodeURIComponent(modalProduct.link)}&text=${encodeURIComponent(text)}`, '_blank');
@@ -503,6 +497,7 @@ function _renderFiltered(grid, empty, search) {
 
   lastRenderAt = Date.now();
   updateResultsSummary(filtered, search);
+  updateStructuredData(filtered);
 
   if (!filtered.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
@@ -853,6 +848,40 @@ function updateResultsSummary(filtered, search) {
   contextEl.textContent = parts.join(' · ');
   updatedEl.textContent = `Última atualização: ${formatUpdatedTime(lastRenderAt)}`;
   updateHeroStats();
+}
+
+function updateStructuredData(filtered) {
+  const existing = document.getElementById('dynamicStructuredData');
+  const payload = filtered.slice(0, 8).map((p, index) => ({
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "position": index + 1,
+    "name": p.name,
+    "description": stripHtml(p.desc || ''),
+    "image": getImages(p)[0] || '',
+    "offers": {
+      "@type": "Offer",
+      "priceCurrency": "BRL",
+      "price": Number(p.price).toFixed(2),
+      "url": p.link,
+      "availability": "https://schema.org/InStock"
+    }
+  }));
+
+  const json = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Ofertas em destaque",
+    "itemListOrder": "https://schema.org/ItemListOrderDescending",
+    "numberOfItems": payload.length,
+    "itemListElement": payload
+  };
+
+  const script = existing || document.createElement('script');
+  script.type = 'application/ld+json';
+  script.id = 'dynamicStructuredData';
+  script.textContent = JSON.stringify(json);
+  if (!existing) document.head.appendChild(script);
 }
 
 initDarkMode();
