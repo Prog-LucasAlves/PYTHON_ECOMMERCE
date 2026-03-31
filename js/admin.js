@@ -248,6 +248,20 @@ function stripHtml(text) {
   return (text || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
 }
 
+function parseSoldCount(value) {
+  const raw = String(value ?? '').trim();
+  if (!raw) return null;
+  const normalized = raw.replace(/[^\d]/g, '');
+  if (!normalized) return null;
+  return parseInt(normalized, 10);
+}
+
+function formatSoldCount(value) {
+  const n = parseInt(String(value ?? '').replace(/[^\d]/g, ''), 10);
+  if (!Number.isFinite(n)) return '';
+  return n.toLocaleString('pt-BR');
+}
+
 // ── SAVE PRODUCT ───────────────────────────────────────────────
 async function saveProduct(e) {
   e.preventDefault();
@@ -265,7 +279,7 @@ async function saveProduct(e) {
     video:         (document.getElementById('prodVideo')?.value || '').trim(),
     desc:          document.getElementById('prodDesc').value.trim(),
     rating:        parseFloat(document.getElementById('prodRating')?.value) || null,
-    soldCount:     parseInt(document.getElementById('prodSoldCount')?.value) || null,
+    soldCount:     parseSoldCount(document.getElementById('prodSoldCount')?.value),
     featured:      document.getElementById('prodFeatured').checked,
     countdown:     document.getElementById('prodCountdown')?.value || null,
     publishDate:   document.getElementById('prodPublishDate')?.value || null,
@@ -314,7 +328,7 @@ function editProduct(id) {
   if (document.getElementById('prodRating'))
     document.getElementById('prodRating').value    = p.rating || '';
   if (document.getElementById('prodSoldCount'))
-    document.getElementById('prodSoldCount').value = p.soldCount || '';
+    document.getElementById('prodSoldCount').value = p.soldCount ? formatSoldCount(p.soldCount) : '';
   if (document.getElementById('prodVideo'))
     document.getElementById('prodVideo').value = p.video || '';
   if (document.getElementById('prodCountdown'))
@@ -643,7 +657,7 @@ function importCSV(e) {
         video:         get('video') || '',
         desc:          get('desc') || get('descricao') || get('descrição') || '',
         rating:        parseFloat(get('rating') || get('avaliacao')) || null,
-        soldCount:     parseInt(get('soldcount') || get('vendidos')) || null,
+        soldCount:     parseSoldCount(get('soldcount') || get('vendidos')),
         featured:      (get('featured') || get('destaque')) === 'true',
         countdown:     get('countdown') || null,
         publishDate:   get('publishdate') || get('publicacao') || null,
