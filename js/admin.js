@@ -170,6 +170,8 @@ function initAdminBindings() {
   const loginPassword = document.getElementById('loginPassword');
   const prodVideo = document.getElementById('prodVideo');
   const adminSearch = document.getElementById('adminSearch');
+  const adminProductList = document.getElementById('adminProductList');
+  const imagesList = document.getElementById('imagesList');
 
   loginBtn?.addEventListener('click', doLogin);
   logoutBtn?.addEventListener('click', doLogout);
@@ -183,6 +185,9 @@ function initAdminBindings() {
   loginPassword?.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
   prodVideo?.addEventListener('input', previewVideo);
   adminSearch?.addEventListener('input', renderAdminList);
+  adminProductList?.addEventListener('click', handleAdminListClick);
+  imagesList?.addEventListener('click', handleImageListClick);
+  imagesList?.addEventListener('input', handleImageListInput);
 }
 
 document.addEventListener('DOMContentLoaded', initAdminBindings);
@@ -224,9 +229,8 @@ function addImageField(value) {
   div.innerHTML = `
     <span class="img-num">${idx + 1}</span>
     <input type="url" class="img-url-input" id="imgUrl_${idx}"
-      placeholder="https://..." value="${value || ''}"
-      oninput="updateImagesPreview()" />
-    <button type="button" class="btn-remove-img" onclick="removeImageField('imgRow_${idx}')">
+      placeholder="https://..." value="${value || ''}" />
+    <button type="button" class="btn-remove-img" data-action="remove-image" data-row-id="imgRow_${idx}">
       <i class="fas fa-trash"></i>
     </button>`;
   list.appendChild(div);
@@ -479,12 +483,33 @@ function renderAdminList() {
         </div>
       </div>
       <div class="admin-item-actions">
-        <button class="btn-tg-share" onclick="shareTelegramAdmin(${p.id})" title="Compartilhar no Telegram"><i class="fab fa-telegram-plane"></i></button>
-        <button class="btn-edit"   onclick="editProduct(${p.id})"><i class="fas fa-pen"></i></button>
-        <button class="btn-delete" onclick="deleteProduct(${p.id})"><i class="fas fa-trash"></i></button>
+        <button class="btn-tg-share" type="button" data-action="share-telegram" data-product-id="${p.id}" title="Compartilhar no Telegram"><i class="fab fa-telegram-plane"></i></button>
+        <button class="btn-edit" type="button" data-action="edit-product" data-product-id="${p.id}"><i class="fas fa-pen"></i></button>
+        <button class="btn-delete" type="button" data-action="delete-product" data-product-id="${p.id}"><i class="fas fa-trash"></i></button>
       </div>
     </div>`;
   }).join('');
+}
+
+function handleAdminListClick(e) {
+  const btn = e.target.closest('button[data-action]');
+  if (!btn) return;
+  const { action, productId, rowId } = btn.dataset;
+  if (action === 'delete-product') deleteProduct(productId);
+  if (action === 'edit-product') editProduct(productId);
+  if (action === 'share-telegram') shareTelegramAdmin(productId);
+  if (action === 'remove-image' && rowId) removeImageField(rowId);
+}
+
+function handleImageListInput(e) {
+  if (e.target.classList.contains('img-url-input')) updateImagesPreview();
+}
+
+function handleImageListClick(e) {
+  const btn = e.target.closest('button[data-action="remove-image"]');
+  if (!btn) return;
+  const rowId = btn.dataset.rowId;
+  if (rowId) removeImageField(rowId);
 }
 
 // ── HELPERS ───────────────────────────────────────────────────
