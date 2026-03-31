@@ -2,17 +2,22 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
 import urllib.request
 from pathlib import Path
 from typing import Any
+from urllib.parse import parse_qs, urlparse
 
 import firebase_admin
 from firebase_admin import credentials, firestore
 
 GRAPHQL_URL = "https://open-api.affiliate.shopee.com.br/graphql"
+PRODUCT_URL_RE = re.compile(r"/(?:product|[^/?#]+)/(\d+)/(\d+)")
+ITEM_ID_KEYS = ("vItemId", "itemId")
+SHOP_ID_KEYS = ("vShopId", "shopId")
 DEFAULT_QUERY = """
 query FindProductByShopAndItem($itemId: Int!, $shopId: Int) {
   productOfferV2(itemId: $itemId, shopId: $shopId) {
@@ -79,6 +84,34 @@ def shopee_request(url: str, app_id: str, app_secret: str, payload_text: str) ->
     return urllib.request.Request(url, data=payload_text.encode("utf-8"), headers=headers, method="POST")
 
 
+def resolve_offer_url(url: str, timeout: int = 20) -> str:
+    request = urllib.request.Request(
+        url,
+        headers={
+            "User-Agent": "PYTHON_ECOMMERCE_LINK_RESOLVER/1.0",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        },
+        method="GET",
+    )
+    with urllib.request.urlopen(request, timeout=timeout) as response:
+        return response.geturl()
+
+
+def extract_ids_from_url(url: str) -> tuple[int | None, int | None]:
+    match = PRODUCT_URL_RE.search(url)
+    if match:
+        return int(match.group(1)), int(match.group(2))
+
+    parsed = urlparse(url)
+    query = parse_qs(parsed.query)
+    item_id = next((values[0] for key in ITEM_ID_KEYS if (values := query.get(key))), None)
+    shop_id = next((values[0] for key in SHOP_ID_KEYS if (values := query.get(key))), None)
+    try:
+        return (int(shop_id) if shop_id else None, int(item_id) if item_id else None)
+    except ValueError:
+        return None, None
+
+
 def resolve_affiliate_product(item_id: int, shop_id: int | None, app_id: str, app_secret: str) -> dict[str, Any] | None:
     payload = build_graphql_payload(item_id, shop_id)
     request = shopee_request(GRAPHQL_URL, app_id, app_secret, payload)
@@ -123,13 +156,15 @@ def update_product(db: firestore.Client, doc_id: str, affiliate_data: dict[str, 
         old_price = data.get("apiPrice") or data.get("price") or data.get("manualPrice")
     if isinstance(old_price, (int, float)) and isinstance(price_min, (int, float)):
         price_changed = abs(float(old_price) - float(price_min)) > 0.009
+    item_id = product.get("itemId")
+    shop_id = affiliate_data.get("shopId") or product.get("shopId")
     payload = {
         "affiliate": {
             "source": "shopee",
             "offerLink": product.get("offerLink"),
             "productLink": product.get("productLink"),
-            "itemId": product.get("itemId"),
-            "shopId": affiliate_data.get("shopId"),
+            "itemId": item_id,
+            "shopId": shop_id,
             "resolvedAt": int(time.time() * 1000),
         },
         "pricing": {
@@ -140,8 +175,8 @@ def update_product(db: firestore.Client, doc_id: str, affiliate_data: dict[str, 
         },
         "offerLink": product.get("offerLink"),
         "productLink": product.get("productLink"),
-        "itemId": product.get("itemId"),
-        "shopId": affiliate_data.get("shopId"),
+        "itemId": item_id,
+        "shopId": shop_id,
         "apiPrice": price_min,
         "apiPriceMax": price_max,
         "priceChanged": price_changed,
@@ -156,7 +191,20 @@ def find_products_to_sync(db: firestore.Client) -> list[tuple[str, dict[str, Any
     for doc in docs:
         data = doc.to_dict() or {}
         item_id = data.get("itemId") or data.get("affiliate", {}).get("itemId")
-        if not item_id:
+        offer_link = data.get("offerLink") or data.get("affiliate", {}).get("offerLink")
+        if not item_id and offer_link:
+            try:
+                final_url = resolve_offer_url(str(offer_link))
+            except urllib.error.URLError:
+                final_url = str(offer_link)
+            shop_from_url, item_from_url = extract_ids_from_url(final_url)
+            if item_from_url:
+                data["itemId"] = item_from_url
+            if shop_from_url:
+                data["shopId"] = shop_from_url
+            if not item_from_url:
+                continue
+        if not item_id and not data.get("itemId"):
             continue
         results.append((doc.id, data))
     return results
@@ -181,12 +229,30 @@ def main() -> int:
     for doc_id, data in products:
         item_id = data.get("itemId") or data.get("affiliate", {}).get("itemId")
         shop_id = data.get("shopId") or data.get("affiliate", {}).get("shopId")
+        offer_link = data.get("offerLink") or data.get("affiliate", {}).get("offerLink")
+        if (not item_id or not shop_id) and offer_link:
+            try:
+                final_url = resolve_offer_url(str(offer_link))
+            except urllib.error.URLError:
+                final_url = str(offer_link)
+            shop_from_url, item_from_url = extract_ids_from_url(final_url)
+            item_id = item_id or item_from_url
+            shop_id = shop_id or shop_from_url
         try:
             item_id_int = int(str(item_id))
             shop_id_int = int(str(shop_id)) if shop_id else None
         except ValueError:
             summary["missing"] += 1
             continue
+        if (data.get("itemId") != item_id_int or data.get("shopId") != shop_id_int) and not args.dry_run:
+            db.collection("products").document(doc_id).set(
+                {
+                    "itemId": item_id_int,
+                    "shopId": shop_id_int,
+                    "offerLink": offer_link,
+                },
+                merge=True,
+            )
 
         resolved = resolve_affiliate_product(item_id_int, shop_id_int, app_id, app_secret)
         summary["checked"] += 1
