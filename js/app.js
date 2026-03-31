@@ -310,13 +310,18 @@ function shareTelegram() {
     : `*R$ ${Number(modalProduct.price).toFixed(2).replace('.',',')}*`;
   const text = [
     `🔥 *${modalProduct.name}*`,
+
     `📂 ${categoryLabel(modalProduct.category)}`,
+
     discount ? `🏷️ Economia de *${discount}%*` : null,
+
     `💰 ${priceLine}`,
+
     `⚠️ Preço promocional sujeito a alteração sem aviso prévio.`,
+
     modalProduct.desc ? `📝 ${modalProduct.desc}` : null,
+
     `🛒 Confira na Shopee: ${modalProduct.link}`,
-    `_Via Melhores Ofertas_`,
   ].filter(Boolean).join('\n');
   window.open(`https://t.me/share/url?url=${encodeURIComponent(modalProduct.link)}&text=${encodeURIComponent(text)}`, '_blank');
 }

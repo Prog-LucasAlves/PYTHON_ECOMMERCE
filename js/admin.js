@@ -53,6 +53,7 @@ let onAuthStateChanged_fn = null;
 const STORAGE_KEY  = 'shopee_products';
 const HISTORY_KEY  = 'shopee_history';
 const CLICKS_KEY   = 'shopee_clicks';
+const DEFAULT_DESC  = 'Frete grátis - Produto original - Entrega rápida - Preço promocional sujeito a alteração sem aviso prévio.';
 
 // Test if localStorage is available and working
 function testLocalStorage() {
@@ -150,6 +151,8 @@ function initImageFields() {
   list.innerHTML = '';
   imageCount = 0;
   addImageField();
+  const desc = document.getElementById('prodDesc');
+  if (desc && !desc.value.trim()) desc.value = DEFAULT_DESC;
 }
 
 function addImageField(value) {
@@ -328,6 +331,8 @@ function resetForm() {
   document.getElementById('productForm').reset();
   document.getElementById('formTitle').innerHTML = '<i class="fas fa-plus-circle"></i> Adicionar Produto';
   document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save"></i> Salvar Produto';
+  const desc = document.getElementById('prodDesc');
+  if (desc) desc.value = DEFAULT_DESC;
   document.getElementById('imagesPreviewBox').style.display = 'none';
   if (document.getElementById('videoPreviewBox'))
     document.getElementById('videoPreviewBox').style.display = 'none';
@@ -408,13 +413,18 @@ function shareTelegramAdmin(id) {
     : `*R$ ${Number(p.price).toFixed(2).replace('.',',')}*`;
   const summary = [
     `🔥 *${p.name}*`,
+
     `📂 ${categoryLabel(p.category)}`,
+
     discount ? `🏷️ Economia de *${discount}%*` : null,
+
     `💰 ${priceLine}`,
+
     `⚠️ Preço promocional sujeito a alteração sem aviso prévio.`,
+
     p.desc ? `📝 ${p.desc}` : null,
+
     `🛒 Confira na Shopee: ${p.link}`,
-    `_Via Melhores Ofertas_`,
   ].filter(Boolean).join('\n');
   const url = `https://t.me/share/url?url=${encodeURIComponent(p.link)}&text=${encodeURIComponent(summary)}`;
   window.open(url, '_blank');
