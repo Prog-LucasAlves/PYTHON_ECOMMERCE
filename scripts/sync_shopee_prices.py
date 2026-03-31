@@ -135,6 +135,42 @@ def pick_variant_price(product: dict[str, Any]) -> tuple[float | None, float | N
     return to_float(product.get("priceMin")), to_float(product.get("priceMax"))
 
 
+def log_product(event: str, doc_id: str, data: dict[str, Any], product: dict[str, Any] | None = None) -> None:
+    item_id = data.get("itemId") or data.get("affiliate", {}).get("itemId") or "-"
+    shop_id = data.get("shopId") or data.get("affiliate", {}).get("shopId") or "-"
+    name = (product or {}).get("productName") or data.get("name") or data.get("affiliate", {}).get("productName") or doc_id
+    if product:
+        price_min, price_max = pick_variant_price(product)
+        print(
+            json.dumps(
+                {
+                    "event": event,
+                    "docId": doc_id,
+                    "name": name,
+                    "itemId": item_id,
+                    "shopId": shop_id,
+                    "priceMin": price_min,
+                    "priceMax": price_max,
+                    "priceChanged": data.get("priceChanged"),
+                },
+                ensure_ascii=False,
+            ),
+        )
+    else:
+        print(
+            json.dumps(
+                {
+                    "event": event,
+                    "docId": doc_id,
+                    "name": name,
+                    "itemId": item_id,
+                    "shopId": shop_id,
+                },
+                ensure_ascii=False,
+            ),
+        )
+
+
 def init_firestore() -> firestore.Client:
     service_account_json = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON")
     if not service_account_json:
@@ -230,6 +266,7 @@ def main() -> int:
         item_id = data.get("itemId") or data.get("affiliate", {}).get("itemId")
         shop_id = data.get("shopId") or data.get("affiliate", {}).get("shopId")
         offer_link = data.get("offerLink") or data.get("affiliate", {}).get("offerLink")
+        log_product("checking", doc_id, data)
         if (not item_id or not shop_id) and offer_link:
             try:
                 final_url = resolve_offer_url(str(offer_link))
@@ -243,6 +280,7 @@ def main() -> int:
             shop_id_int = int(str(shop_id)) if shop_id else None
         except ValueError:
             summary["missing"] += 1
+            log_product("missing_ids", doc_id, data)
             continue
         if (data.get("itemId") != item_id_int or data.get("shopId") != shop_id_int) and not args.dry_run:
             db.collection("products").document(doc_id).set(
@@ -258,11 +296,13 @@ def main() -> int:
         summary["checked"] += 1
         if not resolved:
             summary["missing"] += 1
+            log_product("not_found", doc_id, data)
             continue
 
         if not args.dry_run:
             update_product(db, doc_id, {"shopId": shop_id_int}, resolved)
             summary["updated"] += 1
+        log_product("updated", doc_id, data, resolved)
 
     print(json.dumps(summary, ensure_ascii=False, indent=2))
     return 0
