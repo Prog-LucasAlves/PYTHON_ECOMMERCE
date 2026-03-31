@@ -244,7 +244,7 @@ function shareTelegram() {
     discount ? `🏷️ Economia de *${discount}%*` : null,
     `💰 ${priceLine}`,
     `⚠️ Preço promocional sujeito a alteração sem aviso prévio.`,
-    modalProduct.desc ? `📝 ${stripHtml(modalProduct.desc)}` : null,
+    modalProduct.desc ? `📝 ${formatDescription(modalProduct.desc)}` : null,
     `🛒 Confira na Shopee: ${modalProduct.link}`,
   ].filter(Boolean).join('\n');
   window.open(`https://t.me/share/url?url=${encodeURIComponent(modalProduct.link)}&text=${encodeURIComponent(text)}`, '_blank');
@@ -371,6 +371,12 @@ function getVideoThumb(url) {
   const id = getYouTubeId(url);
   if (id) return `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
   return null;
+}
+function formatDescription(text) {
+  return stripHtml(text || '')
+    .replace(/ - /g, ' -\n')
+    .replace(/\s*\n\s*/g, '\n')
+    .trim();
 }
 function getEmbedUrl(url) {
   const id = getYouTubeId(url);
@@ -603,7 +609,7 @@ function cardHTML(p) {
     ${thumbsHTML}
     <div class="card-body">
       <div class="card-name">${p.name}</div>
-      ${p.desc ? `<div class="card-desc">${p.desc}</div>` : ''}
+      ${p.desc ? `<div class="card-desc">${formatDescription(p.desc)}</div>` : ''}
       ${p.rating ? `<div class="card-stars">${starsHTML(p.rating)}${p.soldCount ? `<span class="card-sold">${p.soldCount}+ vendidos</span>` : ''}</div>` : (p.soldCount ? `<div class="card-stars"><span class="card-sold">${p.soldCount}+ vendidos</span></div>` : '')}
       <div class="card-prices">
         ${p.originalPrice && p.originalPrice > p.price
