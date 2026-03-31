@@ -482,6 +482,7 @@ window.addEventListener('storage', (e) => {
       console.log('[FIRESTORE] No remote products yet; using localStorage snapshot');
     }
     firestoreReady = true;
+    firstLoad = false;
     renderProducts();
     initHeroBanner();
     updateResultsSummary(allProducts.filter(p => !p.publishDate || new Date(p.publishDate) <= new Date()), (document.getElementById('searchInput')?.value || '').toLowerCase().trim());
@@ -497,12 +498,28 @@ function renderProducts() {
   const search = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
   if (!grid || !empty) return;
 
-  if (firstLoad) {
-    firstLoad = false;
-    showSkeleton();
-    setTimeout(() => _renderFiltered(grid, empty, search), 400);
-  } else {
-    _renderFiltered(grid, empty, search);
+  try {
+    if (firstLoad) {
+      firstLoad = false;
+      showSkeleton();
+      requestAnimationFrame(() => {
+        try {
+          _renderFiltered(grid, empty, search);
+        } catch (err) {
+          console.error('[RENDER] Failed after skeleton:', err);
+          grid.innerHTML = '';
+          empty.style.display = 'block';
+          empty.textContent = 'Não foi possível carregar os produtos no momento.';
+        }
+      });
+    } else {
+      _renderFiltered(grid, empty, search);
+    }
+  } catch (err) {
+    console.error('[RENDER] Failed to render products:', err);
+    grid.innerHTML = '';
+    empty.style.display = 'block';
+    empty.textContent = 'Não foi possível carregar os produtos no momento.';
   }
 }
 
@@ -873,7 +890,8 @@ function updateResultsSummary(filtered, search) {
     const maxText = priceMax !== null ? `R$ ${priceMax.toFixed(2).replace('.', ',')}` : 'qualquer valor';
     parts.push(`faixa de ${minText} até ${maxText}`);
   }
-  parts.push(currentSort === 'default' ? 'ordenado por destaques' : `ordenado por ${document.getElementById('sortSelect').selectedOptions[0].textContent.toLowerCase()}`);
+  const sortLabel = document.getElementById('sortSelect')?.selectedOptions?.[0]?.textContent?.toLowerCase() || 'destaques';
+  parts.push(currentSort === 'default' ? 'ordenado por destaques' : `ordenado por ${sortLabel}`);
   contextEl.textContent = parts.join(' · ');
   updatedEl.textContent = `Última atualização: ${formatUpdatedTime(lastRenderAt)}`;
   updateHeroStats();
