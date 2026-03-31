@@ -495,6 +495,7 @@ function renderProducts() {
   const grid   = document.getElementById('productGrid');
   const empty  = document.getElementById('emptyState');
   const search = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+  if (!grid || !empty) return;
 
   if (firstLoad) {
     firstLoad = false;
@@ -506,6 +507,7 @@ function renderProducts() {
 }
 
 function _renderFiltered(grid, empty, search) {
+  if (!grid || !empty) return;
   let filtered = [...allProducts];
   // Hide products scheduled for the future
   filtered = filtered.filter(p => !p.publishDate || new Date(p.publishDate) <= new Date());

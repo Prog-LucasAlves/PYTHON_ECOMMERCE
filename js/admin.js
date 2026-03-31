@@ -249,7 +249,7 @@ function stripHtml(text) {
 }
 
 // ── SAVE PRODUCT ───────────────────────────────────────────────
-function saveProduct(e) {
+async function saveProduct(e) {
   e.preventDefault();
   const images = getImageUrls();
   if (!images.length) { alert('Adicione pelo menos uma imagem.'); return; }
@@ -280,7 +280,7 @@ function saveProduct(e) {
     products.unshift(product);
   }
 
-  saveToStorage();
+  await saveToStorage();
   addHistory(editingId ? 'edit' : 'create', product);
   const savedId = product.id;
   resetForm();
@@ -414,11 +414,11 @@ function renderAdminList() {
 }
 
 // ── HELPERS ───────────────────────────────────────────────────
-function saveToStorage() {
+async function saveToStorage() {
   try {
     const json = JSON.stringify(products);
     localStorage.setItem(STORAGE_KEY, json);
-    saveProductsToFirestore();
+    await saveProductsToFirestore();
     console.log('[STORAGE] ✅ Saved', products.length, 'products to localStorage');
   } catch (e) {
     console.error('[STORAGE] ❌ Failed to save:', e.message);
