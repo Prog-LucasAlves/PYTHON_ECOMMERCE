@@ -455,6 +455,8 @@ let priceMin        = null;
 let priceMax        = null;
 let firstLoad       = true;
 let allProducts = JSON.parse(localStorage.getItem('shopee_products') || '[]');
+let firestoreDb = null;
+let firestoreReady = false;
 
 window.addEventListener('storage', (e) => {
   if (e.key === 'shopee_products') {
@@ -463,11 +465,37 @@ window.addEventListener('storage', (e) => {
   }
 });
 
+(async () => {
+  try {
+    const { firebaseConfig } = await import("./config.js");
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const fs = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    const app = initializeApp(firebaseConfig);
+    firestoreDb = fs.getFirestore(app);
+    const snap = await fs.getDocs(fs.query(fs.collection(firestoreDb, 'products'), fs.orderBy('updatedAt', 'desc')));
+    const remote = snap.docs.map(d => d.data()).filter(Boolean);
+    if (remote.length) {
+      allProducts = remote;
+      localStorage.setItem('shopee_products', JSON.stringify(remote));
+    } else if (allProducts.length) {
+      // If Firestore is empty, keep showing the last local snapshot.
+      console.log('[FIRESTORE] No remote products yet; using localStorage snapshot');
+    }
+    firestoreReady = true;
+    renderProducts();
+    initHeroBanner();
+    updateResultsSummary(allProducts.filter(p => !p.publishDate || new Date(p.publishDate) <= new Date()), (document.getElementById('searchInput')?.value || '').toLowerCase().trim());
+  } catch (e) {
+    console.warn('[FIRESTORE] Falling back to localStorage:', e.message);
+  }
+})();
+
 // ── RENDER ────────────────────────────────────────────────────
 function renderProducts() {
   const grid   = document.getElementById('productGrid');
   const empty  = document.getElementById('emptyState');
   const search = (document.getElementById('searchInput')?.value || '').toLowerCase().trim();
+  if (!grid || !empty) return;
 
   if (firstLoad) {
     firstLoad = false;
@@ -479,6 +507,7 @@ function renderProducts() {
 }
 
 function _renderFiltered(grid, empty, search) {
+  if (!grid || !empty) return;
   let filtered = [...allProducts];
   // Hide products scheduled for the future
   filtered = filtered.filter(p => !p.publishDate || new Date(p.publishDate) <= new Date());

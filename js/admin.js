@@ -8,6 +8,14 @@ let auth = null;
 let signInWithEmailAndPassword_fn = null;
 let signOut_fn = null;
 let onAuthStateChanged_fn = null;
+let db = null;
+let collection_fn = null;
+let doc_fn = null;
+let setDoc_fn = null;
+let deleteDoc_fn = null;
+let getDocs_fn = null;
+let query_fn = null;
+let orderBy_fn = null;
 
 // Load Firebase asynchronously - don't block if it fails
 (async () => {
@@ -15,12 +23,21 @@ let onAuthStateChanged_fn = null;
     const { firebaseConfig } = await import("./config.js");
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
     const fb = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+    const fs = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
 
     const app = initializeApp(firebaseConfig);
     auth = fb.getAuth(app);
     signInWithEmailAndPassword_fn = fb.signInWithEmailAndPassword;
     signOut_fn = fb.signOut;
     onAuthStateChanged_fn = fb.onAuthStateChanged;
+    db = fs.getFirestore(app);
+    collection_fn = fs.collection;
+    doc_fn = fs.doc;
+    setDoc_fn = fs.setDoc;
+    deleteDoc_fn = fs.deleteDoc;
+    getDocs_fn = fs.getDocs;
+    query_fn = fs.query;
+    orderBy_fn = fs.orderBy;
 
     console.log('[FIREBASE] ✅ Firebase loaded successfully');
 
@@ -29,9 +46,13 @@ let onAuthStateChanged_fn = null;
       if (user) {
         document.getElementById('loginOverlay').style.display = 'none';
         document.getElementById('adminPanel').style.display = 'block';
-        renderAdminList();
-        renderDashboard();
-        initImageFields();
+        loadProductsFromFirestore()
+          .then(migrateLocalStorageProductsToFirestore)
+          .finally(() => {
+            renderAdminList();
+            renderDashboard();
+            initImageFields();
+          });
       } else {
         document.getElementById('loginOverlay').style.display = 'flex';
         document.getElementById('adminPanel').style.display = 'none';
@@ -228,7 +249,7 @@ function stripHtml(text) {
 }
 
 // ── SAVE PRODUCT ───────────────────────────────────────────────
-function saveProduct(e) {
+async function saveProduct(e) {
   e.preventDefault();
   const images = getImageUrls();
   if (!images.length) { alert('Adicione pelo menos uma imagem.'); return; }
@@ -259,7 +280,7 @@ function saveProduct(e) {
     products.unshift(product);
   }
 
-  saveToStorage();
+  await saveToStorage();
   addHistory(editingId ? 'edit' : 'create', product);
   const savedId = product.id;
   resetForm();
@@ -393,10 +414,11 @@ function renderAdminList() {
 }
 
 // ── HELPERS ───────────────────────────────────────────────────
-function saveToStorage() {
+async function saveToStorage() {
   try {
     const json = JSON.stringify(products);
     localStorage.setItem(STORAGE_KEY, json);
+    await saveProductsToFirestore();
     console.log('[STORAGE] ✅ Saved', products.length, 'products to localStorage');
   } catch (e) {
     console.error('[STORAGE] ❌ Failed to save:', e.message);
@@ -426,6 +448,63 @@ function shareTelegramAdmin(id) {
   ].filter(Boolean).join('\n');
   const url = `https://t.me/share/url?url=${encodeURIComponent(p.link)}&text=${encodeURIComponent(summary)}`;
   window.open(url, '_blank');
+}
+
+async function loadProductsFromFirestore() {
+  if (!db || !getDocs_fn || !collection_fn) return;
+  try {
+    const snap = await getDocs_fn(query_fn(collection_fn(db, 'products'), orderBy_fn('updatedAt', 'desc')));
+    const remote = snap.docs.map(d => d.data()).filter(Boolean);
+    if (remote.length) {
+      products = remote;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+      console.log('[FIRESTORE] ✅ Loaded', products.length, 'products from Firestore');
+    }
+  } catch (e) {
+    console.warn('[FIRESTORE] Failed to load products:', e.message);
+  }
+}
+
+async function migrateLocalStorageProductsToFirestore() {
+  if (!db || !collection_fn || !doc_fn || !setDoc_fn) return;
+  try {
+    const localProducts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    if (!localProducts.length) return;
+
+    const remoteIds = new Set(products.map(p => String(p.id)));
+    const legacy = localProducts.filter(p => !remoteIds.has(String(p.id)));
+    if (!legacy.length) return;
+
+    const col = collection_fn(db, 'products');
+    await Promise.all(legacy.map(product =>
+      setDoc_fn(doc_fn(col, String(product.id)), { ...product, updatedAt: Date.now() }, { merge: true })
+    ));
+    products = [...legacy, ...products];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+    console.log('[FIRESTORE] ✅ Migrated', legacy.length, 'legacy products from localStorage');
+  } catch (e) {
+    console.warn('[FIRESTORE] Migration skipped:', e.message);
+  }
+}
+
+async function saveProductsToFirestore() {
+  if (!db || !collection_fn || !doc_fn || !setDoc_fn || !deleteDoc_fn) return;
+  try {
+    const col = collection_fn(db, 'products');
+    const ids = new Set();
+    for (const product of products) {
+      const payload = { ...product, updatedAt: Date.now() };
+      ids.add(String(product.id));
+      await setDoc_fn(doc_fn(col, String(product.id)), payload, { merge: true });
+    }
+    const snap = await getDocs_fn(collection_fn(db, 'products'));
+    await Promise.all(snap.docs
+      .filter(d => !ids.has(d.id))
+      .map(d => deleteDoc_fn(d.ref)));
+    console.log('[FIRESTORE] ✅ Synced products to Firestore');
+  } catch (e) {
+    console.warn('[FIRESTORE] Failed to save products:', e.message);
+  }
 }
 
 function shareTelegramGroupAdmin(id) {
