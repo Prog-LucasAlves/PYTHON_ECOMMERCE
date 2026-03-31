@@ -29,8 +29,32 @@
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
   <meta name="apple-mobile-web-app-title" content="MelhoresOfertas"/>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "Melhores Ofertas",
+      "url": "https://melhoresdashopee.com.br/",
+      "description": "Curadoria independente de ofertas online com links para produtos na Shopee."
+    }
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Melhores Ofertas",
+      "url": "https://melhoresdashopee.com.br/",
+      "inLanguage": "pt-BR",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://melhoresdashopee.com.br/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  </script>
 </head>
 <body>
+  <a class="skip-link" href="#mainContent">Pular para o conteúdo</a>
 
   <!-- HEADER -->
   <header>
@@ -62,6 +86,21 @@
     <div class="hero-dots"   id="heroDots"></div>
     <button class="hero-arrow hero-prev" onclick="heroPrev()">&#8249;</button>
     <button class="hero-arrow hero-next" onclick="heroNext()">&#8250;</button>
+  </section>
+
+  <section class="intro-section">
+    <div class="intro-shell">
+      <div class="intro-copy">
+        <span class="intro-kicker">Curadoria diária</span>
+        <h1>Ofertas online escolhidas para facilitar sua compra</h1>
+        <p>Encontramos produtos com bom custo-benefício, organizamos por categoria e mostramos links diretos para você comparar e decidir com mais rapidez.</p>
+      </div>
+      <div class="intro-highlights">
+        <div class="intro-chip"><strong id="heroCount">0</strong><span>ofertas no ar</span></div>
+        <div class="intro-chip"><strong>Atualização</strong><span id="heroUpdated">em tempo real no seu navegador</span></div>
+        <div class="intro-chip"><strong>Transparência</strong><span>links de afiliado identificados</span></div>
+      </div>
+    </div>
   </section>
 
   <!-- FILTROS / CATEGORIAS -->
@@ -167,6 +206,21 @@
   </section>
 
   <!-- CONTROLES: ORDENAÇÃO + FILTRO DE PREÇO -->
+  <section class="results-bar" aria-label="Resumo dos filtros">
+    <div class="results-inner">
+      <div class="results-copy">
+        <p id="resultsSummary">Carregando ofertas...</p>
+        <span id="activeContext">Use busca, categoria e faixa de preço para refinar sua vitrine.</span>
+      </div>
+      <div class="results-actions">
+        <button class="btn-secondary" type="button" onclick="clearAllFilters()">
+          <i class="fas fa-rotate-left"></i> Limpar filtros
+        </button>
+        <span class="results-updated" id="resultsUpdated">Última atualização: agora</span>
+      </div>
+    </div>
+  </section>
+
   <section class="controls-bar">
     <div class="controls-inner">
       <div class="sort-control">
@@ -190,14 +244,67 @@
   </section>
 
   <!-- PRODUTOS -->
-  <main>
+  <main id="mainContent">
     <div id="productGrid" class="product-grid"></div>
-    <div id="emptyState" class="empty-state" style="display:none">
+    <div id="emptyState" class="empty-state" style="display:none" aria-live="polite">
       <i class="fas fa-box-open"></i>
-      <p>Nenhum produto encontrado.</p>
-      <a href="admin.html" class="btn-primary">Adicionar produtos</a>
+      <p>Nenhum produto encontrado com os filtros atuais.</p>
+      <span>Tente outra busca, amplie a faixa de preço ou volte para todas as categorias.</span>
+      <button class="btn-primary" type="button" onclick="clearAllFilters()">Ver todas as ofertas</button>
     </div>
   </main>
+
+  <section class="trust-strip" aria-label="Diferenciais do site">
+    <div class="trust-grid">
+      <article class="trust-card">
+        <i class="fas fa-bolt"></i>
+        <h2>Curadoria rápida</h2>
+        <p>Organizamos ofertas em uma vitrine simples para você encontrar oportunidades sem precisar navegar por dezenas de páginas.</p>
+      </article>
+      <article class="trust-card">
+        <i class="fas fa-eye"></i>
+        <h2>Mais clareza</h2>
+        <p>Mostramos preço promocional, preço original, desconto, avaliações e favoritos para ajudar na decisão.</p>
+      </article>
+      <article class="trust-card">
+        <i class="fas fa-shield-heart"></i>
+        <h2>Transparência afiliada</h2>
+        <p>Quando você compra por nossos links, recebemos comissão sem custo extra para você. A compra acontece na Shopee.</p>
+      </article>
+    </div>
+  </section>
+
+  <section class="editorial-section">
+    <div class="editorial-grid">
+      <article class="editorial-panel">
+        <span class="panel-kicker">Como funciona</span>
+        <h2>Uma vitrine independente para comprar com mais contexto</h2>
+        <ol class="steps-list">
+          <li>Selecionamos produtos com preço competitivo e boa apresentação.</li>
+          <li>Você filtra por categoria, preço, favoritos e comparação.</li>
+          <li>Ao clicar, a compra é concluída diretamente na Shopee.</li>
+        </ol>
+      </article>
+      <article class="editorial-panel faq-panel">
+        <span class="panel-kicker">Perguntas frequentes</span>
+        <h2>Dúvidas comuns antes de comprar</h2>
+        <div class="faq-list">
+          <details>
+            <summary>Os preços podem mudar?</summary>
+            <p>Sim. Os valores podem ser alterados pela loja ou pela plataforma a qualquer momento. Sempre confira o preço final antes de concluir a compra.</p>
+          </details>
+          <details>
+            <summary>O site vende produtos diretamente?</summary>
+            <p>Não. Este site faz a curadoria e redireciona você para a Shopee, onde a compra é realizada.</p>
+          </details>
+          <details>
+            <summary>Vocês ganham comissão?</summary>
+            <p>Sim. Alguns links são de afiliado, o que ajuda a manter o projeto sem aumentar o valor pago por você.</p>
+          </details>
+        </div>
+      </article>
+    </div>
+  </section>
 
   <!-- PRODUCT DETAIL MODAL -->
   <div id="productModal" class="product-modal" onclick="closeModalOutside(event)">
@@ -335,7 +442,7 @@
       </div>
       <p class="footer-copy">© 2026 Melhores Ofertas · Todos os direitos reservados</p>
       <p class="footer-affiliate">Este site utiliza links de afiliados. Você nos ajuda sem pagar nada a mais. 💛</p>
-      <p class="footer-disclaimer">Site independente, não afiliado oficialmente à Shopee. "Shopee" é marca registrada de Sea Limited. Os preços exibidos podem não refletir os valores atuais — consulte sempre a página do produto antes de comprar.</p>
+      <p class="footer-disclaimer">Site independente, não afiliado oficialmente à Shopee. "Shopee" é marca registrada de Sea Limited. Os preços exibidos podem não refletir os valores atuais. Consulte sempre a página do produto antes de comprar.</p>
       <p class="footer-legal">
         <a href="/politica-privacidade.html">Política de Privacidade</a> ·
         <a href="/termos-de-uso.html">Termos de Uso</a>

@@ -1,7 +1,7 @@
 {
   "name": "Melhores Ofertas",
   "short_name": "Ofertas",
-  "description": "Seleção de ofertas online com links para a Shopee.",
+  "description": "Curadoria independente de ofertas online com links para produtos na Shopee.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
