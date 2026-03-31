@@ -60,13 +60,14 @@ let orderBy_fn = null;
     });
   } catch (e) {
     console.error('[FIREBASE] ⚠️ Firebase failed to load:', e.message);
-    console.log('[FIREBASE] Admin will work in offline mode (localStorage only)');
-    // Allow admin to work without Firebase
-    document.getElementById('loginOverlay').style.display = 'none';
-    document.getElementById('adminPanel').style.display = 'block';
-    renderAdminList();
-    renderDashboard();
-    initImageFields();
+    const errorBox = document.getElementById('loginError');
+    if (errorBox) {
+      errorBox.textContent = 'Falha ao carregar o painel. Verifique Firebase/Auth e recarregue a página.';
+      errorBox.style.display = 'block';
+      errorBox.style.color = '#b00020';
+    }
+    document.getElementById('loginOverlay').style.display = 'flex';
+    document.getElementById('adminPanel').style.display = 'none';
   }
 })();
 
