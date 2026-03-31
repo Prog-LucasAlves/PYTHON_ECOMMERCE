@@ -2,6 +2,7 @@
 let heroCurrent  = 0;
 let heroTimer    = null;
 const HERO_INTERVAL = 5000;
+let lastRenderAt = Date.now();
 
 function sameId(a, b) {
   return String(a) === String(b);
@@ -23,6 +24,7 @@ function initHeroBanner() {
           <p>Seleção de ofertas online com links para a Shopee.</p>
         </div>
       </div>`;
+    updateHeroStats();
     return;
   }
 
@@ -47,6 +49,7 @@ function initHeroBanner() {
 
   if (heroTimer) clearInterval(heroTimer);
   heroTimer = setInterval(heroNext, HERO_INTERVAL);
+  updateHeroStats();
 }
 
 function goHeroSlide(n) {
@@ -479,6 +482,9 @@ function _renderFiltered(grid, empty, search) {
     default:           filtered = [...filtered.filter(p => p.featured), ...filtered.filter(p => !p.featured)];
   }
 
+  lastRenderAt = Date.now();
+  updateResultsSummary(filtered, search);
+
   if (!filtered.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
   grid.innerHTML = filtered.map(p => cardHTML(p)).join('');
@@ -528,6 +534,22 @@ function clearPriceFilter() {
   priceMin = null; priceMax = null;
   document.getElementById('priceMin').value = '';
   document.getElementById('priceMax').value = '';
+  renderProducts();
+}
+
+function clearAllFilters() {
+  currentCategory = 'todos';
+  currentSort = 'default';
+  priceMin = null;
+  priceMax = null;
+  const searchEl = document.getElementById('searchInput');
+  if (searchEl) searchEl.value = '';
+  document.getElementById('priceMin').value = '';
+  document.getElementById('priceMax').value = '';
+  document.getElementById('sortSelect').value = 'default';
+  document.querySelectorAll('.cat-item').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.cat === 'todos');
+  });
   renderProducts();
 }
 
@@ -778,11 +800,48 @@ function categoryLabel(cat) {
   return map[cat] || cat;
 }
 
+function formatUpdatedTime(ts) {
+  return new Date(ts).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+
+function updateHeroStats() {
+  const countEl = document.getElementById('heroCount');
+  const updatedEl = document.getElementById('heroUpdated');
+  if (countEl) countEl.textContent = allProducts.length;
+  if (updatedEl) updatedEl.textContent = allProducts.length
+    ? `às ${formatUpdatedTime(Date.now())}`
+    : 'aguardando novos produtos';
+}
+
+function updateResultsSummary(filtered, search) {
+  const summaryEl = document.getElementById('resultsSummary');
+  const contextEl = document.getElementById('activeContext');
+  const updatedEl = document.getElementById('resultsUpdated');
+  if (!summaryEl || !contextEl || !updatedEl) return;
+
+  const totalLive = allProducts.filter(p => !p.publishDate || new Date(p.publishDate) <= new Date()).length;
+  summaryEl.textContent = `${filtered.length} oferta${filtered.length === 1 ? '' : 's'} encontrada${filtered.length === 1 ? '' : 's'} de ${totalLive}`;
+
+  const parts = [];
+  if (currentCategory !== 'todos') parts.push(categoryLabel(currentCategory));
+  if (search) parts.push(`busca por "${search}"`);
+  if (priceMin !== null || priceMax !== null) {
+    const minText = priceMin !== null ? `R$ ${priceMin.toFixed(2).replace('.', ',')}` : 'qualquer valor';
+    const maxText = priceMax !== null ? `R$ ${priceMax.toFixed(2).replace('.', ',')}` : 'qualquer valor';
+    parts.push(`faixa de ${minText} até ${maxText}`);
+  }
+  parts.push(currentSort === 'default' ? 'ordenado por destaques' : `ordenado por ${document.getElementById('sortSelect').selectedOptions[0].textContent.toLowerCase()}`);
+  contextEl.textContent = parts.join(' · ');
+  updatedEl.textContent = `Última atualização: ${formatUpdatedTime(lastRenderAt)}`;
+  updateHeroStats();
+}
+
 initDarkMode();
 updateFavFab();
 renderProducts();
 initHeroBanner();
 initLGPD();
+window.clearAllFilters = clearAllFilters;
 
 // ── LGPD CONSENT ──────────────────────────────────────────────
 function initLGPD() {

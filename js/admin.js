@@ -247,6 +247,8 @@ function saveProduct(e) {
     const idx = products.findIndex(p => sameId(p.id, editingId));
     if (idx !== -1) products[idx] = product;
   } else {
+    const duplicateIdx = products.findIndex(p => sameId(p.id, product.id));
+    if (duplicateIdx !== -1) products.splice(duplicateIdx, 1);
     products.unshift(product);
   }
 
@@ -342,7 +344,9 @@ function renderAdminList() {
   if (search) filtered = products.filter(p => p.name.toLowerCase().includes(search));
 
   if (!filtered.length) {
-    list.innerHTML = '<p style="color:#aaa;text-align:center;padding:24px">Nenhum produto cadastrado ainda.</p>';
+    list.innerHTML = search
+      ? '<p style="color:#aaa;text-align:center;padding:24px">Nenhum produto encontrado para este filtro.</p>'
+      : '<p style="color:#aaa;text-align:center;padding:24px">Nenhum produto cadastrado ainda.</p>';
     return;
   }
 
@@ -359,7 +363,7 @@ function renderAdminList() {
     <div class="admin-item${isScheduled ? ' admin-item-scheduled' : ''}">
       <img src="${mainImg}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/60x60?text=?'"/>
       <div class="admin-item-info">
-        <div class="name">${p.featured ? '⭐ ' : ''}${isScheduled ? '🗓️ ' : ''}${p.name}</div>
+        <div class="name">${p.featured ? 'Destaque · ' : ''}${isScheduled ? 'Agendado · ' : ''}${p.name}</div>
         <div class="meta">
           R$ ${Number(p.price).toFixed(2).replace('.',',')}
           ${discount ? `· <span style="color:#ee4d2d">-${discount}%</span>` : ''}
@@ -492,7 +496,7 @@ function renderDashboard() {
           <div class="dash-top-item">
             <img src="${(p.images&&p.images[0])||''}" alt="" onerror="this.src='https://via.placeholder.com/36?text=?'"/>
             <div class="dash-top-name">${p.name.substring(0,40)}${p.name.length>40?'…':''}</div>
-            <span class="dash-top-count">${n} cliques</span>
+            <span class="dash-top-count">${n} abertura${n > 1 ? 's' : ''}</span>
           </div>`).join('') : '<p class="dash-empty">Nenhum clique registrado ainda.</p>'}
       </div>
 
@@ -554,6 +558,8 @@ function importCSV(e) {
         countdown:     get('countdown') || null,
         publishDate:   get('publishdate') || get('publicacao') || null,
       };
+      const dupIndex = products.findIndex(p => sameId(p.id, product.id) || p.link === product.link || p.name.toLowerCase() === product.name.toLowerCase());
+      if (dupIndex !== -1) products.splice(dupIndex, 1);
       products.unshift(product);
       addHistory('create', product);
       imported++;
@@ -562,7 +568,7 @@ function importCSV(e) {
     renderAdminList();
     renderDashboard();
     e.target.value = '';
-    showToast(`${imported} produto(s) importado(s)${errors ? `, ${errors} linha(s) ignorada(s)` : ''} ✅`);
+    showToast(`${imported} produto${imported === 1 ? '' : 's'} importado${imported === 1 ? '' : 's'}${errors ? `, ${errors} linha${errors === 1 ? '' : 's'} ignorada${errors === 1 ? '' : 's'}` : ''} ✅`);
   };
   reader.readAsText(file);
 }
