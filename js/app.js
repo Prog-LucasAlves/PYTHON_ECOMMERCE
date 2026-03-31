@@ -372,6 +372,14 @@ function getVideoThumb(url) {
   if (id) return `https://img.youtube.com/vi/${id}/mqdefault.jpg`;
   return null;
 }
+function stripHtml(text) {
+  return (text || '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<[^>]*>/g, '')
+    .replace(/\s+\n/g, '\n')
+    .replace(/\n\s+/g, '\n')
+    .trim();
+}
 function formatDescription(text) {
   return stripHtml(text || '')
     .replace(/ - /g, ' -\n')
