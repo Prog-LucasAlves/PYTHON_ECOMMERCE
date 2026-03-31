@@ -170,6 +170,7 @@ function initAdminBindings() {
   const loginEmail = document.getElementById('loginEmail');
   const loginPassword = document.getElementById('loginPassword');
   const prodVideo = document.getElementById('prodVideo');
+  const prodLink = document.getElementById('prodLink');
   const adminSearch = document.getElementById('adminSearch');
   const adminProductList = document.getElementById('adminProductList');
   const imagesList = document.getElementById('imagesList');
@@ -185,6 +186,7 @@ function initAdminBindings() {
   loginEmail?.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
   loginPassword?.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
   prodVideo?.addEventListener('input', previewVideo);
+  prodLink?.addEventListener('input', updateAffiliatePreview);
   adminSearch?.addEventListener('input', renderAdminList);
   adminProductList?.addEventListener('click', handleAdminListClick);
   imagesList?.addEventListener('click', handleImageListClick);
@@ -336,6 +338,29 @@ function normalizeAffiliateLink(link) {
   };
 }
 
+function updateAffiliatePreview() {
+  const linkInput = document.getElementById('prodLink');
+  const itemIdInput = document.getElementById('prodItemId');
+  const shopIdInput = document.getElementById('prodShopId');
+  const status = document.getElementById('affiliateResolveStatus');
+  const affiliate = normalizeAffiliateLink(linkInput?.value || '');
+
+  if (itemIdInput) itemIdInput.value = affiliate.itemId || '';
+  if (shopIdInput) shopIdInput.value = affiliate.shopId || '';
+
+  if (!status) return;
+  if (!affiliate.offerLink) {
+    status.textContent = 'Cole a URL completa do produto para preencher os IDs.';
+    status.style.color = '#777';
+  } else if (affiliate.itemId && affiliate.shopId) {
+    status.textContent = `IDs detectados: shopId ${affiliate.shopId} e itemId ${affiliate.itemId}.`;
+    status.style.color = '#2e7d32';
+  } else {
+    status.textContent = 'Este link não trouxe os IDs no navegador. Use a URL completa do produto/variação, ou resolva o link antes de salvar.';
+    status.style.color = '#b26a00';
+  }
+}
+
 // ── SAVE PRODUCT ───────────────────────────────────────────────
 async function saveProduct(e) {
   e.preventDefault();
@@ -368,6 +393,7 @@ async function saveProduct(e) {
   const shopIdInput = document.getElementById('prodShopId');
   if (itemIdInput) itemIdInput.value = affiliate.itemId || '';
   if (shopIdInput) shopIdInput.value = affiliate.shopId || '';
+  updateAffiliatePreview();
 
   const validationError = validateProductPayload(product);
   if (validationError) {
@@ -415,6 +441,7 @@ function editProduct(id) {
   document.getElementById('prodLink').value          = p.link;
   if (document.getElementById('prodItemId')) document.getElementById('prodItemId').value = p.itemId || '';
   if (document.getElementById('prodShopId')) document.getElementById('prodShopId').value = p.shopId || '';
+  updateAffiliatePreview();
   document.getElementById('prodDesc').value          = p.desc || '';
   document.getElementById('prodFeatured').checked    = p.featured || false;
   if (document.getElementById('prodRating'))
@@ -466,6 +493,7 @@ function resetForm() {
   if (desc) desc.value = DEFAULT_DESC;
   if (document.getElementById('prodItemId')) document.getElementById('prodItemId').value = '';
   if (document.getElementById('prodShopId')) document.getElementById('prodShopId').value = '';
+  updateAffiliatePreview();
   document.getElementById('imagesPreviewBox').style.display = 'none';
   if (document.getElementById('videoPreviewBox'))
     document.getElementById('videoPreviewBox').style.display = 'none';
