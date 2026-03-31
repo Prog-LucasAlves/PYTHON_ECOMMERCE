@@ -403,17 +403,20 @@ function shareTelegramAdmin(id) {
   if (!p) return;
   const discount = p.originalPrice && p.originalPrice > p.price
     ? Math.round((1 - p.price / p.originalPrice) * 100) : null;
-  const lines = [
+  const priceLine = p.originalPrice && p.originalPrice > p.price
+    ? `~~R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}~~  →  *R$ ${Number(p.price).toFixed(2).replace('.',',')}*`
+    : `*R$ ${Number(p.price).toFixed(2).replace('.',',')}*`;
+  const summary = [
     `🔥 *${p.name}*`,
-    discount ? `🏷️ -${discount}% de desconto!` : null,
-    p.originalPrice && p.originalPrice > p.price
-      ? `~~R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}~~  →  *R$ ${Number(p.price).toFixed(2).replace('.',',')}*`
-      : `💰 R$ ${Number(p.price).toFixed(2).replace('.',',')}`,
-    p.desc ? `\n📝 ${p.desc}` : null,
-    `\n🛒 Compre agora: ${p.link}`,
-    `\n_Via Melhores Ofertas_`,
+    `📂 ${categoryLabel(p.category)}`,
+    discount ? `🏷️ Economia de *${discount}%*` : null,
+    `💰 ${priceLine}`,
+    `⚠️ Preço promocional sujeito a alteração sem aviso prévio.`,
+    p.desc ? `📝 ${p.desc}` : null,
+    `🛒 Confira na Shopee: ${p.link}`,
+    `_Via Melhores Ofertas_`,
   ].filter(Boolean).join('\n');
-  const url = `https://t.me/share/url?url=${encodeURIComponent(p.link)}&text=${encodeURIComponent(lines)}`;
+  const url = `https://t.me/share/url?url=${encodeURIComponent(p.link)}&text=${encodeURIComponent(summary)}`;
   window.open(url, '_blank');
 }
 
