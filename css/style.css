@@ -152,7 +152,7 @@ header {
 .hero-content h1 { font-size: 2.2rem; margin-bottom: 10px; }
 .hero-content p  { font-size: 1.1rem; opacity: .9; }
 .intro-section {
-  padding: 22px 16px 4px;
+  padding: 22px 16px 12px;
 }
 .intro-shell {
   max-width: 1200px; margin: 0 auto;
@@ -203,7 +203,7 @@ header {
 .cat-section {
   background: #fff;
   border-bottom: 1px solid #f0f0f0;
-  padding: 8px 0 8px;
+  padding: 12px 0 12px;
 }
 .cat-track-wrap {
   max-width: 1200px; margin: 0 auto;
@@ -278,7 +278,7 @@ header {
 [data-theme="dark"] .cat-item.active .cat-label { color: #ff7a5c; }
 
 .results-bar {
-  padding: 0 16px 0;
+  padding: 0 16px 8px;
   background: transparent;
 }
 .results-inner {
@@ -294,7 +294,7 @@ header {
   display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
 }
 .results-bar + .controls-bar {
-  margin-top: 4px;
+  margin-top: 8px;
   background: transparent;
   border-bottom: none;
 }
@@ -310,7 +310,7 @@ header {
 main {
   width: 100%;
   max-width: 1200px;
-  margin: 8px auto 32px;
+  margin: 16px auto 32px;
   padding: 0 16px;
 }
 .product-grid {
