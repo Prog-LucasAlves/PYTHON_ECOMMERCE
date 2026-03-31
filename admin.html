@@ -112,6 +112,16 @@
             <div class="form-group full-width">
               <label>Link de Afiliado Shopee *</label>
               <input type="url" id="prodLink" placeholder="https://s.shopee.com.br/..." required/>
+              <small class="helper-note">Se você colar um link completo do produto, o painel tenta preencher `itemId` e `shopId` automaticamente.</small>
+              <small class="helper-note" id="affiliateResolveStatus">Cole a URL completa do produto para preencher os IDs.</small>
+            </div>
+            <div class="form-group">
+              <label>Item ID</label>
+              <input type="text" id="prodItemId" placeholder="Preenchido automaticamente" readonly/>
+            </div>
+            <div class="form-group">
+              <label>Shop ID</label>
+              <input type="text" id="prodShopId" placeholder="Preenchido automaticamente" readonly/>
             </div>
 
             <!-- MULTI-IMAGE SECTION -->
