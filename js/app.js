@@ -31,7 +31,7 @@ function initHeroBanner() {
   slidesEl.innerHTML = slides.map((p, i) => {
     const img      = getImages(p)[0] || '';
     const discount = getDiscount(p);
-    return `<div class="hero-slide ${i === 0 ? 'active' : ''}" onclick="openProductModal(${p.id},0)">
+    return `<div class="hero-slide ${i === 0 ? 'active' : ''}" data-action="open-product" data-id="${p.id}">
       ${img ? `<div class="hero-slide-bg" style="background-image:url('${img}')"></div>` : ''}
       <div class="hero-slide-overlay"></div>
       <div class="hero-slide-content">
@@ -44,7 +44,7 @@ function initHeroBanner() {
   }).join('');
 
   dotsEl.innerHTML = slides.map((_, i) =>
-    `<button class="hero-dot ${i===0?'active':''}" onclick="goHeroSlide(${i})"></button>`
+    `<button class="hero-dot ${i===0?'active':''}" data-action="hero-dot" data-index="${i}"></button>`
   ).join('');
 
   if (heroTimer) clearInterval(heroTimer);
@@ -109,7 +109,7 @@ function renderRelated(p) {
   el.style.display = 'block';
   listEl.innerHTML = related.map(r => {
     const img = getImages(r)[0] || '';
-    return `<div class="related-item" onclick="openProductModal(${r.id},0)">
+    return `<div class="related-item" data-action="open-product" data-id="${r.id}">
       <img src="${img}" alt="${r.name}" loading="lazy"
            onerror="this.src='https://via.placeholder.com/80x80?text=?'"/>
       <div class="related-name">${r.name.substring(0,40)}${r.name.length>40?'…':''}</div>
@@ -164,7 +164,7 @@ function renderCompareBar() {
     return `<div class="compare-slot">
       ${img ? `<img src="${img}" alt=""/>` : '<div class="compare-slot-placeholder"></div>'}
       <span>${p.name.substring(0,22)}${p.name.length>22?'…':''}</span>
-      <button onclick="toggleCompare(${p.id},event)" title="Remover"><i class="fas fa-times"></i></button>
+      <button data-action="toggle-compare-remove" data-pid="${p.id}" title="Remover"><i class="fas fa-times"></i></button>
     </div>`;
   }).join('');
 }
@@ -579,12 +579,12 @@ function cardHTML(p) {
       ${allMedia.slice(0, 5).map((m, i) => {
         if (m === '__video__') {
           const vt = getVideoThumb(p.video);
-          return `<div class="thumb video-thumb" onclick="openProductModal(${p.id},${images.length});event.stopPropagation()">
+          return `<div class="thumb video-thumb" data-action="open-product" data-id="${p.id}" data-start-index="${images.length}">
             ${vt ? `<img src="${vt}" alt="video"/>` : '<div class="vt-placeholder"></div>'}
             <span class="play-icon">▶</span>
           </div>`;
         }
-        return `<div class="thumb ${i===0?'active':''}" onclick="openProductModal(${p.id},${i});event.stopPropagation()">
+        return `<div class="thumb ${i===0?'active':''}" data-action="open-product" data-id="${p.id}" data-start-index="${i}">
           <img src="${m}" alt="" loading="lazy"/>
         </div>`;
       }).join('')}
@@ -592,7 +592,7 @@ function cardHTML(p) {
     </div>` : '';
 
   return `
-  <div class="product-card" onclick="openProductModal(${p.id},0)">
+  <div class="product-card" data-action="open-product" data-id="${p.id}">
     ${leftBadge}
     ${discount   ? `<span class="badge-discount">-${discount}%</span>` : ''}
     ${hasMore ? `<span class="badge-gallery"><i class="fas fa-images"></i> ${[...images, ...(p.video?['v']:[])].length}</span>` : ''}
@@ -614,7 +614,7 @@ function cardHTML(p) {
         <div class="card-btn">🛒 Comprar na Shopee</div>
     ${(() => { const t = p.countdown ? new Date(p.countdown).getTime() : null; const s = t ? renderCountdownStr(t) : null; return s ? `<div class="card-countdown-wrap"><span class="card-countdown" data-countdown="${t}">⏰ Oferta encerra em: ${s}</span></div>` : ''; })()}
     <button class="card-compare-btn ${compareList.some(id => sameId(id, p.id))?'active':''}" data-pid="${p.id}"
-      onclick="toggleCompare(${p.id},event)" title="Adicionar para comparar">
+      data-action="toggle-compare" title="Adicionar para comparar">
       <i class="fas fa-columns"></i>
     </button>
   </div>`;
@@ -717,7 +717,7 @@ function renderModalThumbs(allMedia) {
     const isVideo = m === '__video__';
     const src = isVideo ? (getVideoThumb(modalProduct.video) || '') : m;
     return `<div class="modal-thumb ${i===modalIndex?'active':''} ${isVideo?'video-thumb':''}"
-      onclick="setModalIndex(${i})">
+      data-action="set-modal-index" data-index="${i}">
       ${src ? `<img src="${src}" alt=""/>` : '<div class="vt-placeholder"></div>'}
       ${isVideo ? '<span class="play-icon">▶</span>' : ''}
     </div>`;
@@ -742,6 +742,12 @@ function closeProductModal() {
 
 function closeModalOutside(e) {
   if (e.target.id === 'productModal') closeProductModal();
+}
+
+function handleOpenProductAction(el) {
+  const id = el.dataset.id;
+  const startIdx = parseInt(el.dataset.startIndex || '0', 10);
+  if (id) openProductModal(id, Number.isFinite(startIdx) ? startIdx : 0);
 }
 
 // Keyboard navigation
@@ -912,6 +918,40 @@ function initAppBindings() {
   compareCloseBtn?.addEventListener('click', closeCompareModal);
   productModal?.addEventListener('click', e => { if (e.target === productModal) closeProductModal(); });
   compareModal?.addEventListener('click', e => { if (e.target === compareModal) closeCompareModal(); });
+
+  const productGrid = document.getElementById('productGrid');
+  const heroSlides = document.getElementById('heroSlides');
+  const heroDots = document.getElementById('heroDots');
+  const modalThumbsStrip = document.getElementById('modalThumbsStrip');
+  const modalRelatedList = document.getElementById('modalRelatedList');
+  const compareSlots = document.getElementById('compareSlots');
+
+  productGrid?.addEventListener('click', e => {
+    const openEl = e.target.closest('[data-action="open-product"]');
+    if (openEl) handleOpenProductAction(openEl);
+    const compareEl = e.target.closest('[data-action="toggle-compare"]');
+    if (compareEl) toggleCompare(compareEl.dataset.pid, e);
+  });
+  heroSlides?.addEventListener('click', e => {
+    const openEl = e.target.closest('[data-action="open-product"]');
+    if (openEl) handleOpenProductAction(openEl);
+  });
+  heroDots?.addEventListener('click', e => {
+    const dot = e.target.closest('[data-action="hero-dot"]');
+    if (dot) goHeroSlide(parseInt(dot.dataset.index || '0', 10));
+  });
+  modalThumbsStrip?.addEventListener('click', e => {
+    const thumb = e.target.closest('[data-action="set-modal-index"]');
+    if (thumb) setModalIndex(parseInt(thumb.dataset.index || '0', 10));
+  });
+  modalRelatedList?.addEventListener('click', e => {
+    const openEl = e.target.closest('[data-action="open-product"]');
+    if (openEl) handleOpenProductAction(openEl);
+  });
+  compareSlots?.addEventListener('click', e => {
+    const btn = e.target.closest('[data-action="toggle-compare-remove"]');
+    if (btn) toggleCompare(btn.dataset.pid, e);
+  });
 
   document.querySelectorAll('.cat-item[data-cat]').forEach(btn => {
     btn.addEventListener('click', () => setCategory(btn.dataset.cat, btn));
