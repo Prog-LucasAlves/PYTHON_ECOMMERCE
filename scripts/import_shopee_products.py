@@ -2,6 +2,7 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
@@ -27,6 +28,7 @@ DEFAULT_CATEGORY_BY_KEYWORD = {
     "air fryer": "eletrodom",
     "fone bluetooth": "audio",
 }
+PRODUCT_URL_RE = re.compile(r"/(?:product|[^/?#]+)/(\d+)/(\d+)")
 DEFAULT_QUERY = """
 query SearchProducts($keyword: String, $sortType: Int, $page: Int, $limit: Int, $listType: Int) {
   productOfferV2(keyword: $keyword, sortType: $sortType, page: $page, limit: $limit, listType: $listType) {
@@ -142,17 +144,34 @@ def cents_to_float(value: Any) -> float | None:
         return None
 
 
+def extract_ids_from_url(url: str) -> tuple[int | None, int | None]:
+    match = PRODUCT_URL_RE.search(url)
+    if not match:
+        return None, None
+    try:
+        return int(match.group(2)), int(match.group(1))
+    except ValueError:
+        return None, None
+
+
+def stable_product_id(keyword: str, offer_link: str, product_link: str, product_name: str) -> str:
+    basis = offer_link or product_link or f"{keyword}:{product_name}"
+    return f"shopee_{hashlib.sha256(basis.encode('utf-8')).hexdigest()[:16]}"
+
+
 def normalize_product(keyword: str, raw: dict[str, Any], default_category: str) -> dict[str, Any]:
-    item_id = raw.get("productId")
     now_ms = int(time.time() * 1000)
     image = raw.get("imageUrl")
     offer_link = raw.get("offerLink") or raw.get("productLink") or ""
     product_link = raw.get("productLink") or ""
+    item_id, shop_id = extract_ids_from_url(offer_link or product_link)
     price = cents_to_float(raw.get("price")) or cents_to_float(raw.get("priceMin"))
     original_price = cents_to_float(raw.get("priceMax"))
+    name = raw.get("productName") or "Shopee product"
+    product_id = stable_product_id(keyword, offer_link, product_link, name)
     return {
-        "id": f"shopee_{item_id}",
-        "name": raw.get("productName") or f"shopee_{item_id}",
+        "id": product_id,
+        "name": name,
         "category": default_category,
         "price": price,
         "originalPrice": original_price,
@@ -163,10 +182,8 @@ def normalize_product(keyword: str, raw: dict[str, Any], default_category: str) 
         "source": "shopee",
         "status": "draft",
         "itemId": item_id,
-        "shopId": raw.get("shopId"),
+        "shopId": shop_id,
         "keywordsSource": [keyword],
-        "rating": raw.get("ratingStar"),
-        "soldCount": raw.get("soldCount"),
         "createdAt": now_ms,
         "updatedAt": now_ms,
     }
@@ -224,10 +241,6 @@ def main() -> int:
 
         for raw in nodes:
             product = normalize_product(keyword, raw, default_category)
-            if not product["itemId"]:
-                summary["skipped"] += 1
-                continue
-
             doc_id = str(product["id"])
             if doc_id in seen_ids:
                 summary["skipped"] += 1
