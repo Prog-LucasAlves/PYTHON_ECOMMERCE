@@ -28,21 +28,15 @@ DEFAULT_CATEGORY_BY_KEYWORD = {
     "fone bluetooth": "audio",
 }
 DEFAULT_QUERY = """
-query SearchProducts($keyword: String, $sortType: Int, $page: Int, $limit: Int, $listType: Int, $categoryId: Int) {
-  productOfferV2(keyword: $keyword, sortType: $sortType, page: $page, limit: $limit, listType: $listType, categoryId: $categoryId) {
+query SearchProducts($keyword: String, $sortType: Int, $page: Int, $limit: Int, $listType: Int) {
+  productOfferV2(keyword: $keyword, sortType: $sortType, page: $page, limit: $limit, listType: $listType) {
     nodes {
-      productId
       productName
-      price
-      priceMin
-      priceMax
+      productLink
+      productCatIds
       imageUrl
       offerLink
       productLink
-      shopId
-      shopName
-      soldCount
-      ratingStar
     }
     pageInfo {
       page
@@ -103,7 +97,7 @@ def shopee_request(app_id: str, app_secret: str, payload_text: str) -> urllib.re
     )
 
 
-def build_payload(keyword: str, sort_type: int, page: int, limit: int, list_type: int, category_id: int | None) -> str:
+def build_payload(keyword: str, sort_type: int, page: int, limit: int, list_type: int) -> str:
     payload = {
         "query": DEFAULT_QUERY,
         "variables": {
@@ -112,7 +106,6 @@ def build_payload(keyword: str, sort_type: int, page: int, limit: int, list_type
             "page": page,
             "limit": limit,
             "listType": list_type,
-            "categoryId": category_id,
         },
         "operationName": "SearchProducts",
     }
@@ -127,9 +120,8 @@ def fetch_keyword_products(
     limit: int,
     sort_type: int,
     list_type: int,
-    category_id: int | None,
 ) -> tuple[list[dict[str, Any]], dict[str, Any], dict[str, Any]]:
-    payload = build_payload(keyword, sort_type, page, limit, list_type, category_id)
+    payload = build_payload(keyword, sort_type, page, limit, list_type)
     request = shopee_request(app_id, app_secret, payload)
     with urllib.request.urlopen(request, timeout=30) as response:
         data = json.loads(response.read().decode("utf-8", errors="replace"))
@@ -194,7 +186,6 @@ def main() -> int:
     parser.add_argument("--page", type=int, default=1, help="Starting page")
     parser.add_argument("--sort-type", type=int, default=1, help="Shopee sortType (default: latest desc)")
     parser.add_argument("--list-type", type=int, default=1, help="Shopee listType")
-    parser.add_argument("--category-id", type=int, default=None, help="Shopee categoryId")
     parser.add_argument("--category", help="Force one category for all imported products")
     parser.add_argument("--dry-run", action="store_true", help="Do not write to Firestore")
     args = parser.parse_args()
@@ -222,7 +213,6 @@ def main() -> int:
                 args.limit,
                 args.sort_type,
                 args.list_type,
-                args.category_id,
             )
         except (urllib.error.HTTPError, urllib.error.URLError, json.JSONDecodeError) as exc:
             print(json.dumps({"keyword": keyword, "event": "error", "error": str(exc)}, ensure_ascii=False))
