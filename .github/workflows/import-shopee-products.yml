@@ -1,0 +1,60 @@
+name: Import Shopee Products
+
+on:
+  workflow_dispatch:
+    inputs:
+      keywords:
+        description: "Comma-separated keywords"
+        required: false
+        default: "vestido feminino,tênis feminino,kit maquiagem,air fryer,fone bluetooth"
+      limit:
+        description: "Items per keyword page"
+        required: false
+        default: "20"
+      page:
+        description: "Starting page"
+        required: false
+        default: "1"
+      sort_type:
+        description: "Shopee sortType"
+        required: false
+        default: "1"
+      category:
+        description: "Force one category for all results"
+        required: false
+        default: ""
+      dry_run:
+        description: "Do not write to Firestore"
+        required: false
+        default: "true"
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install firebase-admin
+
+      - name: Run Shopee import
+        env:
+          SHOPEE_APP_ID: ${{ secrets.SHOPEE_APP_ID }}
+          SHOPEE_APP_SECRET: ${{ secrets.SHOPEE_APP_SECRET }}
+          FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+        run: |
+          python scripts/import_shopee_products.py \
+            --keywords "${{ inputs.keywords }}" \
+            --limit "${{ inputs.limit }}" \
+            --page "${{ inputs.page }}" \
+            --sort-type "${{ inputs.sort_type }}" \
+            ${{ inputs.category != '' && format('--category "{0}"', inputs.category) || '' }} \
+            ${{ inputs.dry_run == 'true' && '--dry-run' || '' }}
