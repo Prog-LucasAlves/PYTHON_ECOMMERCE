@@ -135,40 +135,35 @@ def pick_variant_price(product: dict[str, Any]) -> tuple[float | None, float | N
     return to_float(product.get("priceMin")), to_float(product.get("priceMax"))
 
 
-def log_product(event: str, doc_id: str, data: dict[str, Any], product: dict[str, Any] | None = None) -> None:
+def log_product(
+    event: str,
+    doc_id: str,
+    data: dict[str, Any],
+    product: dict[str, Any] | None = None,
+    *,
+    requested_item_id: int | None = None,
+    requested_shop_id: int | None = None,
+) -> None:
     item_id = data.get("itemId") or data.get("affiliate", {}).get("itemId") or "-"
     shop_id = data.get("shopId") or data.get("affiliate", {}).get("shopId") or "-"
     name = (product or {}).get("productName") or data.get("name") or data.get("affiliate", {}).get("productName") or doc_id
+    payload = {
+        "event": event,
+        "docId": doc_id,
+        "name": name,
+        "itemId": item_id,
+        "shopId": shop_id,
+    }
+    if requested_item_id is not None:
+        payload["requestedItemId"] = requested_item_id
+    if requested_shop_id is not None:
+        payload["requestedShopId"] = requested_shop_id
     if product:
         price_min, price_max = pick_variant_price(product)
-        print(
-            json.dumps(
-                {
-                    "event": event,
-                    "docId": doc_id,
-                    "name": name,
-                    "itemId": item_id,
-                    "shopId": shop_id,
-                    "priceMin": price_min,
-                    "priceMax": price_max,
-                    "priceChanged": data.get("priceChanged"),
-                },
-                ensure_ascii=False,
-            ),
-        )
-    else:
-        print(
-            json.dumps(
-                {
-                    "event": event,
-                    "docId": doc_id,
-                    "name": name,
-                    "itemId": item_id,
-                    "shopId": shop_id,
-                },
-                ensure_ascii=False,
-            ),
-        )
+        payload["priceMin"] = price_min
+        payload["priceMax"] = price_max
+        payload["priceChanged"] = data.get("priceChanged")
+    print(json.dumps(payload, ensure_ascii=False))
 
 
 def init_firestore() -> firestore.Client:
@@ -275,12 +270,6 @@ def main() -> int:
         "not_found": "Não encontrados",
         "missing_ids": "Sem IDs",
     }
-    print("Shopee sync summary")
-    print(json.dumps({key: summary[key] for key in ("checked", "updated", "missing")}, ensure_ascii=False, indent=2))
-    print("By status")
-    for key in status_order:
-        print(f"- {status_labels[key]}: 0")
-
     for doc_id, data in products:
         item_id = data.get("itemId") or data.get("affiliate", {}).get("itemId")
         shop_id = data.get("shopId") or data.get("affiliate", {}).get("shopId")
@@ -318,7 +307,13 @@ def main() -> int:
         if not resolved:
             summary["missing"] += 1
             summary["not_found"] += 1
-            log_product("not_found", doc_id, data)
+            log_product(
+                "not_found",
+                doc_id,
+                data,
+                requested_item_id=item_id_int,
+                requested_shop_id=shop_id_int,
+            )
             continue
 
         if not args.dry_run:
