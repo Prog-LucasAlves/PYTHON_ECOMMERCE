@@ -39,6 +39,11 @@ query SearchProducts($keyword: String, $sortType: Int, $page: Int, $limit: Int, 
       imageUrl
       offerLink
       productLink
+      price
+      priceMin
+      priceMax
+      commissionRate
+      priceDiscountRate
     }
     pageInfo {
       page
@@ -144,6 +149,14 @@ def cents_to_float(value: Any) -> float | None:
         return None
 
 
+def pick_price(*values: Any) -> float | None:
+    for value in values:
+        price = cents_to_float(value)
+        if price is not None and price > 0:
+            return price
+    return None
+
+
 def extract_ids_from_url(url: str) -> tuple[int | None, int | None]:
     match = PRODUCT_URL_RE.search(url)
     if not match:
@@ -165,8 +178,8 @@ def normalize_product(keyword: str, raw: dict[str, Any], default_category: str) 
     offer_link = raw.get("offerLink") or raw.get("productLink") or ""
     product_link = raw.get("productLink") or ""
     item_id, shop_id = extract_ids_from_url(offer_link or product_link)
-    price = cents_to_float(raw.get("price")) or cents_to_float(raw.get("priceMin"))
-    original_price = cents_to_float(raw.get("priceMax"))
+    price = pick_price(raw.get("price"), raw.get("priceMin"), raw.get("priceMax"))
+    original_price = pick_price(raw.get("priceMax"), raw.get("price"), raw.get("priceMin"))
     name = raw.get("productName") or "Shopee product"
     product_id = stable_product_id(keyword, offer_link, product_link, name)
     return {
