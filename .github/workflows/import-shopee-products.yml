@@ -1,6 +1,8 @@
 name: Import Shopee Products
 
 on:
+  schedule:
+    - cron: "0 */8 * * *"
   workflow_dispatch:
     inputs:
       keywords:
@@ -57,4 +59,4 @@ jobs:
             --page "${{ inputs.page }}" \
             --sort-type "${{ inputs.sort_type }}" \
             ${{ inputs.category != '' && format('--category "{0}"', inputs.category) || '' }} \
-            ${{ inputs.dry_run == 'true' && '--dry-run' || '' }}
+            ${{ github.event_name == 'schedule' && '' || (inputs.dry_run == 'true' && '--dry-run' || '') }}

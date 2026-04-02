@@ -2,10 +2,52 @@
 let heroCurrent  = 0;
 let heroTimer    = null;
 const HERO_INTERVAL = 5000;
+const HOME_ROTATION_MINUTES = 20;
 let lastRenderAt = Date.now();
+
+function getInitialSearchTerm() {
+  const params = new URLSearchParams(window.location.search);
+  return (params.get('q') || params.get('search') || '').trim();
+}
 
 function sameId(a, b) {
   return String(a) === String(b);
+}
+
+function getHomeRotationBucket() {
+  return Math.floor(Date.now() / (HOME_ROTATION_MINUTES * 60 * 1000));
+}
+
+function hashString(text) {
+  let hash = 0;
+  const input = String(text || '');
+  for (let i = 0; i < input.length; i++) {
+    hash = ((hash << 5) - hash) + input.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+function sortFeaturedFirst(items) {
+  return [...items].sort((a, b) => {
+    const aFeatured = a.featured ? 1 : 0;
+    const bFeatured = b.featured ? 1 : 0;
+    if (aFeatured !== bFeatured) return bFeatured - aFeatured;
+    const aOrder = Number.isFinite(Number(a.homeOrder)) ? Number(a.homeOrder) : Number.MAX_SAFE_INTEGER;
+    const bOrder = Number.isFinite(Number(b.homeOrder)) ? Number(b.homeOrder) : Number.MAX_SAFE_INTEGER;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    return String(b.id).localeCompare(String(a.id));
+  });
+}
+
+function rotateHomeProducts(items) {
+  const bucket = getHomeRotationBucket();
+  return [...items].sort((a, b) => {
+    const aKey = hashString(`${bucket}:${a.id}:${a.name}`);
+    const bKey = hashString(`${bucket}:${b.id}:${b.name}`);
+    if (aKey !== bKey) return aKey - bKey;
+    return String(a.id).localeCompare(String(b.id));
+  });
 }
 
 function initHeroBanner() {
@@ -427,6 +469,9 @@ window.addEventListener('storage', (e) => {
     }
     firestoreReady = true;
     firstLoad = false;
+    const initialSearch = getInitialSearchTerm();
+    const searchInput = document.getElementById('searchInput');
+    if (initialSearch && searchInput && !searchInput.value) searchInput.value = initialSearch;
     renderProducts();
     initHeroBanner();
     updateResultsSummary(allProducts.filter(p => !p.publishDate || new Date(p.publishDate) <= new Date()), (document.getElementById('searchInput')?.value || '').toLowerCase().trim());
@@ -482,7 +527,12 @@ function _renderFiltered(grid, empty, search) {
     case 'price-desc': filtered.sort((a, b) => b.price - a.price); break;
     case 'discount':   filtered.sort((a, b) => getDiscount(b) - getDiscount(a)); break;
     case 'newest':     filtered.sort((a, b) => b.id - a.id); break;
-    default:           filtered = [...filtered.filter(p => p.featured), ...filtered.filter(p => !p.featured)];
+    default: {
+      const featured = sortFeaturedFirst(filtered.filter(p => p.featured));
+      const rotating = rotateHomeProducts(filtered.filter(p => !p.featured));
+      filtered = [...featured, ...rotating];
+      break;
+    }
   }
 
   lastRenderAt = Date.now();
@@ -496,7 +546,31 @@ function _renderFiltered(grid, empty, search) {
   if (!filtered.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
   try {
-    grid.innerHTML = filtered.map(p => cardHTML(p)).join('');
+    const featured = filtered.filter(p => p.featured);
+    const rotating = filtered.filter(p => !p.featured);
+    const featuredHTML = featured.length ? `
+      <section class="home-vitrine home-vitrine-featured">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Coleção em destaque</span>
+            <h3>Escolhas principais do momento</h3>
+          </div>
+          <p>Produtos selecionados no admin para ficarem sempre no topo da vitrine.</p>
+        </div>
+        <div class="featured-row">${featured.map(p => cardHTML(p)).join('')}</div>
+      </section>` : '';
+    const rotatingHTML = rotating.length ? `
+      <section class="home-vitrine home-vitrine-rotating">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Atualização contínua</span>
+            <h3>Mais ofertas para explorar</h3>
+          </div>
+          <p>Esses produtos mudam a cada 20 minutos para manter a vitrine sempre fresca.</p>
+        </div>
+        <div class="product-grid-inner">${rotating.map(p => cardHTML(p)).join('')}</div>
+      </section>` : '';
+    grid.innerHTML = `${featuredHTML}${rotatingHTML}`;
     animateCards();
     startCountdownTimers();
   } catch (err) {
@@ -831,6 +905,33 @@ function updateHeroStats() {
     : 'aguardando novos produtos';
 }
 
+function updatePageSeo(filtered, search) {
+  const baseTitle = 'Ofertas na Shopee com Desconto | Melhores Ofertas';
+  const baseDescription = 'Curadoria de ofertas na Shopee com descontos, comparação de preços e links de afiliado. Veja produtos atualizados por categoria, preço e vitrine fixa.';
+  const liveCount = filtered.length;
+  const activeCategory = currentCategory !== 'todos' ? categoryLabel(currentCategory) : null;
+  const searchTerm = search ? `busca por "${search}"` : null;
+  const bits = [];
+
+  if (activeCategory) bits.push(activeCategory.replace(/^.*? /, ''));
+  if (searchTerm) bits.push(searchTerm);
+  if (!bits.length) {
+    document.title = baseTitle;
+  } else {
+    document.title = `${bits.join(' · ')} | Melhores Ofertas`;
+  }
+
+  const descParts = [
+    activeCategory ? `Ofertas de ${activeCategory.replace(/^.*? /, '')}` : 'Curadoria de ofertas na Shopee',
+    searchTerm ? `filtradas por ${search}` : null,
+    `Veja ${liveCount} oferta${liveCount === 1 ? '' : 's'} na vitrine atual.`,
+  ].filter(Boolean);
+
+  const description = descParts.join(' ');
+  const metaDesc = document.querySelector('meta[name="description"]');
+  if (metaDesc) metaDesc.setAttribute('content', description || baseDescription);
+}
+
 function updateResultsSummary(filtered, search) {
   const summaryEl = document.getElementById('resultsSummary');
   const contextEl = document.getElementById('activeContext');
@@ -853,6 +954,7 @@ function updateResultsSummary(filtered, search) {
   contextEl.textContent = parts.join(' · ');
   updatedEl.textContent = `Última atualização: ${formatUpdatedTime(lastRenderAt)}`;
   updateHeroStats();
+  updatePageSeo(filtered, search);
 }
 
 function updateStructuredData(filtered) {
@@ -867,11 +969,11 @@ function updateStructuredData(filtered) {
     "offers": {
       "@type": "Offer",
       "priceCurrency": "BRL",
-      "price": Number(p.price).toFixed(2),
+      "price": Number.isFinite(Number(p.price)) ? Number(p.price).toFixed(2) : undefined,
       "url": p.link,
       "availability": "https://schema.org/InStock"
     }
-  }));
+  })).filter(item => item.offers.price);
 
   const json = {
     "@context": "https://schema.org",

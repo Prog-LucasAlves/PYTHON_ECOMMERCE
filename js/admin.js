@@ -389,6 +389,7 @@ async function saveProduct(e) {
     rating:        parseFloat(document.getElementById('prodRating')?.value) || null,
     soldCount:     parseSoldCount(document.getElementById('prodSoldCount')?.value),
     featured:      document.getElementById('prodFeatured').checked,
+    homeOrder:     parseInt(document.getElementById('prodHomeOrder')?.value || '', 10) || null,
     countdown:     document.getElementById('prodCountdown')?.value || null,
     publishDate:   document.getElementById('prodPublishDate')?.value || null,
   };
@@ -453,6 +454,8 @@ function editProduct(id) {
   updateAffiliatePreview();
   document.getElementById('prodDesc').value          = p.desc || '';
   document.getElementById('prodFeatured').checked    = p.featured || false;
+  if (document.getElementById('prodHomeOrder'))
+    document.getElementById('prodHomeOrder').value   = p.homeOrder || '';
   if (document.getElementById('prodRating'))
     document.getElementById('prodRating').value    = p.rating || '';
   if (document.getElementById('prodSoldCount'))
@@ -502,6 +505,7 @@ function resetForm() {
   if (desc) desc.value = DEFAULT_DESC;
   if (document.getElementById('prodItemId')) document.getElementById('prodItemId').value = '';
   if (document.getElementById('prodShopId')) document.getElementById('prodShopId').value = '';
+  if (document.getElementById('prodHomeOrder')) document.getElementById('prodHomeOrder').value = '';
   updateAffiliatePreview();
   document.getElementById('imagesPreviewBox').style.display = 'none';
   if (document.getElementById('videoPreviewBox'))
@@ -534,8 +538,9 @@ function renderAdminList() {
     const clicks   = JSON.parse(localStorage.getItem(CLICKS_KEY) || '{}');
     const clickN   = clicks[p.id] || 0;
     const isScheduled = p.publishDate && new Date(p.publishDate) > new Date();
+    const isHomeTop = p.featured || p.homeOrder;
     return `
-    <div class="admin-item${isScheduled ? ' admin-item-scheduled' : ''}">
+    <div class="admin-item${isScheduled ? ' admin-item-scheduled' : ''}${isHomeTop ? ' admin-item-featured' : ''}">
       <img src="${mainImg}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/60x60?text=?'"/>
       <div class="admin-item-info">
         <div class="name">${p.featured ? 'Destaque · ' : ''}${isScheduled ? 'Agendado · ' : ''}${p.name}</div>
@@ -543,6 +548,7 @@ function renderAdminList() {
           R$ ${Number(p.price).toFixed(2).replace('.',',')}
           ${discount ? `· <span style="color:#ee4d2d">-${discount}%</span>` : ''}
           · ${categoryLabel(p.category)}
+          ${p.homeOrder ? `· <span style="color:#1976d2">1ª linha #${p.homeOrder}</span>` : ''}
           ${mediaCount > 1 ? `· <span style="color:#888">📷 ${mediaCount} mídias</span>` : ''}
           ${p.video ? '· <span style="color:#888">🎬 vídeo</span>' : ''}
           ${clickN ? `· <span style="color:#1976d2"><i class="fas fa-mouse-pointer"></i> ${clickN}</span>` : ''}
