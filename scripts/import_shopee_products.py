@@ -7,6 +7,7 @@ import sys
 import time
 import urllib.error
 import urllib.request
+from math import ceil
 from pathlib import Path
 from typing import Any
 
@@ -208,14 +209,68 @@ def parse_keywords(value: str | None) -> list[str]:
     return [item.strip() for item in value.split(",") if item.strip()]
 
 
+def parse_keywords_file(path: str | None) -> list[str]:
+    if not path:
+        return []
+    file_path = Path(path)
+    if not file_path.exists():
+        return []
+    lines: list[str] = []
+    with file_path.open("r", encoding="utf-8") as handle:
+        for raw_line in handle:
+            line = raw_line.strip()
+            if not line:
+                continue
+            if "." in line[:4]:
+                line = line.split(".", 1)[1].strip()
+            if line:
+                lines.append(line)
+    return lines
+
+
+def get_batch_state(db: firestore.Client, total_batches: int) -> int:
+    state_ref = db.collection("meta").document("shopee_import_state")
+    snap = state_ref.get()
+    if snap.exists:
+        data = snap.to_dict() or {}
+        try:
+            return int(data.get("batchIndex", 0)) % max(total_batches, 1)
+        except (TypeError, ValueError):
+            return 0
+    return 0
+
+
+def save_batch_state(db: firestore.Client, next_batch_index: int) -> None:
+    state_ref = db.collection("meta").document("shopee_import_state")
+    state_ref.set(
+        {
+            "batchIndex": next_batch_index,
+            "updatedAt": int(time.time() * 1000),
+        },
+        merge=True,
+    )
+
+
+def select_keyword_batch(keywords: list[str], batch_size: int | None, batch_index: int) -> tuple[list[str], int]:
+    if not batch_size or batch_size <= 0 or len(keywords) <= batch_size:
+        return keywords, 1
+    total_batches = ceil(len(keywords) / batch_size)
+    batch_index = batch_index % total_batches
+    start = batch_index * batch_size
+    end = start + batch_size
+    return keywords[start:end], total_batches
+
+
 def main() -> int:
     load_env_file()
     parser = argparse.ArgumentParser(description="Import Shopee products into Firestore by keyword.")
     parser.add_argument("--keywords", help="Comma-separated list of keywords")
+    parser.add_argument("--keywords-file", help="Path to a text file with one keyword group per line")
     parser.add_argument("--limit", type=int, default=20, help="Items per page")
     parser.add_argument("--page", type=int, default=1, help="Starting page")
     parser.add_argument("--sort-type", type=int, default=1, help="Shopee sortType (default: latest desc)")
     parser.add_argument("--list-type", type=int, default=1, help="Shopee listType")
+    parser.add_argument("--batch-size", type=int, default=0, help="Process only a batch of keywords per run")
     parser.add_argument("--category", help="Force one category for all imported products")
     parser.add_argument("--dry-run", action="store_true", help="Do not write to Firestore")
     args = parser.parse_args()
@@ -226,8 +281,14 @@ def main() -> int:
         print("SHOPEE_APP_ID and SHOPEE_APP_SECRET are required.", file=sys.stderr)
         return 2
 
-    keywords = parse_keywords(args.keywords)
+    file_keywords = parse_keywords_file(args.keywords_file)
+    base_keywords = file_keywords if file_keywords else parse_keywords(args.keywords)
     db = init_firestore()
+    batch_index = 0
+    keywords, total_batches = select_keyword_batch(base_keywords, args.batch_size, batch_index)
+    if args.batch_size and args.batch_size > 0 and total_batches > 1:
+        batch_index = get_batch_state(db, total_batches)
+        keywords, total_batches = select_keyword_batch(base_keywords, args.batch_size, batch_index)
     products_ref = db.collection("products")
     summary = {"keywords": len(keywords), "fetched": 0, "saved": 0, "skipped": 0}
     seen_ids: set[str] = set()
@@ -279,6 +340,9 @@ def main() -> int:
                 summary["saved"] += 1
 
             print(json.dumps({"keyword": keyword, "event": "saved", "id": doc_id, "name": product["name"]}, ensure_ascii=False))
+
+    if args.batch_size and args.batch_size > 0 and total_batches > 1 and not args.dry_run:
+        save_batch_state(db, (batch_index + 1) % total_batches)
 
     print(json.dumps(summary, ensure_ascii=False, indent=2))
     return 0
