@@ -354,9 +354,9 @@ main {
   padding: 0 16px;
 }
 .product-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
 }
 .home-vitrine {
   margin-bottom: 28px;
