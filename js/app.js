@@ -14,6 +14,12 @@ function sameId(a, b) {
   return String(a) === String(b);
 }
 
+function trackEvent(name, params = {}) {
+  if (typeof window.gtag === 'function') {
+    window.gtag('event', name, params);
+  }
+}
+
 function getHomeRotationBucket() {
   return Math.floor(Date.now() / (HOME_ROTATION_MINUTES * 60 * 1000));
 }
@@ -285,11 +291,21 @@ window.closeCompareOutside = closeCompareOutside;
 // ── SHARE ─────────────────────────────────────────────────────
 function shareWhatsApp() {
   if (!modalProduct) return;
+  trackEvent('share_whatsapp', {
+    item_id: modalProduct.id,
+    item_name: modalProduct.name,
+    item_category: modalProduct.category,
+  });
   const text = `🔥 *${modalProduct.name}*\n💰 R$ ${Number(modalProduct.price).toFixed(2).replace('.',',')}\n🛒 ${modalProduct.link}\n\n_Via Melhores Ofertas_`;
   window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
 }
 function shareTelegram() {
   if (!modalProduct) return;
+  trackEvent('share_telegram', {
+    item_id: modalProduct.id,
+    item_name: modalProduct.name,
+    item_category: modalProduct.category,
+  });
   const discount = modalProduct.originalPrice && modalProduct.originalPrice > modalProduct.price
     ? Math.round((1 - modalProduct.price / modalProduct.originalPrice) * 100) : null;
   const priceLine = modalProduct.originalPrice && modalProduct.originalPrice > modalProduct.price
@@ -753,10 +769,32 @@ function openProductModal(id, startIdx) {
   const discount = p.originalPrice && p.originalPrice > p.price
     ? Math.round((1 - p.price / p.originalPrice) * 100) : null;
 
+  trackEvent('view_item', {
+    item_id: p.id,
+    item_name: p.name,
+    item_category: p.category,
+    price: Number(p.price) || 0,
+    currency: 'BRL',
+  });
+
   document.getElementById('modalName').textContent = p.name;
   document.getElementById('modalCategory').textContent = categoryLabel(p.category);
   document.getElementById('modalDesc').textContent = p.desc || '';
   document.getElementById('modalBuyBtn').href = p.link;
+  const buyBtn = document.getElementById('modalBuyBtn');
+  if (buyBtn && !buyBtn.dataset.analyticsBound) {
+    buyBtn.dataset.analyticsBound = '1';
+    buyBtn.addEventListener('click', () => {
+      if (!modalProduct) return;
+      trackEvent('click_buy_shopee', {
+        item_id: modalProduct.id,
+        item_name: modalProduct.name,
+        item_category: modalProduct.category,
+        price: Number(modalProduct.price) || 0,
+        currency: 'BRL',
+      });
+    });
+  }
 
   // Stars & sold count
   const starsEl = document.getElementById('modalStars');
