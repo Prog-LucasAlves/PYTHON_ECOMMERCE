@@ -581,7 +581,7 @@ function _renderFiltered(grid, empty, search) {
             <span class="section-kicker">Atualização contínua</span>
             <h3>Mais ofertas para explorar</h3>
           </div>
-          <p>Esses produtos mudam a cada 20 minutos para manter a vitrine sempre fresca.</p>
+          <p>Ofertas atualizadas a cada 20 min.</p>
         </div>
         <div class="product-grid-inner">${rotating.map(p => cardHTML(p)).join('')}</div>
       </section>` : '';

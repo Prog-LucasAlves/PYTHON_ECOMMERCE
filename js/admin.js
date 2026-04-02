@@ -517,19 +517,50 @@ function resetForm() {
 function renderAdminList() {
   const search = (document.getElementById('adminSearch')?.value || '').toLowerCase();
   const list   = document.getElementById('adminProductList');
-  document.getElementById('prodCount').textContent = products.length;
+  const homeTopList = document.getElementById('adminHomeTopList');
+  const prodCountEl = document.getElementById('prodCount');
+  const homeTopCountEl = document.getElementById('homeTopCount');
+  if (prodCountEl) prodCountEl.textContent = products.length;
 
   let filtered = products;
   if (search) filtered = products.filter(p => p.name.toLowerCase().includes(search));
+  const homeTop = filtered
+    .filter(p => p.featured || p.homeOrder)
+    .sort((a, b) => {
+      const aOrder = Number.isFinite(Number(a.homeOrder)) ? Number(a.homeOrder) : Number.MAX_SAFE_INTEGER;
+      const bOrder = Number.isFinite(Number(b.homeOrder)) ? Number(b.homeOrder) : Number.MAX_SAFE_INTEGER;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      if ((a.featured ? 1 : 0) !== (b.featured ? 1 : 0)) return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
+      return String(a.name || '').localeCompare(String(b.name || ''));
+    });
+  const remaining = filtered.filter(p => !(p.featured || p.homeOrder));
+  if (homeTopCountEl) homeTopCountEl.textContent = homeTop.length;
+
+  const emptyMsg = search
+    ? '<p style="color:#aaa;text-align:center;padding:24px">Nenhum produto encontrado para este filtro.</p>'
+    : '<p style="color:#aaa;text-align:center;padding:24px">Nenhum produto cadastrado ainda.</p>';
 
   if (!filtered.length) {
-    list.innerHTML = search
-      ? '<p style="color:#aaa;text-align:center;padding:24px">Nenhum produto encontrado para este filtro.</p>'
-      : '<p style="color:#aaa;text-align:center;padding:24px">Nenhum produto cadastrado ainda.</p>';
+    if (homeTopList) homeTopList.innerHTML = '';
+    if (list) list.innerHTML = emptyMsg;
     return;
   }
 
-  list.innerHTML = filtered.map(p => {
+  if (homeTopList) {
+    homeTopList.innerHTML = homeTop.length
+      ? homeTop.map(renderAdminItem).join('')
+      : '<p class="admin-empty-inline">Nenhum item fixado na 1ª linha.</p>';
+  }
+
+  if (!remaining.length) {
+    list.innerHTML = '<p class="admin-empty-inline">Nenhum outro produto encontrado.</p>';
+    return;
+  }
+
+  list.innerHTML = remaining.map(renderAdminItem).join('');
+}
+
+function renderAdminItem(p) {
     const imgs     = p.images && p.images.length ? p.images : (p.image ? [p.image] : []);
     const mainImg  = imgs[0] || '';
     const discount = p.originalPrice && p.originalPrice > p.price
@@ -561,7 +592,6 @@ function renderAdminList() {
         <button class="btn-delete" type="button" data-action="delete-product" data-product-id="${p.id}"><i class="fas fa-trash"></i></button>
       </div>
     </div>`;
-  }).join('');
 }
 
 function handleAdminListClick(e) {
