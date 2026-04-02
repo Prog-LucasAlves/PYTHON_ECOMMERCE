@@ -35,7 +35,7 @@ header {
   box-shadow: 0 2px 8px rgba(0,0,0,0.2);
 }
 .header-inner {
-  max-width: 1200px; margin: 0 auto;
+  max-width: 1440px; margin: 0 auto;
   display: flex; align-items: center; justify-content: space-between;
   height: 60px; gap: 16px;
 }
@@ -163,7 +163,7 @@ header {
   padding: 18px 16px 10px;
 }
 .intro-shell {
-  max-width: 1200px; margin: 0 auto;
+  max-width: 1440px; margin: 0 auto;
   display: grid; grid-template-columns: 1.5fr 1fr; gap: 18px;
 }
 .intro-copy, .intro-highlights {
@@ -406,13 +406,13 @@ header {
 /* ========== PRODUCT GRID ========== */
 main {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1440px;
   margin: 18px auto 36px;
   padding: 0 16px;
 }
 .product-grid {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 18px;
 }
 .home-vitrine {
@@ -452,7 +452,7 @@ main {
 }
 .featured-row {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 18px;
   padding: 16px;
   border: 1px solid rgba(238, 77, 45, .12);
@@ -462,8 +462,29 @@ main {
 }
 .product-grid-inner {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 18px;
+}
+@media (min-width: 1600px) {
+  .product-grid,
+  .featured-row,
+  .product-grid-inner {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1180px) {
+  .product-grid,
+  .featured-row,
+  .product-grid-inner {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+@media (max-width: 820px) {
+  .product-grid,
+  .featured-row,
+  .product-grid-inner {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 /* ========== PRODUCT CARD ========== */
@@ -524,7 +545,8 @@ main {
   .intro-copy { padding: 22px 18px; }
   .intro-highlights { padding: 18px; }
   .featured-row,
-  .product-grid-inner {
+  .product-grid-inner,
+  .product-grid {
     grid-template-columns: 1fr;
     gap: 14px;
     padding: 12px;
