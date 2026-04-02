@@ -59,7 +59,7 @@ jobs:
               --limit 20 \
               --page 1 \
               --sort-type 1 \
-              --batch-size 20
+              --batch-size 27
           else
             python scripts/import_shopee_products.py \
               --keywords "${{ inputs.keywords }}" \
