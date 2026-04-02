@@ -53,10 +53,19 @@ jobs:
           SHOPEE_APP_SECRET: ${{ secrets.SHOPEE_APP_SECRET }}
           FIREBASE_SERVICE_ACCOUNT_JSON: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
         run: |
-          python scripts/import_shopee_products.py \
-            --keywords "${{ inputs.keywords }}" \
-            --limit "${{ inputs.limit }}" \
-            --page "${{ inputs.page }}" \
-            --sort-type "${{ inputs.sort_type }}" \
-            ${{ inputs.category != '' && format('--category "{0}"', inputs.category) || '' }} \
-            ${{ github.event_name == 'schedule' && '' || (inputs.dry_run == 'true' && '--dry-run' || '') }}
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            python scripts/import_shopee_products.py \
+              --keywords-file "shopee_workflow_keywords.txt" \
+              --limit 20 \
+              --page 1 \
+              --sort-type 1 \
+              --batch-size 20
+          else
+            python scripts/import_shopee_products.py \
+              --keywords "${{ inputs.keywords }}" \
+              --limit "${{ inputs.limit }}" \
+              --page "${{ inputs.page }}" \
+              --sort-type "${{ inputs.sort_type }}" \
+              ${{ inputs.category != '' && format('--category "{0}"', inputs.category) || '' }} \
+              ${{ inputs.dry_run == 'true' && '--dry-run' || '' }}
+          fi
