@@ -40,6 +40,11 @@ function sortFeaturedFirst(items) {
   });
 }
 
+function isDisplayableProduct(p) {
+  const price = Number(p?.price);
+  return Number.isFinite(price) && price > 0;
+}
+
 function rotateHomeProducts(items) {
   const bucket = getHomeRotationBucket();
   return [...items].sort((a, b) => {
@@ -55,8 +60,9 @@ function initHeroBanner() {
   const dotsEl   = document.getElementById('heroDots');
   if (!slidesEl) return;
 
-  const featured = allProducts.filter(p => p.featured).slice(0, 6);
-  const slides   = featured.length >= 2 ? featured : allProducts.slice(0, Math.min(5, allProducts.length));
+  const visibleProducts = allProducts.filter(isDisplayableProduct);
+  const featured = visibleProducts.filter(p => p.featured).slice(0, 6);
+  const slides   = featured.length >= 2 ? featured : visibleProducts.slice(0, Math.min(5, visibleProducts.length));
 
   if (!slides.length) {
     document.getElementById('heroBanner').innerHTML = `
@@ -146,7 +152,10 @@ function renderRelated(p) {
   const el     = document.getElementById('modalRelated');
   const listEl = document.getElementById('modalRelatedList');
   if (!el || !listEl) return;
-  const related = allProducts.filter(x => x.category === p.category && !sameId(x.id, p.id)).slice(0, 6);
+  const related = allProducts
+    .filter(isDisplayableProduct)
+    .filter(x => x.category === p.category && !sameId(x.id, p.id))
+    .slice(0, 6);
   if (!related.length) { el.style.display = 'none'; return; }
   el.style.display = 'block';
   listEl.innerHTML = related.map(r => {
@@ -196,6 +205,10 @@ function renderCompareBar() {
   const slots = document.getElementById('compareSlots');
   const btn   = document.getElementById('btnCompareNow');
   if (!bar) return;
+  compareList = compareList.filter(id => {
+    const p = allProducts.find(x => sameId(x.id, id));
+    return p && isDisplayableProduct(p);
+  });
   if (!compareList.length) { bar.style.display = 'none'; return; }
   bar.style.display = 'flex';
   btn.disabled      = compareList.length < 2;
@@ -221,7 +234,9 @@ function openCompareModal() {
   if (compareList.length < 2) return;
   const modal = document.getElementById('compareModal');
   const table = document.getElementById('compareTable');
-  const prods = compareList.map(id => allProducts.find(x => sameId(x.id, id))).filter(Boolean);
+  const prods = compareList
+    .map(id => allProducts.find(x => sameId(x.id, id)))
+    .filter(p => p && isDisplayableProduct(p));
 
   const rows = [
     { label: 'Imagem',     fn: p => `<img src="${getImages(p)[0]||''}" alt="" onerror="this.src='https://via.placeholder.com/90x90?text=?'"/>` },
@@ -514,7 +529,7 @@ function renderProducts() {
 
 function _renderFiltered(grid, empty, search) {
   if (!grid || !empty) return;
-  let filtered = [...allProducts];
+  let filtered = allProducts.filter(isDisplayableProduct);
   // Hide products scheduled for the future
   filtered = filtered.filter(p => !p.publishDate || new Date(p.publishDate) <= new Date());
   if (currentCategory !== 'todos') filtered = filtered.filter(p => p.category === currentCategory);
