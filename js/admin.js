@@ -117,6 +117,12 @@ function sameId(a, b) {
   return String(a) === String(b);
 }
 
+function trackEvent(name, params = {}) {
+  if (typeof window.gtag === 'function') {
+    window.gtag('event', name, params);
+  }
+}
+
 // ── HISTORY HELPER ────────────────────────────────────────────
 function addHistory(action, product) {
   const hist = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
@@ -634,6 +640,11 @@ const TG_GROUP = 'https://t.me/ofertasshopeeday';
 function shareTelegramAdmin(id) {
   const p = products.find(x => sameId(x.id, id));
   if (!p) return;
+  trackEvent('share_telegram_admin', {
+    item_id: p.id,
+    item_name: p.name,
+    item_category: p.category,
+  });
   const discount = p.originalPrice && p.originalPrice > p.price
     ? Math.round((1 - p.price / p.originalPrice) * 100) : null;
   const priceLine = p.originalPrice && p.originalPrice > p.price
