@@ -28,6 +28,14 @@ DEFAULT_CATEGORY_BY_KEYWORD = {
     "kit maquiagem": "beleza",
     "air fryer": "eletrodom",
     "fone bluetooth": "audio",
+    "utensilios para o lar": "casa",
+    "utensílios para o lar": "casa",
+    "cozinha organizada": "casa",
+    "organização de cozinha": "casa",
+    "organizacao de cozinha": "casa",
+    "casa organizada": "casa",
+    "casa e construcao": "casa",
+    "casa e construção": "casa",
 }
 PRODUCT_URL_RE = re.compile(r"/(?:product|[^/?#]+)/(\d+)/(\d+)")
 DEFAULT_QUERY = """
@@ -228,6 +236,17 @@ def parse_keywords_file(path: str | None) -> list[str]:
     return lines
 
 
+def resolve_category_for_keyword(keyword: str, forced_category: str | None = None) -> str:
+    if forced_category:
+        return forced_category
+    normalized = keyword.lower().strip()
+    if normalized in DEFAULT_CATEGORY_BY_KEYWORD:
+        return DEFAULT_CATEGORY_BY_KEYWORD[normalized]
+    if any(token in normalized for token in ("utens", "cozinha", "organiza", "lar", "casa")):
+        return "casa"
+    return "outros"
+
+
 def get_batch_state(db: firestore.Client, total_batches: int) -> int:
     state_ref = db.collection("meta").document("shopee_import_state")
     snap = state_ref.get()
@@ -294,7 +313,7 @@ def main() -> int:
     seen_ids: set[str] = set()
 
     for keyword in keywords:
-        default_category = args.category or DEFAULT_CATEGORY_BY_KEYWORD.get(keyword.lower(), "outros")
+        default_category = resolve_category_for_keyword(keyword, args.category)
         try:
             nodes, page_info, raw_response = fetch_keyword_products(
                 keyword,
