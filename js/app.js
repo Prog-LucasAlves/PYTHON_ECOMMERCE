@@ -73,16 +73,18 @@ function normalizeText(value) {
     .replace(/\s+/g, ' ');
 }
 
+function normalizeImageUrl(url) {
+  const value = String(url || '').trim();
+  if (!value) return '';
+  return value.replace(/[?#].*$/, '');
+}
+
 function productFingerprint(item) {
-  const itemId = String(item?.itemId || '').trim();
-  const shopId = String(item?.shopId || '').trim();
   const name = normalizeText(item?.name || '');
-  const category = String(item?.category || '').trim().toLowerCase();
   const price = Number.isFinite(Number(item?.price)) ? Number(Number(item.price)).toFixed(2) : '';
-  const image = String(getImages(item)[0] || '').trim();
-  if (itemId || shopId) return `ids:${itemId}:${shopId}`;
-  if (name) return [name, category, price, image ? 'img' : 'noimg'].join('|');
-  return `id:${String(item?.id || '').trim()}`;
+  const image = normalizeImageUrl(getImages(item)[0] || '');
+  if (name || image || price) return [name, price, image].join('|');
+  return String(item?.id || '').trim();
 }
 
 function dedupeProducts(items) {
@@ -96,13 +98,7 @@ function dedupeProducts(items) {
 }
 
 function dedupeByContent(items) {
-  const seen = new Set();
-  return items.filter(item => {
-    const key = productFingerprint(item);
-    if (seen.has(key)) return false;
-    seen.add(key);
-    return true;
-  });
+  return dedupeProducts(items);
 }
 
 function updateShareableUrl() {
@@ -173,7 +169,7 @@ function getActiveSeasonalCollections(items) {
 }
 
 function getCampaignItems(items) {
-  return dedupeByContent(items)
+  return items
     .filter(p => !p.featured && !p.homeOrder && getCampaignGroupKey(p))
     .sort((a, b) => {
       const aOrder = Number.isFinite(Number(a.homeOrder)) ? Number(a.homeOrder) : Number.MAX_SAFE_INTEGER;
@@ -181,6 +177,7 @@ function getCampaignItems(items) {
       if (aOrder !== bOrder) return aOrder - bOrder;
       return getProductScore(b) - getProductScore(a);
     })
+    .filter((p, i, arr) => arr.findIndex(x => productFingerprint(x) === productFingerprint(p)) === i)
     .slice(0, CAMPAIGN_SECTION_LIMIT);
 }
 
