@@ -61,6 +61,16 @@ function sameId(a, b) {
   return String(a) === String(b);
 }
 
+function dedupeProducts(items) {
+  const seen = new Set();
+  return items.filter(item => {
+    const key = String(item?.id ?? `${item?.name || ''}:${item?.link || ''}`);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
 function updateShareableUrl() {
   const params = new URLSearchParams();
   if (currentCategory && currentCategory !== 'todos') params.set('cat', currentCategory);
@@ -120,14 +130,17 @@ function getActiveSeasonalCollections(items) {
     .filter(c => sameDayRange(c.start, c.end))
     .map(collection => ({
       ...collection,
-      items: items.filter(p => matchesSeasonalCollection(p, collection)).slice(0, SEASONAL_COLLECTION_LIMIT),
+      items: items
+        .filter(p => !p.featured && !p.homeOrder)
+        .filter(p => matchesSeasonalCollection(p, collection))
+        .slice(0, SEASONAL_COLLECTION_LIMIT),
     }))
     .filter(c => c.items.length);
 }
 
 function getCampaignItems(items) {
   return items
-    .filter(p => p.featured || p.homeOrder || getCampaignGroupKey(p))
+    .filter(p => !p.featured && !p.homeOrder && getCampaignGroupKey(p))
     .sort((a, b) => {
       const aOrder = Number.isFinite(Number(a.homeOrder)) ? Number(a.homeOrder) : Number.MAX_SAFE_INTEGER;
       const bOrder = Number.isFinite(Number(b.homeOrder)) ? Number(b.homeOrder) : Number.MAX_SAFE_INTEGER;
@@ -622,8 +635,9 @@ window.addEventListener('storage', (e) => {
     const snap = await fs.getDocs(fs.query(fs.collection(firestoreDb, 'products'), fs.orderBy('updatedAt', 'desc')));
     const remote = snap.docs.map(d => d.data()).filter(Boolean);
     if (remote.length) {
-      allProducts = remote;
-      localStorage.setItem('shopee_products', JSON.stringify(remote));
+      const normalized = dedupeProducts(remote);
+      allProducts = normalized;
+      localStorage.setItem('shopee_products', JSON.stringify(normalized));
     } else if (allProducts.length) {
       // If Firestore is empty, keep showing the last local snapshot.
       console.log('[FIRESTORE] No remote products yet; using localStorage snapshot');
@@ -677,7 +691,7 @@ function renderProducts() {
 
 function _renderFiltered(grid, empty, search) {
   if (!grid || !empty) return;
-  let filtered = allProducts.filter(isDisplayableProduct);
+  let filtered = dedupeProducts(allProducts).filter(isDisplayableProduct);
   // Hide products scheduled for the future
   filtered = filtered.filter(p => !p.publishDate || new Date(p.publishDate) <= new Date());
   if (currentCategory !== 'todos') filtered = filtered.filter(p => p.category === currentCategory);
@@ -763,7 +777,7 @@ function _renderFiltered(grid, empty, search) {
           </div>
         `).join('')}
       </section>` : '';
-    const seasonalCollections = getActiveSeasonalCollections(filtered);
+    const seasonalCollections = getActiveSeasonalCollections(rotatingSource);
     const seasonalHTML = seasonalCollections.length ? `
       <section class="home-vitrine home-vitrine-seasonal">
         <div class="section-head">
