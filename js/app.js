@@ -69,12 +69,7 @@ function dedupeProducts(items) {
     const link = String(item?.offerLink || item?.productLink || item?.link || '').trim();
     const image = String(getImages(item)[0] || '').trim();
     const name = String(item?.name || '').trim().toLowerCase();
-    const key = [
-      String(item?.id || '').trim(),
-      link,
-      image,
-      name,
-    ].join('|');
+    const key = `${link}|${image}|${name}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -729,6 +724,7 @@ function _renderFiltered(grid, empty, search) {
   if (search) filtered = filtered.filter(p => p.name.toLowerCase().includes(search));
   if (priceMin !== null) filtered = filtered.filter(p => p.price >= priceMin);
   if (priceMax !== null) filtered = filtered.filter(p => p.price <= priceMax);
+  const uniqueFiltered = dedupeByContent(filtered);
 
   switch (currentSort) {
     case 'price-asc':  filtered.sort((a, b) => a.price - b.price); break;
@@ -736,8 +732,8 @@ function _renderFiltered(grid, empty, search) {
     case 'discount':   filtered.sort((a, b) => getDiscount(b) - getDiscount(a)); break;
     case 'newest':     filtered.sort((a, b) => b.id - a.id); break;
     default: {
-      const featured = sortFeaturedFirst(dedupeByContent(filtered.filter(p => p.featured || p.homeOrder)));
-      const rotating = rotateHomeProducts(dedupeByContent(filtered.filter(p => !(p.featured || p.homeOrder))));
+      const featured = sortFeaturedFirst(uniqueFiltered.filter(p => p.featured || p.homeOrder));
+      const rotating = rotateHomeProducts(uniqueFiltered.filter(p => !(p.featured || p.homeOrder)));
       filtered = [...featured, ...rotating];
       break;
     }
@@ -754,9 +750,9 @@ function _renderFiltered(grid, empty, search) {
   if (!filtered.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
   try {
-    const pinned = sortFeaturedFirst(dedupeByContent(filtered.filter(p => p.featured || p.homeOrder))).slice(0, HOME_SECTION_LIMIT);
-    const campaignItems = getCampaignItems(filtered);
-    const rotatingSource = dedupeByContent(filtered.filter(p => !(p.featured || p.homeOrder || getCampaignGroupKey(p))));
+    const pinned = sortFeaturedFirst(uniqueFiltered.filter(p => p.featured || p.homeOrder)).slice(0, HOME_SECTION_LIMIT);
+    const campaignItems = getCampaignItems(uniqueFiltered);
+    const rotatingSource = uniqueFiltered.filter(p => !(p.featured || p.homeOrder || getCampaignGroupKey(p)));
     const rotatingGroups = groupByCategory(rotatingSource);
     const categoryOrder = Object.entries(rotatingGroups)
       .map(([cat, items]) => ({
