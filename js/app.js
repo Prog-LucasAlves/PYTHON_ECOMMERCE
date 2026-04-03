@@ -63,13 +63,36 @@ function sameId(a, b) {
   return String(a) === String(b);
 }
 
+function normalizeText(value) {
+  return String(value || '')
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim()
+    .replace(/\s+/g, ' ');
+}
+
+function productFingerprint(item) {
+  const itemId = String(item?.itemId || '').trim();
+  const shopId = String(item?.shopId || '').trim();
+  const offerLink = String(item?.offerLink || '').trim();
+  const productLink = String(item?.productLink || '').trim();
+  const link = String(item?.link || '').trim();
+  const image = String(getImages(item)[0] || '').trim();
+  const name = normalizeText(item?.name || '');
+  if (itemId || shopId) return `ids:${itemId}:${shopId}`;
+  if (offerLink) return `offer:${offerLink}`;
+  if (productLink) return `product:${productLink}`;
+  if (link) return `link:${link}`;
+  if (image) return `img:${image}|${name}`;
+  return `name:${name}`;
+}
+
 function dedupeProducts(items) {
   const seen = new Set();
   return items.filter(item => {
-    const link = String(item?.offerLink || item?.productLink || item?.link || '').trim();
-    const image = String(getImages(item)[0] || '').trim();
-    const name = String(item?.name || '').trim().toLowerCase();
-    const key = `${link}|${image}|${name}`;
+    const key = productFingerprint(item);
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -79,10 +102,7 @@ function dedupeProducts(items) {
 function dedupeByContent(items) {
   const seen = new Set();
   return items.filter(item => {
-    const link = String(item?.offerLink || item?.productLink || item?.link || '').trim();
-    const image = String(getImages(item)[0] || '').trim();
-    const name = String(item?.name || '').trim().toLowerCase();
-    const key = `${link}|${image}|${name}`;
+    const key = productFingerprint(item);
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
