@@ -3,10 +3,12 @@ let heroCurrent  = 0;
 let heroTimer    = null;
 const HERO_INTERVAL = 5000;
 const HOME_ROTATION_MINUTES = 20;
-const HOME_CATEGORY_LIMIT = 5;
-const HOME_SECTION_LIMIT = 8;
-const CAMPAIGN_SECTION_LIMIT = 12;
-const SEASONAL_COLLECTION_LIMIT = 8;
+const HOME_CATEGORY_LIMIT = 8;
+const HOME_SECTION_LIMIT = 12;
+const CAMPAIGN_SECTION_LIMIT = 18;
+const SEASONAL_COLLECTION_LIMIT = 10;
+const FIRESTORE_CACHE_KEY = 'shopee_products_cache';
+const FIRESTORE_CACHE_TTL_MS = 10 * 60 * 1000;
 let lastRenderAt = Date.now();
 
 const SEASONAL_COLLECTIONS = [
@@ -64,7 +66,28 @@ function sameId(a, b) {
 function dedupeProducts(items) {
   const seen = new Set();
   return items.filter(item => {
-    const key = String(item?.id ?? `${item?.name || ''}:${item?.link || ''}`);
+    const link = String(item?.offerLink || item?.productLink || item?.link || '').trim();
+    const image = String(getImages(item)[0] || '').trim();
+    const name = String(item?.name || '').trim().toLowerCase();
+    const key = [
+      String(item?.id || '').trim(),
+      link,
+      image,
+      name,
+    ].join('|');
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function dedupeByContent(items) {
+  const seen = new Set();
+  return items.filter(item => {
+    const link = String(item?.offerLink || item?.productLink || item?.link || '').trim();
+    const image = String(getImages(item)[0] || '').trim();
+    const name = String(item?.name || '').trim().toLowerCase();
+    const key = `${link}|${image}|${name}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -139,7 +162,7 @@ function getActiveSeasonalCollections(items) {
 }
 
 function getCampaignItems(items) {
-  return items
+  return dedupeByContent(items)
     .filter(p => !p.featured && !p.homeOrder && getCampaignGroupKey(p))
     .sort((a, b) => {
       const aOrder = Number.isFinite(Number(a.homeOrder)) ? Number(a.homeOrder) : Number.MAX_SAFE_INTEGER;
@@ -210,8 +233,8 @@ function initHeroBanner() {
   if (!slidesEl) return;
 
   const visibleProducts = allProducts.filter(isDisplayableProduct);
-  const featured = visibleProducts.filter(p => p.featured).slice(0, 6);
-  const slides   = featured.length >= 2 ? featured : visibleProducts.slice(0, Math.min(5, visibleProducts.length));
+  const featured = visibleProducts.filter(p => p.featured).slice(0, 3);
+  const slides   = featured.length >= 2 ? featured : visibleProducts.slice(0, Math.min(3, visibleProducts.length));
 
   if (!slides.length) {
     document.getElementById('heroBanner').innerHTML = `
@@ -304,13 +327,13 @@ function renderRelated(p) {
   const related = allProducts
     .filter(isDisplayableProduct)
     .filter(x => x.category === p.category && !sameId(x.id, p.id))
-    .slice(0, 6);
+    .slice(0, 4);
   if (!related.length) { el.style.display = 'none'; return; }
   el.style.display = 'block';
   listEl.innerHTML = related.map(r => {
     const img = getImages(r)[0] || '';
     return `<div class="related-item" data-action="open-product" data-id="${r.id}">
-      <img src="${img}" alt="${r.name}" loading="lazy"
+      <img src="${img}" alt="${r.name}" loading="lazy" decoding="async"
            onerror="this.src='https://via.placeholder.com/80x80?text=?'"/>
       <div class="related-name">${r.name.substring(0,40)}${r.name.length>40?'…':''}</div>
       <div class="related-price">R$ ${Number(r.price).toFixed(2).replace('.',',')}</div>
@@ -366,7 +389,7 @@ function renderCompareBar() {
     if (!p) return '';
     const img = getImages(p)[0] || '';
     return `<div class="compare-slot">
-      ${img ? `<img src="${img}" alt=""/>` : '<div class="compare-slot-placeholder"></div>'}
+      ${img ? `<img src="${img}" alt="${p.name}" loading="lazy" decoding="async"/>` : '<div class="compare-slot-placeholder"></div>'}
       <span>${p.name.substring(0,22)}${p.name.length>22?'…':''}</span>
       <button data-action="toggle-compare-remove" data-pid="${p.id}" title="Remover"><i class="fas fa-times"></i></button>
     </div>`;
@@ -388,7 +411,7 @@ function openCompareModal() {
     .filter(p => p && isDisplayableProduct(p));
 
   const rows = [
-    { label: 'Imagem',     fn: p => `<img src="${getImages(p)[0]||''}" alt="" onerror="this.src='https://via.placeholder.com/90x90?text=?'"/>` },
+    { label: 'Imagem',     fn: p => `<img src="${getImages(p)[0]||''}" alt="${p.name}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/90x90?text=?'"/>` },
     { label: 'Nome',       fn: p => p.name },
     { label: 'Categoria',  fn: p => categoryLabel(p.category) },
     { label: 'Preço',      fn: p => `<strong style="color:#ee4d2d">R$ ${Number(p.price).toFixed(2).replace('.',',')}</strong>` },
@@ -632,15 +655,23 @@ window.addEventListener('storage', (e) => {
     const fs = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
     const app = initializeApp(firebaseConfig);
     firestoreDb = fs.getFirestore(app);
-    const snap = await fs.getDocs(fs.query(fs.collection(firestoreDb, 'products'), fs.orderBy('updatedAt', 'desc')));
-    const remote = snap.docs.map(d => d.data()).filter(Boolean);
-    if (remote.length) {
-      const normalized = dedupeProducts(remote);
-      allProducts = normalized;
-      localStorage.setItem('shopee_products', JSON.stringify(normalized));
-    } else if (allProducts.length) {
-      // If Firestore is empty, keep showing the last local snapshot.
-      console.log('[FIRESTORE] No remote products yet; using localStorage snapshot');
+    const cacheRaw = localStorage.getItem(FIRESTORE_CACHE_KEY);
+    const cache = cacheRaw ? JSON.parse(cacheRaw) : null;
+    if (cache?.ts && Array.isArray(cache.items) && Date.now() - cache.ts < FIRESTORE_CACHE_TTL_MS) {
+      allProducts = dedupeProducts(cache.items);
+      console.log('[FIRESTORE] Using cached product snapshot');
+    } else {
+      const snap = await fs.getDocs(fs.query(fs.collection(firestoreDb, 'products'), fs.orderBy('updatedAt', 'desc')));
+      const remote = snap.docs.map(d => d.data()).filter(Boolean);
+      if (remote.length) {
+        const normalized = dedupeProducts(remote);
+        allProducts = normalized;
+        localStorage.setItem('shopee_products', JSON.stringify(normalized));
+        localStorage.setItem(FIRESTORE_CACHE_KEY, JSON.stringify({ ts: Date.now(), items: normalized }));
+      } else if (allProducts.length) {
+        // If Firestore is empty, keep showing the last local snapshot.
+        console.log('[FIRESTORE] No remote products yet; using localStorage snapshot');
+      }
     }
     firestoreReady = true;
     firstLoad = false;
@@ -705,8 +736,8 @@ function _renderFiltered(grid, empty, search) {
     case 'discount':   filtered.sort((a, b) => getDiscount(b) - getDiscount(a)); break;
     case 'newest':     filtered.sort((a, b) => b.id - a.id); break;
     default: {
-      const featured = sortFeaturedFirst(filtered.filter(p => p.featured || p.homeOrder));
-      const rotating = rotateHomeProducts(filtered.filter(p => !(p.featured || p.homeOrder)));
+      const featured = sortFeaturedFirst(dedupeByContent(filtered.filter(p => p.featured || p.homeOrder)));
+      const rotating = rotateHomeProducts(dedupeByContent(filtered.filter(p => !(p.featured || p.homeOrder))));
       filtered = [...featured, ...rotating];
       break;
     }
@@ -723,9 +754,9 @@ function _renderFiltered(grid, empty, search) {
   if (!filtered.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
   try {
-    const pinned = sortFeaturedFirst(filtered.filter(p => p.featured || p.homeOrder)).slice(0, HOME_SECTION_LIMIT);
+    const pinned = sortFeaturedFirst(dedupeByContent(filtered.filter(p => p.featured || p.homeOrder))).slice(0, HOME_SECTION_LIMIT);
     const campaignItems = getCampaignItems(filtered);
-    const rotatingSource = filtered.filter(p => !(p.featured || p.homeOrder || getCampaignGroupKey(p)));
+    const rotatingSource = dedupeByContent(filtered.filter(p => !(p.featured || p.homeOrder || getCampaignGroupKey(p))));
     const rotatingGroups = groupByCategory(rotatingSource);
     const categoryOrder = Object.entries(rotatingGroups)
       .map(([cat, items]) => ({
@@ -825,6 +856,7 @@ function showSkeleton() {
 // ── CARD ANIMATION ────────────────────────────────────────────
 function animateCards() {
   if (typeof IntersectionObserver === 'undefined') return;
+  if (window.matchMedia('(max-width: 768px)').matches) return;
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(e => {
       if (e.isIntersecting) {
