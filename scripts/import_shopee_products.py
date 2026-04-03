@@ -37,6 +37,340 @@ DEFAULT_CATEGORY_BY_KEYWORD = {
     "casa e construcao": "casa",
     "casa e construção": "casa",
 }
+CATEGORY_RULES: dict[str, tuple[str, ...]] = {
+    "roupas-fem": (
+        "vestido",
+        "blusa",
+        "saia",
+        "calca feminina",
+        "calça feminina",
+        "macacao",
+        "macacão",
+        "cropped",
+        "regata feminina",
+        "top feminino",
+        "body feminino",
+        "moletom feminino",
+        "casaco feminino",
+        "cardigan",
+        "jaqueta feminina",
+        "plus size",
+    ),
+    "roupas-masc": (
+        "camiseta masculina",
+        "camisa masculina",
+        "camisa social",
+        "calca masculina",
+        "calça masculina",
+        "bermuda masculina",
+        "moletom masculino",
+        "jaqueta masculina",
+        "polo masculina",
+        "blazer",
+        "sapatenis",
+        "sapatênis",
+    ),
+    "sapatos": (
+        "tênis",
+        "tenis",
+        "sandalia",
+        "sandália",
+        "chinelo",
+        "rasteirinha",
+        "sapatilha",
+        "anabela",
+        "espadrille",
+        "tamanco",
+        "sapato",
+        "bota",
+        "scarpin",
+    ),
+    "celulares": (
+        "celular",
+        "smartphone",
+        "iphone",
+        "samsung",
+        "xiaomi",
+        "capinha",
+        "película",
+        "pelicula",
+        "carregador iphone",
+        "carregador samsung",
+        "carregador xiaomi",
+        "fone iphone",
+        "fone samsung",
+    ),
+    "eletronicos": (
+        "eletron",
+        "eletrôn",
+        "webcam",
+        "microfone",
+        "ring light",
+        "drone",
+        "camera",
+        "câmera",
+        "tripé",
+        "tripé selfie",
+        "relógio",
+        "relogio",
+        "smartwatch",
+        "luminária led",
+        "lampada inteligente",
+    ),
+    "computadores": (
+        "notebook",
+        "mouse",
+        "teclado",
+        "monitor",
+        "ssd",
+        "pendrive",
+        "hub usb",
+        "adaptador usb",
+        "memoria ram",
+        "memória ram",
+        "placa de vídeo",
+        "placa de video",
+        "gabinete",
+        "fonte computador",
+        "mouse pad",
+        "mousepad",
+        "webcam",
+        "cooler",
+        "carregador notebook",
+    ),
+    "jogos": (
+        "video game",
+        "videogame",
+        "ps5",
+        "xbox",
+        "controle",
+        "console",
+        "volante gamer",
+        "headset gamer",
+        "teclado rgb",
+        "mouse rgb",
+        "cadeira gamer",
+        "mouse gamer",
+        "jogo",
+        "playstation",
+    ),
+    "cameras": (
+        "camera",
+        "câmera",
+        "go pro",
+        "gopro",
+        "tripé",
+        "tripod",
+        "drones",
+        "drone",
+        "microfone lapela",
+    ),
+    "audio": (
+        "fone",
+        "headphone",
+        "earbuds",
+        "caixa de som",
+        "bluetooth",
+        "microfone sem fio",
+        "microfone",
+        "alto-falante",
+        "speaker",
+    ),
+    "eletrodom": (
+        "air fryer",
+        "forno elétrico",
+        "forno eletrico",
+        "micro-ondas",
+        "microondas",
+        "panela elétrica",
+        "panela eletrica",
+        "cafeteira",
+        "liquidificador",
+        "batedeira",
+        "aspirador",
+        "secador",
+        "chapinha",
+        "lava e seca",
+        "geladeira",
+        "freezer",
+        "fogão",
+        "fogao",
+        "coifa",
+        "cooktop",
+        "ventilador",
+    ),
+    "casa": (
+        "utens",
+        "cozinha",
+        "organiza",
+        "pote",
+        "hermético",
+        "hermetico",
+        "porta temperos",
+        "escorredor",
+        "toalheiro",
+        "organizador",
+        "tábua",
+        "tabua",
+        "ralador",
+        "jogo de panelas",
+        "frigideira",
+        "caçarola",
+        "caç̧arola",
+        "lençol",
+        "lencol",
+        "edredom",
+        "cortina",
+        "tapete",
+        "almofada",
+        "manta",
+        "capa de sofa",
+        "capa de sofá",
+        "travesseiro",
+        "marmita térmica",
+        "marmita termica",
+    ),
+    "alimentos": (
+        "café",
+        "cafe",
+        "chá",
+        "cha",
+        "barra de proteína",
+        "barra de proteina",
+        "biscoito",
+        "temperos",
+        "proteína",
+        "proteina",
+        "chá mate",
+        "cha mate",
+    ),
+    "beleza": (
+        "maquiagem",
+        "batom",
+        "base facial",
+        "corretivo",
+        "esponja",
+        "perfume",
+        "body splash",
+        "desodorante",
+        "creme corporal",
+        "shampoo",
+        "condicionador",
+        "creme para pentear",
+        "óleo capilar",
+        "oleo capilar",
+        "penteadeira",
+        "espelho com led",
+        "organizador de maquiagem",
+        "maleta de maquiagem",
+    ),
+    "saude": (
+        "massageador",
+        "balança",
+        "balanca",
+        "termômetro",
+        "termometro",
+        "colágeno",
+        "colageno",
+        "vitamina c",
+        "protetor térmico",
+        "protetor termico",
+        "aparador de pelos",
+        "barbeador",
+        "lâmina de barbear",
+    ),
+    "esporte": (
+        "fitness",
+        "legging",
+        "top fitness",
+        "roupa fitness",
+        "corda de pular",
+        "bicicleta",
+        "capacete",
+        "luva esportiva",
+        "garrafa squeeze",
+        "mochila esportiva",
+        "halter",
+        "faixa elástica",
+        "esteira",
+    ),
+    "bebes": (
+        "bebê",
+        "bebe",
+        "fralda",
+        "mamadeira",
+        "chupeta",
+        "roupinha",
+        "body bebê",
+        "body bebe",
+    ),
+    "brinquedos": (
+        "brinquedo",
+        "boneca",
+        "lego",
+        "quebra-cabeça",
+        "quebra-cabeca",
+        "jogo educativo",
+        "montessori",
+        "pelúcia",
+        "pelucia",
+        "patinete infantil",
+        "skate infantil",
+        "blocos de montar",
+    ),
+    "animais": (
+        "pet",
+        "ração",
+        "racao",
+        "coleira",
+        "arranhador",
+        "petisco",
+        "caixa de areia",
+        "pá higiênica",
+        "pa higiênica",
+        "pá higienica",
+        "petisco gato",
+        "petisco cachorro",
+        "ração gato",
+        "ração cachorro",
+    ),
+    "automoveis": (
+        "carro",
+        "automotivo",
+        "volante",
+        "suporte celular carro",
+        "capa volante",
+        "som automotivo",
+        "lâmpada automotiva",
+        "lampada automotiva",
+        "aspirador automotivo",
+    ),
+    "livros": (
+        "livro",
+        "caderno",
+        "agenda",
+        "caneta",
+        "literatura",
+        "romance",
+        "autoajuda",
+        "livro infantil",
+    ),
+    "moda": (
+        "relógio",
+        "relogio",
+        "óculos",
+        "oculos",
+        "brinco",
+        "colar",
+        "anel",
+        "pulseira",
+        "acessório",
+        "acessorio",
+        "bolsa",
+        "óculos de sol",
+        "oculos de sol",
+    ),
+}
 PRODUCT_URL_RE = re.compile(r"/(?:product|[^/?#]+)/(\d+)/(\d+)")
 DEFAULT_QUERY = """
 query SearchProducts($keyword: String, $sortType: Int, $page: Int, $limit: Int, $listType: Int) {
@@ -242,28 +576,35 @@ def resolve_category_for_keyword(keyword: str, forced_category: str | None = Non
     normalized = keyword.lower().strip()
     if normalized in DEFAULT_CATEGORY_BY_KEYWORD:
         return DEFAULT_CATEGORY_BY_KEYWORD[normalized]
-    if any(token in normalized for token in ("utens", "cozinha", "organiza", "lar", "casa")):
-        return "casa"
+    for category, rules in CATEGORY_RULES.items():
+        if any(token in normalized for token in rules):
+            return category
     return "outros"
 
 
-def get_batch_state(db: firestore.Client, total_batches: int) -> int:
+def get_batch_state(db: firestore.Client, total_batches: int) -> dict[str, int]:
     state_ref = db.collection("meta").document("shopee_import_state")
     snap = state_ref.get()
     if snap.exists:
         data = snap.to_dict() or {}
         try:
-            return int(data.get("batchIndex", 0)) % max(total_batches, 1)
+            return {
+                "batchIndex": int(data.get("batchIndex", 0)) % max(total_batches, 1),
+                "cycleStartAt": int(data.get("cycleStartAt", 0) or 0),
+                "pausedUntil": int(data.get("pausedUntil", 0) or 0),
+            }
         except (TypeError, ValueError):
-            return 0
-    return 0
+            return {"batchIndex": 0, "cycleStartAt": 0, "pausedUntil": 0}
+    return {"batchIndex": 0, "cycleStartAt": 0, "pausedUntil": 0}
 
 
-def save_batch_state(db: firestore.Client, next_batch_index: int) -> None:
+def save_batch_state(db: firestore.Client, next_batch_index: int, cycle_start_at: int, paused_until: int = 0) -> None:
     state_ref = db.collection("meta").document("shopee_import_state")
     state_ref.set(
         {
             "batchIndex": next_batch_index,
+            "cycleStartAt": cycle_start_at,
+            "pausedUntil": paused_until,
             "updatedAt": int(time.time() * 1000),
         },
         merge=True,
@@ -304,10 +645,40 @@ def main() -> int:
     base_keywords = file_keywords if file_keywords else parse_keywords(args.keywords)
     db = init_firestore()
     batch_index = 0
-    keywords, total_batches = select_keyword_batch(base_keywords, args.batch_size, batch_index)
-    if args.batch_size and args.batch_size > 0 and total_batches > 1:
-        batch_index = get_batch_state(db, total_batches)
-        keywords, total_batches = select_keyword_batch(base_keywords, args.batch_size, batch_index)
+    total_batches = 1
+    state = {"batchIndex": 0, "cycleStartAt": 0, "pausedUntil": 0}
+    now_ms = int(time.time() * 1000)
+    if args.batch_size and args.batch_size > 0:
+        keywords_preview, total_batches = select_keyword_batch(base_keywords, args.batch_size, 0)
+        if total_batches > 1:
+            state = get_batch_state(db, total_batches)
+            cycle_start_at = state.get("cycleStartAt", 0)
+            paused_until = state.get("pausedUntil", 0)
+            if paused_until and now_ms < paused_until:
+                wait_minutes = max(1, int((paused_until - now_ms) / 60000))
+                print(
+                    json.dumps(
+                        {
+                            "event": "batch_paused",
+                            "pausedUntil": paused_until,
+                            "waitMinutes": wait_minutes,
+                        },
+                        ensure_ascii=False,
+                    ),
+                )
+                return 0
+            if not cycle_start_at or now_ms >= cycle_start_at + 8 * 60 * 60 * 1000:
+                cycle_start_at = now_ms
+                state = {"batchIndex": 0, "cycleStartAt": cycle_start_at, "pausedUntil": 0}
+                save_batch_state(db, 0, cycle_start_at, 0)
+            batch_index = state["batchIndex"]
+            keywords, total_batches = select_keyword_batch(base_keywords, args.batch_size, batch_index)
+        else:
+            keywords = keywords_preview
+            total_batches = 1
+    else:
+        keywords = base_keywords
+        total_batches = 1
     products_ref = db.collection("products")
     summary = {"keywords": len(keywords), "fetched": 0, "saved": 0, "skipped": 0}
     seen_ids: set[str] = set()
@@ -361,7 +732,10 @@ def main() -> int:
             print(json.dumps({"keyword": keyword, "event": "saved", "id": doc_id, "name": product["name"]}, ensure_ascii=False))
 
     if args.batch_size and args.batch_size > 0 and total_batches > 1 and not args.dry_run:
-        save_batch_state(db, (batch_index + 1) % total_batches)
+        if batch_index + 1 >= total_batches:
+            save_batch_state(db, 0, state.get("cycleStartAt", now_ms), state.get("cycleStartAt", now_ms) + 8 * 60 * 60 * 1000)
+        else:
+            save_batch_state(db, batch_index + 1, state.get("cycleStartAt", now_ms), 0)
 
     print(json.dumps(summary, ensure_ascii=False, indent=2))
     return 0
