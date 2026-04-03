@@ -74,14 +74,14 @@ function normalizeText(value) {
 }
 
 function productFingerprint(item) {
-  const image = String(getImages(item)[0] || '').trim();
+  const itemId = String(item?.itemId || '').trim();
+  const shopId = String(item?.shopId || '').trim();
   const name = normalizeText(item?.name || '');
-  const category = String(item?.category || '').trim();
+  const category = String(item?.category || '').trim().toLowerCase();
   const price = Number.isFinite(Number(item?.price)) ? Number(Number(item.price)).toFixed(2) : '';
-  const link = String(item?.offerLink || item?.productLink || item?.link || '').trim();
-  if (image || name || category || price || link) {
-    return [image, name, category, price, link].join('|');
-  }
+  const image = String(getImages(item)[0] || '').trim();
+  if (itemId || shopId) return `ids:${itemId}:${shopId}`;
+  if (name) return [name, category, price, image ? 'img' : 'noimg'].join('|');
   return `id:${String(item?.id || '').trim()}`;
 }
 
