@@ -3,10 +3,10 @@ let heroCurrent  = 0;
 let heroTimer    = null;
 const HERO_INTERVAL = 5000;
 const HOME_ROTATION_MINUTES = 20;
-const HOME_CATEGORY_LIMIT = 5;
-const HOME_SECTION_LIMIT = 8;
-const CAMPAIGN_SECTION_LIMIT = 12;
-const SEASONAL_COLLECTION_LIMIT = 8;
+const HOME_CATEGORY_LIMIT = 8;
+const HOME_SECTION_LIMIT = 12;
+const CAMPAIGN_SECTION_LIMIT = 18;
+const SEASONAL_COLLECTION_LIMIT = 10;
 let lastRenderAt = Date.now();
 
 const SEASONAL_COLLECTIONS = [
@@ -64,7 +64,28 @@ function sameId(a, b) {
 function dedupeProducts(items) {
   const seen = new Set();
   return items.filter(item => {
-    const key = String(item?.id ?? `${item?.name || ''}:${item?.link || ''}`);
+    const link = String(item?.offerLink || item?.productLink || item?.link || '').trim();
+    const image = String(getImages(item)[0] || '').trim();
+    const name = String(item?.name || '').trim().toLowerCase();
+    const key = [
+      String(item?.id || '').trim(),
+      link,
+      image,
+      name,
+    ].join('|');
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function dedupeByContent(items) {
+  const seen = new Set();
+  return items.filter(item => {
+    const link = String(item?.offerLink || item?.productLink || item?.link || '').trim();
+    const image = String(getImages(item)[0] || '').trim();
+    const name = String(item?.name || '').trim().toLowerCase();
+    const key = `${link}|${image}|${name}`;
     if (seen.has(key)) return false;
     seen.add(key);
     return true;
@@ -139,7 +160,7 @@ function getActiveSeasonalCollections(items) {
 }
 
 function getCampaignItems(items) {
-  return items
+  return dedupeByContent(items)
     .filter(p => !p.featured && !p.homeOrder && getCampaignGroupKey(p))
     .sort((a, b) => {
       const aOrder = Number.isFinite(Number(a.homeOrder)) ? Number(a.homeOrder) : Number.MAX_SAFE_INTEGER;
@@ -705,8 +726,8 @@ function _renderFiltered(grid, empty, search) {
     case 'discount':   filtered.sort((a, b) => getDiscount(b) - getDiscount(a)); break;
     case 'newest':     filtered.sort((a, b) => b.id - a.id); break;
     default: {
-      const featured = sortFeaturedFirst(filtered.filter(p => p.featured || p.homeOrder));
-      const rotating = rotateHomeProducts(filtered.filter(p => !(p.featured || p.homeOrder)));
+      const featured = sortFeaturedFirst(dedupeByContent(filtered.filter(p => p.featured || p.homeOrder)));
+      const rotating = rotateHomeProducts(dedupeByContent(filtered.filter(p => !(p.featured || p.homeOrder))));
       filtered = [...featured, ...rotating];
       break;
     }
@@ -723,9 +744,9 @@ function _renderFiltered(grid, empty, search) {
   if (!filtered.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
   try {
-    const pinned = sortFeaturedFirst(filtered.filter(p => p.featured || p.homeOrder)).slice(0, HOME_SECTION_LIMIT);
+    const pinned = sortFeaturedFirst(dedupeByContent(filtered.filter(p => p.featured || p.homeOrder))).slice(0, HOME_SECTION_LIMIT);
     const campaignItems = getCampaignItems(filtered);
-    const rotatingSource = filtered.filter(p => !(p.featured || p.homeOrder || getCampaignGroupKey(p)));
+    const rotatingSource = dedupeByContent(filtered.filter(p => !(p.featured || p.homeOrder || getCampaignGroupKey(p))));
     const rotatingGroups = groupByCategory(rotatingSource);
     const categoryOrder = Object.entries(rotatingGroups)
       .map(([cat, items]) => ({
