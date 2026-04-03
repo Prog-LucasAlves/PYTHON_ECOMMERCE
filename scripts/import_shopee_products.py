@@ -41,6 +41,8 @@ CATEGORY_RULES: dict[str, tuple[str, ...]] = {
     "roupas-fem": (
         "vestido",
         "blusa",
+        "blusa de frio",
+        "blusa moletom",
         "saia",
         "calca feminina",
         "calça feminina",
@@ -50,8 +52,11 @@ CATEGORY_RULES: dict[str, tuple[str, ...]] = {
         "regata feminina",
         "top feminino",
         "body feminino",
+        "moletom",
         "moletom feminino",
         "casaco feminino",
+        "casaco",
+        "hoodie",
         "cardigan",
         "jaqueta feminina",
         "plus size",
@@ -60,11 +65,16 @@ CATEGORY_RULES: dict[str, tuple[str, ...]] = {
         "camiseta masculina",
         "camisa masculina",
         "camisa social",
+        "blusa de frio",
+        "blusa moletom",
         "calca masculina",
         "calça masculina",
         "bermuda masculina",
+        "moletom",
         "moletom masculino",
         "jaqueta masculina",
+        "casaco",
+        "hoodie",
         "polo masculina",
         "blazer",
         "sapatenis",
@@ -137,6 +147,10 @@ CATEGORY_RULES: dict[str, tuple[str, ...]] = {
         "webcam",
         "cooler",
         "carregador notebook",
+        "headset",
+        "head set",
+        "headphone gamer",
+        "fone gamer",
     ),
     "jogos": (
         "video game",
@@ -204,11 +218,18 @@ CATEGORY_RULES: dict[str, tuple[str, ...]] = {
         "cozinha",
         "organiza",
         "pote",
+        "porta mantimentos",
+        "porta mantimento",
+        "mantimentos",
         "hermético",
         "hermetico",
         "porta temperos",
         "escorredor",
         "toalheiro",
+        "papel higienico",
+        "papel higiênico",
+        "suporte de papel higienico",
+        "suporte de papel higiênico",
         "organizador",
         "tábua",
         "tabua",
@@ -577,7 +598,7 @@ def resolve_category_for_keyword(keyword: str, forced_category: str | None = Non
     if normalized in DEFAULT_CATEGORY_BY_KEYWORD:
         return DEFAULT_CATEGORY_BY_KEYWORD[normalized]
     for category, rules in CATEGORY_RULES.items():
-        if any(token in normalized for token in rules):
+        if any(re.search(rf"(?<!\\w){re.escape(token)}(?!\\w)", normalized) for token in rules):
             return category
     return "outros"
 
@@ -632,6 +653,11 @@ def main() -> int:
     parser.add_argument("--list-type", type=int, default=1, help="Shopee listType")
     parser.add_argument("--batch-size", type=int, default=0, help="Process only a batch of keywords per run")
     parser.add_argument("--category", help="Force one category for all imported products")
+    parser.add_argument(
+        "--reclassify-existing",
+        action="store_true",
+        help="Overwrite the category of existing products using the current keyword rules",
+    )
     parser.add_argument("--dry-run", action="store_true", help="Do not write to Firestore")
     args = parser.parse_args()
 
@@ -722,7 +748,7 @@ def main() -> int:
                     product["keywordsSource"] = sorted(set(existing_keywords + [keyword]))
                 else:
                     product["keywordsSource"] = existing_keywords
-                if existing_data.get("category") and not args.category:
+                if existing_data.get("category") and not args.category and not args.reclassify_existing:
                     product["category"] = existing_data["category"]
 
             if not args.dry_run:
