@@ -3,7 +3,54 @@ let heroCurrent  = 0;
 let heroTimer    = null;
 const HERO_INTERVAL = 5000;
 const HOME_ROTATION_MINUTES = 20;
+const HOME_CATEGORY_LIMIT = 5;
+const HOME_SECTION_LIMIT = 8;
+const CAMPAIGN_SECTION_LIMIT = 12;
+const SEASONAL_COLLECTION_LIMIT = 8;
 let lastRenderAt = Date.now();
+
+const SEASONAL_COLLECTIONS = [
+  {
+    id: 'easter-2026',
+    title: 'Páscoa e mesa posta',
+    kicker: 'Coleção sazonal',
+    start: '2026-03-15T00:00:00',
+    end: '2026-04-30T23:59:59',
+    categories: ['casa', 'alimentos', 'beleza'],
+  },
+  {
+    id: 'mothers-day',
+    title: 'Dia das Mães',
+    kicker: 'Coleção especial',
+    start: '2026-04-20T00:00:00',
+    end: '2026-05-15T23:59:59',
+    categories: ['beleza', 'moda', 'casa', 'eletronicos'],
+  },
+  {
+    id: 'midyear-tech',
+    title: 'Semana de Tecnologia',
+    kicker: 'Coleção sazonal',
+    start: '2026-06-01T00:00:00',
+    end: '2026-06-14T23:59:59',
+    categories: ['computadores', 'celulares', 'eletronicos', 'audio', 'cameras'],
+  },
+  {
+    id: 'black-friday',
+    title: 'Black Friday Preparatória',
+    kicker: 'Campanha sazonal',
+    start: '2026-11-01T00:00:00',
+    end: '2026-11-30T23:59:59',
+    categories: ['todos'],
+  },
+  {
+    id: 'christmas',
+    title: 'Natal e presentes',
+    kicker: 'Coleção sazonal',
+    start: '2026-12-01T00:00:00',
+    end: '2026-12-26T23:59:59',
+    categories: ['moda', 'beleza', 'bebes', 'brinquedos', 'casa'],
+  },
+];
 
 function getInitialSearchTerm() {
   const params = new URLSearchParams(window.location.search);
@@ -14,14 +61,90 @@ function sameId(a, b) {
   return String(a) === String(b);
 }
 
+function updateShareableUrl() {
+  const params = new URLSearchParams();
+  if (currentCategory && currentCategory !== 'todos') params.set('cat', currentCategory);
+  const search = (document.getElementById('searchInput')?.value || '').trim();
+  if (search) params.set('q', search);
+  if (currentSort && currentSort !== 'default') params.set('sort', currentSort);
+  if (priceMin !== null) params.set('min', String(priceMin));
+  if (priceMax !== null) params.set('max', String(priceMax));
+  const nextUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
+  window.history.replaceState({}, '', nextUrl);
+}
+
 function trackEvent(name, params = {}) {
   if (typeof window.gtag === 'function') {
     window.gtag('event', name, params);
   }
 }
 
+function getInitialCategory() {
+  const params = new URLSearchParams(window.location.search);
+  return (params.get('cat') || 'todos').trim();
+}
+
 function getHomeRotationBucket() {
   return Math.floor(Date.now() / (HOME_ROTATION_MINUTES * 60 * 1000));
+}
+
+function getTimeBucket(mins = HOME_ROTATION_MINUTES) {
+  return Math.floor(Date.now() / (mins * 60 * 1000));
+}
+
+function sameDayRange(start, end) {
+  const now = Date.now();
+  const s = start ? new Date(start).getTime() : null;
+  const e = end ? new Date(end).getTime() : null;
+  if (s && now < s) return false;
+  if (e && now > e) return false;
+  return true;
+}
+
+function isCampaignActive(p) {
+  return sameDayRange(p.campaignStart || p.publishDate, p.campaignEnd || null);
+}
+
+function getCampaignGroupKey(p) {
+  return p.campaignId || p.campaignCategory || (isCampaignActive(p) ? 'campanha-ativa' : '');
+}
+
+function matchesSeasonalCollection(p, collection) {
+  if (!collection || !sameDayRange(collection.start, collection.end)) return false;
+  if (!collection.categories || !collection.categories.length) return false;
+  return collection.categories.includes('todos') || collection.categories.includes(p.category) || collection.categories.includes(p.campaignCategory);
+}
+
+function getActiveSeasonalCollections(items) {
+  return SEASONAL_COLLECTIONS
+    .filter(c => sameDayRange(c.start, c.end))
+    .map(collection => ({
+      ...collection,
+      items: items.filter(p => matchesSeasonalCollection(p, collection)).slice(0, SEASONAL_COLLECTION_LIMIT),
+    }))
+    .filter(c => c.items.length);
+}
+
+function getCampaignItems(items) {
+  return items
+    .filter(p => p.featured || p.homeOrder || getCampaignGroupKey(p))
+    .sort((a, b) => {
+      const aOrder = Number.isFinite(Number(a.homeOrder)) ? Number(a.homeOrder) : Number.MAX_SAFE_INTEGER;
+      const bOrder = Number.isFinite(Number(b.homeOrder)) ? Number(b.homeOrder) : Number.MAX_SAFE_INTEGER;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return getProductScore(b) - getProductScore(a);
+    })
+    .slice(0, CAMPAIGN_SECTION_LIMIT);
+}
+
+function getProductScore(p) {
+  const clicks = JSON.parse(localStorage.getItem('shopee_clicks') || '{}');
+  const clickN = Number(clicks[p.id] || 0);
+  const discount = getDiscount(p);
+  const featured = p.featured ? 50 : 0;
+  const orderBoost = Number.isFinite(Number(p.homeOrder)) ? Math.max(0, 100 - Number(p.homeOrder)) : 0;
+  const campaignBoost = isCampaignActive(p) ? 30 : 0;
+  return clickN * 2 + discount + featured + orderBoost + campaignBoost;
 }
 
 function hashString(text) {
@@ -54,11 +177,18 @@ function isDisplayableProduct(p) {
 function rotateHomeProducts(items) {
   const bucket = getHomeRotationBucket();
   return [...items].sort((a, b) => {
-    const aKey = hashString(`${bucket}:${a.id}:${a.name}`);
-    const bKey = hashString(`${bucket}:${b.id}:${b.name}`);
+    const aKey = hashString(`${bucket}:${a.category}:${a.id}:${a.name}`);
+    const bKey = hashString(`${bucket}:${b.category}:${b.id}:${b.name}`);
     if (aKey !== bKey) return aKey - bKey;
     return String(a.id).localeCompare(String(b.id));
   });
+}
+
+function groupByCategory(items) {
+  return items.reduce((acc, p) => {
+    (acc[p.category] ||= []).push(p);
+    return acc;
+  }, {});
 }
 
 function initHeroBanner() {
@@ -503,6 +633,7 @@ window.addEventListener('storage', (e) => {
     const initialSearch = getInitialSearchTerm();
     const searchInput = document.getElementById('searchInput');
     if (initialSearch && searchInput && !searchInput.value) searchInput.value = initialSearch;
+    currentCategory = getInitialCategory();
     renderProducts();
     initHeroBanner();
     updateResultsSummary(allProducts.filter(p => !p.publishDate || new Date(p.publishDate) <= new Date()), (document.getElementById('searchInput')?.value || '').toLowerCase().trim());
@@ -541,6 +672,7 @@ function renderProducts() {
     empty.style.display = 'block';
     empty.textContent = 'Não foi possível carregar os produtos no momento.';
   }
+  updateShareableUrl();
 }
 
 function _renderFiltered(grid, empty, search) {
@@ -559,8 +691,8 @@ function _renderFiltered(grid, empty, search) {
     case 'discount':   filtered.sort((a, b) => getDiscount(b) - getDiscount(a)); break;
     case 'newest':     filtered.sort((a, b) => b.id - a.id); break;
     default: {
-      const featured = sortFeaturedFirst(filtered.filter(p => p.featured));
-      const rotating = rotateHomeProducts(filtered.filter(p => !p.featured));
+      const featured = sortFeaturedFirst(filtered.filter(p => p.featured || p.homeOrder));
+      const rotating = rotateHomeProducts(filtered.filter(p => !(p.featured || p.homeOrder)));
       filtered = [...featured, ...rotating];
       break;
     }
@@ -577,31 +709,81 @@ function _renderFiltered(grid, empty, search) {
   if (!filtered.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
   try {
-    const featured = filtered.filter(p => p.featured);
-    const rotating = filtered.filter(p => !p.featured);
+    const pinned = sortFeaturedFirst(filtered.filter(p => p.featured || p.homeOrder)).slice(0, HOME_SECTION_LIMIT);
+    const campaignItems = getCampaignItems(filtered);
+    const rotatingSource = filtered.filter(p => !(p.featured || p.homeOrder || getCampaignGroupKey(p)));
+    const rotatingGroups = groupByCategory(rotatingSource);
+    const categoryOrder = Object.entries(rotatingGroups)
+      .map(([cat, items]) => ({
+        cat,
+        items: rotateHomeProducts(items)
+          .sort((a, b) => getProductScore(b) - getProductScore(a))
+          .slice(0, HOME_CATEGORY_LIMIT),
+      }))
+      .sort((a, b) => b.items.length - a.items.length || a.cat.localeCompare(b.cat));
+    const featured = pinned.filter(Boolean);
     const featuredHTML = featured.length ? `
       <section class="home-vitrine home-vitrine-featured">
         <div class="section-head">
           <div>
-            <span class="section-kicker">Coleção em destaque</span>
-            <h3>Escolhas principais do momento</h3>
+            <span class="section-kicker">Primeira linha</span>
+            <h3>Produtos fixos e campanhas ativas</h3>
           </div>
-          <p>Produtos selecionados no admin para ficarem sempre no topo da vitrine.</p>
+          <p>Itens fixados manualmente, campanhas e promoções temporárias ficam acima da rotação.</p>
         </div>
         <div class="featured-row">${featured.map(p => cardHTML(p)).join('')}</div>
       </section>` : '';
-    const rotatingHTML = rotating.length ? `
+    const campaignHTML = campaignItems.length ? `
+      <section class="home-vitrine home-vitrine-campaign">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Vitrine de campanha</span>
+            <h3>Ofertas temporárias e campanhas semanais</h3>
+          </div>
+          <p>Itens com campanha, janela de data ou promoção destacada entram aqui sem misturar com a rotação principal.</p>
+        </div>
+        <div class="product-grid-inner">${campaignItems.map(p => cardHTML(p)).join('')}</div>
+      </section>` : '';
+    const rotatingHTML = categoryOrder.length ? `
       <section class="home-vitrine home-vitrine-rotating">
         <div class="section-head">
           <div>
-            <span class="section-kicker">Atualização contínua</span>
-            <h3>Mais ofertas para explorar</h3>
+            <span class="section-kicker">Rotação por categoria</span>
+            <h3>Vitrine organizada por blocos</h3>
           </div>
-          <p>Ofertas atualizadas a cada 20 min.</p>
+          <p>Rotação previsível por janela temporal fixa, sem repetir os fixos na fila rotativa.</p>
         </div>
-        <div class="product-grid-inner">${rotating.map(p => cardHTML(p)).join('')}</div>
+        ${categoryOrder.map(section => `
+          <div class="category-rotation-block">
+            <div class="category-rotation-head">
+              <h4>${categoryLabel(section.cat)}</h4>
+              <span>${section.items.length} oferta${section.items.length === 1 ? '' : 's'}</span>
+            </div>
+            <div class="product-grid-inner">${section.items.map(p => cardHTML(p)).join('')}</div>
+          </div>
+        `).join('')}
       </section>` : '';
-    grid.innerHTML = `${featuredHTML}${rotatingHTML}`;
+    const seasonalCollections = getActiveSeasonalCollections(filtered);
+    const seasonalHTML = seasonalCollections.length ? `
+      <section class="home-vitrine home-vitrine-seasonal">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Datas sazonais</span>
+            <h3>Coleções especiais por período</h3>
+          </div>
+          <p>Blocos ativados por janela temporal fixa e previsível.</p>
+        </div>
+        ${seasonalCollections.map(collection => `
+          <div class="category-rotation-block">
+            <div class="category-rotation-head">
+              <h4>${collection.title}</h4>
+              <span>${collection.kicker}</span>
+            </div>
+            <div class="product-grid-inner">${collection.items.map(p => cardHTML(p)).join('')}</div>
+          </div>
+        `).join('')}
+      </section>` : '';
+    grid.innerHTML = `${featuredHTML}${campaignHTML}${seasonalHTML}${rotatingHTML}`;
     animateCards();
     startCountdownTimers();
   } catch (err) {
@@ -686,9 +868,11 @@ function cardHTML(p) {
   const discount = getDiscount(p);
   const isNew    = p.id && (Date.now() - p.id) < 7 * 24 * 60 * 60 * 1000;
   const isHot    = discount >= 30;
+  const isCampaign = isCampaignActive(p) || p.campaignId;
 
   let leftBadge = '';
   if (p.featured)    leftBadge = '<span class="badge-featured">⭐ Destaque</span>';
+  else if (isCampaign) leftBadge = '<span class="badge-featured">🎯 Campanha</span>';
   else if (isHot)    leftBadge = '<span class="badge-hot">🔥 QUENTE</span>';
   else if (isNew)    leftBadge = '<span class="badge-new">✨ NOVO</span>';
 
@@ -716,7 +900,7 @@ function cardHTML(p) {
     ${discount   ? `<span class="badge-discount">-${discount}%</span>` : ''}
     ${hasMore ? `<span class="badge-gallery"><i class="fas fa-images"></i> ${[...images, ...(p.video?['v']:[])].length}</span>` : ''}
     <div class="card-img-wrap">
-      <img src="${main}" alt="${p.name}" loading="lazy"
+      <img src="${main}" alt="${p.name} - imagem principal" loading="lazy"
            onerror="this.src='https://via.placeholder.com/300x300?text=Sem+Imagem'"/>
     </div>
     ${thumbsHTML}
@@ -846,7 +1030,7 @@ function renderModalMedia(allMedia) {
         style="width:100%;height:100%;border-radius:8px;object-fit:contain;background:#000"></video>`;
     }
   } else {
-    display.innerHTML = `<img src="${m}" alt="" style="width:100%;height:100%;object-fit:contain;border-radius:8px"
+    display.innerHTML = `<img src="${m}" alt="${modalProduct?.name || 'Produto'} - imagem ampliada" style="width:100%;height:100%;object-fit:contain;border-radius:8px"
       onerror="this.src='https://via.placeholder.com/500x500?text=Imagem+indisponivel'"/>`;
   }
 }
@@ -859,7 +1043,7 @@ function renderModalThumbs(allMedia) {
     const src = isVideo ? (getVideoThumb(modalProduct.video) || '') : m;
     return `<div class="modal-thumb ${i===modalIndex?'active':''} ${isVideo?'video-thumb':''}"
       data-action="set-modal-index" data-index="${i}">
-      ${src ? `<img src="${src}" alt=""/>` : '<div class="vt-placeholder"></div>'}
+      ${src ? `<img src="${src}" alt="${modalProduct?.name || 'Produto'} ${isVideo ? 'vídeo' : 'imagem'} ${i + 1}"/>` : '<div class="vt-placeholder"></div>'}
       ${isVideo ? '<span class="play-icon">▶</span>' : ''}
     </div>`;
   }).join('');
@@ -960,29 +1144,43 @@ function updateHeroStats() {
 
 function updatePageSeo(filtered, search) {
   const baseTitle = 'Ofertas na Shopee com Desconto | Melhores Ofertas';
-  const baseDescription = 'Curadoria de ofertas na Shopee com descontos, comparação de preços e links de afiliado. Veja produtos atualizados por categoria, preço e vitrine fixa.';
+  const baseDescription = 'Curadoria de ofertas na Shopee com descontos, comparação de preços e links de afiliado. Veja produtos atualizados por categoria, preço, campanha e coleção sazonal.';
   const liveCount = filtered.length;
   const activeCategory = currentCategory !== 'todos' ? categoryLabel(currentCategory) : null;
   const searchTerm = search ? `busca por "${search}"` : null;
-  const bits = [];
+  const activeCategoryName = activeCategory ? activeCategory.replace(/^.*? /, '') : null;
+  const titleBits = [];
+  if (activeCategoryName) titleBits.push(activeCategoryName);
+  if (searchTerm) titleBits.push(searchTerm);
+  document.title = titleBits.length ? `${titleBits.join(' · ')} | Melhores Ofertas` : baseTitle;
 
-  if (activeCategory) bits.push(activeCategory.replace(/^.*? /, ''));
-  if (searchTerm) bits.push(searchTerm);
-  if (!bits.length) {
-    document.title = baseTitle;
-  } else {
-    document.title = `${bits.join(' · ')} | Melhores Ofertas`;
+  const description = activeCategoryName
+    ? `${activeCategoryName} com ofertas selecionadas, comparação de preços, campanhas e rotação por categoria.`
+    : search
+      ? `Resultados de busca para ${search} com ofertas atualizadas e filtros por preço e categoria.`
+      : `Curadoria de ofertas na Shopee com rotação por categoria, campanhas temporárias e coleções sazonais.`;
+  const metaDesc = document.querySelector('meta[name="description"]');
+  if (metaDesc) metaDesc.setAttribute('content', `${description} Veja ${liveCount} oferta${liveCount === 1 ? '' : 's'} na vitrine atual.`);
+
+  const robotsMeta = document.querySelector('meta[name="robots"]');
+  const hasFilteredView = !!(activeCategory || search || priceMin !== null || priceMax !== null || currentSort !== 'default');
+  if (robotsMeta) robotsMeta.setAttribute('content', hasFilteredView ? 'noindex, follow' : 'index, follow');
+
+  const canonical = document.querySelector('link[rel="canonical"]');
+  if (canonical) {
+    canonical.setAttribute('href', hasFilteredView
+      ? `${window.location.origin}${window.location.pathname}${currentCategory !== 'todos' ? `?cat=${encodeURIComponent(currentCategory)}` : ''}`
+      : `${window.location.origin}/`);
   }
 
-  const descParts = [
-    activeCategory ? `Ofertas de ${activeCategory.replace(/^.*? /, '')}` : 'Curadoria de ofertas na Shopee',
-    searchTerm ? `filtradas por ${search}` : null,
-    `Veja ${liveCount} oferta${liveCount === 1 ? '' : 's'} na vitrine atual.`,
-  ].filter(Boolean);
-
-  const description = descParts.join(' ');
-  const metaDesc = document.querySelector('meta[name="description"]');
-  if (metaDesc) metaDesc.setAttribute('content', description || baseDescription);
+  const ogTitle = document.querySelector('meta[property="og:title"]');
+  const ogDesc = document.querySelector('meta[property="og:description"]');
+  const ogUrl = document.querySelector('meta[property="og:url"]');
+  if (ogTitle) ogTitle.setAttribute('content', document.title);
+  if (ogDesc) ogDesc.setAttribute('content', description);
+  if (ogUrl) ogUrl.setAttribute('content', hasFilteredView && currentCategory !== 'todos'
+    ? `${window.location.origin}${window.location.pathname}?cat=${encodeURIComponent(currentCategory)}`
+    : `${window.location.origin}/`);
 }
 
 function updateResultsSummary(filtered, search) {
@@ -1028,13 +1226,43 @@ function updateStructuredData(filtered) {
     }
   })).filter(item => item.offers.price);
 
+  const itemList = payload.map(item => ({
+    "@type": "ListItem",
+    "position": item.position,
+    "url": item.offers.url,
+    "item": item,
+  }));
+
+  const breadcrumbs = [
+    { name: 'Home', url: 'https://melhoresdashopee.com.br/' },
+  ];
+  if (currentCategory !== 'todos') {
+    breadcrumbs.push({
+      name: categoryLabel(currentCategory).replace(/^.*? /, ''),
+      url: `${window.location.origin}${window.location.pathname}?cat=${encodeURIComponent(currentCategory)}`,
+    });
+  }
+
   const json = {
     "@context": "https://schema.org",
-    "@type": "ItemList",
-    "name": "Ofertas em destaque",
-    "itemListOrder": "https://schema.org/ItemListOrderDescending",
-    "numberOfItems": payload.length,
-    "itemListElement": payload
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": breadcrumbs.map((crumb, index) => ({
+          "@type": "ListItem",
+          "position": index + 1,
+          "name": crumb.name,
+          "item": crumb.url,
+        }))
+      },
+      {
+        "@type": "ItemList",
+        "name": currentCategory !== 'todos' ? `Ofertas de ${categoryLabel(currentCategory).replace(/^.*? /, '')}` : 'Ofertas em destaque',
+        "itemListOrder": "https://schema.org/ItemListOrderDescending",
+        "numberOfItems": payload.length,
+        "itemListElement": itemList
+      }
+    ]
   };
 
   const script = existing || document.createElement('script');

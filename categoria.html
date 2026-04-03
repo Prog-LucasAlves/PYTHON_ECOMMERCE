@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Categorias | Melhores Ofertas</title>
+  <meta name="description" content="Páginas de categoria com ofertas na Shopee, comparação de preços, campanhas e coleções sazonais." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://melhoresdashopee.com.br/categoria.html" />
+  <meta property="og:title" content="Categorias | Melhores Ofertas" />
+  <meta property="og:description" content="Vitrine dedicada por categoria com ofertas selecionadas, campanhas e rotação previsível." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://melhoresdashopee.com.br/categoria.html" />
+  <meta property="og:image" content="https://melhoresdashopee.com.br/img/logo-01-header.svg" />
+  <meta property="og:image:alt" content="Melhores Ofertas - páginas de categoria" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Categorias | Melhores Ofertas" />
+  <meta name="twitter:description" content="Vitrine dedicada por categoria com ofertas selecionadas, campanhas e rotação previsível." />
+  <meta name="twitter:image" content="https://melhoresdashopee.com.br/img/logo-01-header.svg" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; script-src 'self' https://www.gstatic.com https://www.googletagmanager.com; connect-src 'self' https://www.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.gstatic.com https://www.googletagmanager.com; font-src 'self' https://cdnjs.cloudflare.com data:; manifest-src 'self'; upgrade-insecure-requests">
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CJZX1ZJ2GM"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CJZX1ZJ2GM');
+  </script>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="manifest" href="manifest.json"/>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "Categorias",
+      "url": "https://melhoresdashopee.com.br/categoria.html",
+      "description": "Página dedicada para navegar por categoria com SEO próprio."
+    }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#mainContent">Pular para o conteúdo</a>
+  <header>
+    <div class="header-inner">
+      <div class="logo">
+        <a href="/" aria-label="Ir para a home">
+          <img src="img/logo-01-icon.svg" alt="Melhores Ofertas" class="site-logo site-logo-icon"/>
+        </a>
+      </div>
+      <div class="header-actions">
+        <div class="search-wrap">
+          <input type="text" id="searchInput" placeholder="🔍 Buscar produto..." autocomplete="off"/>
+          <div id="searchDropdown" class="search-dropdown hidden-block"></div>
+        </div>
+        <a href="/" class="btn-secondary"><i class="fas fa-home"></i> Home</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="intro-section">
+    <div class="intro-shell">
+      <div class="intro-copy">
+        <span class="intro-kicker">Navegação por categoria</span>
+        <h1 id="pageTitle">Categorias com ofertas selecionadas</h1>
+        <p id="pageSubtitle">Encontre produtos por intenção de busca, compare preços e navegue por coleções específicas com foco em descoberta rápida.</p>
+      </div>
+      <div class="intro-highlights">
+        <div class="intro-chip"><strong>SEO dedicado</strong><span>url, canonical e descrição próprios</span></div>
+        <div class="intro-chip"><strong>Rotação</strong><span>blocos previsíveis por categoria</span></div>
+        <div class="intro-chip"><strong>Campanhas</strong><span>itens temporários em destaque</span></div>
+      </div>
+    </div>
+  </section>
+
+  <main id="mainContent">
+    <section class="results-bar" aria-label="Resumo da categoria">
+      <div class="results-inner">
+        <div class="results-copy">
+          <p id="resultsSummary">Carregando ofertas...</p>
+          <span id="activeContext">Use a URL com `?cat=` para abrir uma categoria dedicada.</span>
+        </div>
+        <div class="results-actions">
+          <span class="results-updated" id="resultsUpdated">Última atualização: agora</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="controls-bar">
+      <div class="controls-inner">
+        <div class="sort-control">
+          <label><i class="fas fa-sort"></i></label>
+          <select id="sortSelect" onchange="setSortMode(this.value)">
+            <option value="default">Destaques primeiro</option>
+            <option value="price-asc">Menor preço</option>
+            <option value="price-desc">Maior preço</option>
+            <option value="discount">Maior desconto</option>
+            <option value="newest">Mais recente</option>
+          </select>
+        </div>
+        <div class="price-control">
+          <label><i class="fas fa-tag"></i> Preço:</label>
+          <input type="number" id="priceMin" placeholder="Min" min="0"/>
+          <span>—</span>
+          <input type="number" id="priceMax" placeholder="Max" min="0"/>
+          <button class="btn-clear-price" id="clearPriceBtn" title="Limpar"><i class="fas fa-times"></i></button>
+        </div>
+      </div>
+    </section>
+
+    <div id="productGrid" class="product-grid"></div>
+    <div id="emptyState" class="empty-state hidden-block" aria-live="polite">
+      <i class="fas fa-box-open"></i>
+      <p>Nenhum produto encontrado com os filtros atuais.</p>
+      <span>Tente outra busca ou troque a categoria na URL.</span>
+    </div>
+  </main>
+
+  <script src="js/app.js" defer></script>
+</body>
+</html>
