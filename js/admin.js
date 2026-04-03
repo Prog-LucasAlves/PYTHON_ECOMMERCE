@@ -396,6 +396,10 @@ async function saveProduct(e) {
     soldCount:     parseSoldCount(document.getElementById('prodSoldCount')?.value),
     featured:      document.getElementById('prodFeatured').checked,
     homeOrder:     parseInt(document.getElementById('prodHomeOrder')?.value || '', 10) || null,
+    campaignId:    document.getElementById('prodCampaignId')?.value.trim() || '',
+    campaignCategory: document.getElementById('prodCampaignCategory')?.value || '',
+    campaignStart: document.getElementById('prodCampaignStart')?.value || '',
+    campaignEnd:   document.getElementById('prodCampaignEnd')?.value || '',
     countdown:     document.getElementById('prodCountdown')?.value || null,
     publishDate:   document.getElementById('prodPublishDate')?.value || null,
   };
@@ -462,6 +466,14 @@ function editProduct(id) {
   document.getElementById('prodFeatured').checked    = p.featured || false;
   if (document.getElementById('prodHomeOrder'))
     document.getElementById('prodHomeOrder').value   = p.homeOrder || '';
+  if (document.getElementById('prodCampaignId'))
+    document.getElementById('prodCampaignId').value = p.campaignId || '';
+  if (document.getElementById('prodCampaignCategory'))
+    document.getElementById('prodCampaignCategory').value = p.campaignCategory || '';
+  if (document.getElementById('prodCampaignStart'))
+    document.getElementById('prodCampaignStart').value = p.campaignStart || '';
+  if (document.getElementById('prodCampaignEnd'))
+    document.getElementById('prodCampaignEnd').value = p.campaignEnd || '';
   if (document.getElementById('prodRating'))
     document.getElementById('prodRating').value    = p.rating || '';
   if (document.getElementById('prodSoldCount'))
@@ -512,6 +524,10 @@ function resetForm() {
   if (document.getElementById('prodItemId')) document.getElementById('prodItemId').value = '';
   if (document.getElementById('prodShopId')) document.getElementById('prodShopId').value = '';
   if (document.getElementById('prodHomeOrder')) document.getElementById('prodHomeOrder').value = '';
+  if (document.getElementById('prodCampaignId')) document.getElementById('prodCampaignId').value = '';
+  if (document.getElementById('prodCampaignCategory')) document.getElementById('prodCampaignCategory').value = '';
+  if (document.getElementById('prodCampaignStart')) document.getElementById('prodCampaignStart').value = '';
+  if (document.getElementById('prodCampaignEnd')) document.getElementById('prodCampaignEnd').value = '';
   updateAffiliatePreview();
   document.getElementById('imagesPreviewBox').style.display = 'none';
   if (document.getElementById('videoPreviewBox'))
@@ -531,7 +547,7 @@ function renderAdminList() {
   let filtered = products;
   if (search) filtered = products.filter(p => p.name.toLowerCase().includes(search));
   const homeTop = filtered
-    .filter(p => p.featured || p.homeOrder)
+    .filter(p => p.featured || p.homeOrder || p.campaignId || p.campaignStart || p.campaignEnd)
     .sort((a, b) => {
       const aOrder = Number.isFinite(Number(a.homeOrder)) ? Number(a.homeOrder) : Number.MAX_SAFE_INTEGER;
       const bOrder = Number.isFinite(Number(b.homeOrder)) ? Number(b.homeOrder) : Number.MAX_SAFE_INTEGER;
@@ -539,7 +555,7 @@ function renderAdminList() {
       if ((a.featured ? 1 : 0) !== (b.featured ? 1 : 0)) return (b.featured ? 1 : 0) - (a.featured ? 1 : 0);
       return String(a.name || '').localeCompare(String(b.name || ''));
     });
-  const remaining = filtered.filter(p => !(p.featured || p.homeOrder));
+  const remaining = filtered.filter(p => !(p.featured || p.homeOrder || p.campaignId || p.campaignStart || p.campaignEnd));
   if (homeTopCountEl) homeTopCountEl.textContent = homeTop.length;
 
   const emptyMsg = search
@@ -575,17 +591,19 @@ function renderAdminItem(p) {
     const clicks   = JSON.parse(localStorage.getItem(CLICKS_KEY) || '{}');
     const clickN   = clicks[p.id] || 0;
     const isScheduled = p.publishDate && new Date(p.publishDate) > new Date();
-    const isHomeTop = p.featured || p.homeOrder;
+    const isCampaign = p.campaignId || p.campaignStart || p.campaignEnd;
+    const isHomeTop = p.featured || p.homeOrder || isCampaign;
     return `
     <div class="admin-item${isScheduled ? ' admin-item-scheduled' : ''}${isHomeTop ? ' admin-item-featured' : ''}">
       <img src="${mainImg}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/60x60?text=?'"/>
       <div class="admin-item-info">
-        <div class="name">${p.featured ? 'Destaque · ' : ''}${isScheduled ? 'Agendado · ' : ''}${p.name}</div>
+        <div class="name">${p.featured ? 'Destaque · ' : ''}${isCampaign ? 'Campanha · ' : ''}${isScheduled ? 'Agendado · ' : ''}${p.name}</div>
         <div class="meta">
           R$ ${Number(p.price).toFixed(2).replace('.',',')}
           ${discount ? `· <span style="color:#ee4d2d">-${discount}%</span>` : ''}
           · ${categoryLabel(p.category)}
           ${p.homeOrder ? `· <span style="color:#1976d2">1ª linha #${p.homeOrder}</span>` : ''}
+          ${isCampaign ? `· <span style="color:#d97706">Campanha${p.campaignId ? ` #${p.campaignId}` : ''}</span>` : ''}
           ${mediaCount > 1 ? `· <span style="color:#888">📷 ${mediaCount} mídias</span>` : ''}
           ${p.video ? '· <span style="color:#888">🎬 vídeo</span>' : ''}
           ${clickN ? `· <span style="color:#1976d2"><i class="fas fa-mouse-pointer"></i> ${clickN}</span>` : ''}
@@ -849,6 +867,10 @@ function importCSV(e) {
         id:            Date.now() + Math.random(),
         name,
         category:      get('category') || get('categoria') || 'outros',
+        campaignId:    get('campaignid') || get('campaign_id') || '',
+        campaignStart: get('campaignstart') || get('campaign_start') || '',
+        campaignEnd:   get('campaignend') || get('campaign_end') || '',
+        campaignCategory: get('campaigncategory') || get('campaign_category') || '',
         originalPrice: parseFloat(get('originalprice') || get('precooriginal') || get('preco_original')) || null,
         price,
         link,
@@ -860,6 +882,7 @@ function importCSV(e) {
         featured:      (get('featured') || get('destaque')) === 'true',
         countdown:     get('countdown') || null,
         publishDate:   get('publishdate') || get('publicacao') || null,
+        firstLine:     (get('firstline') || get('primeiralinha')) === 'true',
       };
       const dupIndex = products.findIndex(p => sameId(p.id, product.id) || p.link === product.link || p.name.toLowerCase() === product.name.toLowerCase());
       if (dupIndex !== -1) products.splice(dupIndex, 1);

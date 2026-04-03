@@ -1,81 +1,102 @@
 1. vestido feminino,blusa feminina,conjunto feminino,macacão feminino,saia feminina
-2. tênis feminino,sandália feminina,chinelo feminino,rasteirinha feminina,sapatilha feminina
-3. celular,smartphone,capinha de celular,película de vidro,carregador turbo
-4. fone bluetooth,headphone,earbuds,caixa de som bluetooth,microfone sem fio
-5. kit maquiagem,batom,base facial,corretivo,esponja de maquiagem
-6. air fryer,liquidificador,espremedor de frutas,panela elétrica,garrafa térmica
-7. notebook,mouse sem fio,teclado mecânico,monitor gamer,base para notebook
-8. perfume feminino,perfume masculino,body splash,desodorante,creme corporal
-9. bolsa feminina,relógio feminino,óculos de sol,brinco feminino,colar feminino
-10. camiseta masculina,calça masculina,moletom masculino,bermuda masculina,tênis masculino
-11. aspirador de pó,secador de cabelo,chapinha,escova secadora,batedeira
-12. cama box,travesseiro,edredom,cortina blackout,organizador de casa
-13. café torrado,chá mate,barra de proteína,biscoito integral,temperos
-14. massageador elétrico,balança digital,termômetro digital,colágeno,vitamina c
-15. roupa fitness,legging feminina,top fitness,garrafa térmica,corda de pular
-16. fralda descartável,roupinha bebê,mamadeira,chupeta,brinquedo bebê
-17. boneca infantil,lego,jogo educativo,pelúcia,quebra-cabeça
-18. ração para cachorro,coleira pet,brinquedo pet,arranhador pet,petisco pet
-19. suporte celular carro,capa volante,som automotivo,lâmpada automotiva,aspirador automotivo
-20. livro infantil,caderno,agenda,caneta premium,livro de autoajuda
-21. webcam,microfone gamer,mouse gamer,teclado gamer,headset gamer
-22. roteador wifi,adaptador usb,hub usb,ssd externo,pendrive
-23. monitor,placa de vídeo,memória ram,fonte computador,gabinete gamer
-24. camera de segurança,drone,tripé,microfone lapela,cartão de memória
-25. panela antiaderente,jogo de facas,utensílios de cozinha,pote hermético,forma de silicone
-26. organização de cozinha,porta temperos,escorredor de louça,suporte de papel,toalheiro
-27. tapete para sala,almofada,cobertor,manta decorativa,kit banheiro
-28. luminária led,lâmpada inteligente,fita led,abajur,arandela
-29. smartwatch,bracelete smartwatch,carregador smartwatch,película smartwatch,fone esportivo
-30. bicicleta,capacete,luva esportiva,garrafa squeeze,mochila esportiva
-31. camisa social masculina,calça social,sapato social,gravata,blazer masculino
-32. vestido longo,vestido midi,vestido casual,macacão pantalona,conjunto alfaiataria
-33. short feminino,regata feminina,blusa cropped,saia midi,calça wide leg
-34. chinelo havaianas,sandália rasteira,tamanco feminino,anabela,espadrille
-35. capa de sofá,protetor de colchão,lençol casal,travesseiro ortopédico,edredom casal
-36. shampoo,condicionador,creme para pentear,escova de cabelo,óleo capilar
-37. barbeador elétrico,aparador de pelos,lâmina de barbear,kit barba,perfume masculino
-38. panela de pressão,frigideira,wok,caçarola,jogo de panelas
-39. suporte notebook,cadeira escritório,mesa escritório,mouse pad,organizador de mesa
-40. tablet,caneta stylus,teclado bluetooth,case tablet,carregador portátil
-41. impressora,cartucho,toner,cabo usb,scanner
-42. videogame,controle ps5,jogo de xbox,jogo de ps5,volante gamer
-43. brinquedo montessori,blocos de montar,quebra-cabeça infantil,patinete infantil,skate infantil
-44. mochila escolar,estojo,lancheira,garrafa infantil,caderno escolar
-45. panela elétrica de arroz,frigideira elétrica,air fryer oven,forno elétrico,coifa
-46. cafeteira,moedor de café,coador,jarra térmica,cápsulas de café
-47. aspirador robô,robô limpador,mop giratório,vassoura elétrica,balde mop
-48. câmera esportiva,tripé selfie,ring light,fone com microfone,adaptador tipo c
-49. relogio masculino,relógio feminino,pulseira,anel,óculos de grau
-50. moletom feminino,blusa de frio,casaco feminino,cardigan,jaqueta feminina
-51. camiseta feminina,top feminino,body feminino,blusa ombro a ombro,regata feminina
-52. calça jeans feminina,calça jeans masculina,short jeans,saia jeans,jaqueta jeans
-53. tênis casual,tênis corrida,tênis academia,tênis esportivo,sapatênis
-54. penteadeira,espelho com led,organizador de maquiagem,porta batom,maleta de maquiagem
-55. lanternas,pilhas,recarregador,extensão elétrica,adaptador de tomada
-56. rede wifi,mesh wifi,modem,roteador gamer,repetidor wifi
-57. cooktop,depurador,liquidificador industrial,processador de alimentos,centrífuga
-58. panela de arroz,panela de pressão elétrica,micro-ondas,freezer,geladeira
-59. tábua de corte,ralador,conjunto utensílios,escorredor prato,porta copos
-60. cesta organizadora,caixa organizadora,organizador gaveta,armário auxiliar,prateleira
-61. fantasia infantil,roupa de bebê,macacão bebê,body bebê,meia infantil
-62. brinquedo educativo,livro infantil,jogo de tabuleiro,painel sensorial,blocos pedagógicos
-63. ração gato,caixa de areia,pá higiênica,petisco gato,arranhador gato
-64. lava e seca,ferro de passar,aspirador vertical,secador profissional,prancha cabelo
-65. capa de celular iphfone,carregador iphone,película iphone,fone iphone,adaptador iphone
-66. capinha samsung,película samsung,carregador samsung,fone samsung,smartwatch samsung
-67. capinha xiaomi,película xiaomi,carregador xiaomi,fone xiaomi,smartphone xiaomi
-68. suporte tv,controle remoto universal,cabo hdmi,antena digital,caixa som tv
-69. bicicleta ergométrica,halter,faixa elástica,elíptico,esteira
-70. coleção livros,literatura brasileira,romance,autoajuda,livro infantil
-71. brinco dourado,colar prata,anel feminino,kit pulseiras,acessórios femininos
-72. camiseta polo masculina,camisa manga longa,bermuda jeans,jaqueta masculina,calça sarja
-73. shampoo anticaspa,creme hidratação,protetor térmico,óleo de argan,escova modeladora
-74. vela aromática,incenso,difusor de ambiente,essência,aromatizador
-75. copo térmico,garrafa térmica,marmita térmica,lunch box,mochila térmica
-76. capacete bike,luva bike,óculos ciclismo,suporte garrafa,bomba pneu
-77. ferro de solda,alicate,kit ferramentas,chave de fenda,parafusadeira
-78. mousepad gamer,cadeira gamer,headset bluetooth,teclado rgb,mouse rgb
-79. blusa plus size,vestido plus size,calça plus size,saia plus size,cardigan plus size
-80. cozinha organizada,quarto organizado,sala organizada,banheiro organizado,home office
-81. vestido feminino,tênis feminino,kit maquiagem,air fryer,fone bluetooth
+2. vestido longo,vestido midi,vestido casual,vestido social,vestido plus size
+3. short feminino,regata feminina,blusa cropped,saia midi,calça wide leg
+4. camiseta feminina,top feminino,body feminino,blusa ombro a ombro,regata feminina
+5. calça jeans feminina,legging feminina,calça alfaiataria feminina,calça flare feminina,calça pantalona feminina
+6. moletom feminino,blusa de frio feminina,casaco feminino,cardigan feminino,jaqueta feminina
+7. blusa moletom feminina,hoodie feminina,blusa fleece feminina,blusa plush feminina,moletom cropped
+8. plus size feminino,blusa plus size,vestido plus size,calça plus size,saia plus size
+9. conjunto alfaiataria feminina,conjunto feminino casual,conjunto social feminino,conjunto verão feminino,conjunto inverno feminino
+10. tênis feminino,sandália feminina,chinelo feminino,rasteirinha feminina,sapatilha feminina
+11. chinelo havaianas,sandália rasteira,tamanco feminino,anabela,espadrille
+12. bota feminina,botina feminina,scarpin,peep toe,slip on feminino
+13. bolsa feminina,bolsa transversal,bolsa tiracolo,mochila feminina,carteira feminina
+14. relógio feminino,brinco feminino,colar feminino,pulseira feminina,anel feminino
+15. óculos de sol feminino,óculos de grau feminino,acessórios femininos,kit pulseiras,conjunto acessórios
+16. camisa social masculina,camisa masculina,camisa manga longa masculina,camisa polo masculina,camisa de botão masculina
+17. calça masculina,calça social masculina,calça jeans masculina,calça sarja masculina,bermuda masculina
+18. camiseta masculina,camiseta polo masculina,regata masculina,camisa manga curta masculina,camisa básica masculina
+19. moletom masculino,blusa de frio masculina,casaco masculino,jaqueta masculina,cardigan masculino
+20. blusa moletom masculina,hoodie masculina,blusa fleece masculina,blusão masculino,moletom oversized masculino
+21. tênis masculino,sapatenis,sapatênis,chinelo masculino,sapato social masculino
+22. relógio masculino,óculos de grau masculino,acessórios masculinos,pulseira masculina,anel masculino
+23. kit cueca,meia masculina,pijama masculino,roupa íntima masculina,camiseta básica masculina
+24. roupa fitness,legging feminina,top fitness,short fitness,blusa fitness
+25. camiseta dry fit,camisa esportiva,regata esportiva,short esportivo,jaqueta esportiva
+26. smartwatch,bracelete smartwatch,carregador smartwatch,película smartwatch,relógio inteligente
+27. celular,smartphone,capinha de celular,película de vidro,carregador turbo
+28. celular samsung,capinha samsung,película samsung,carregador samsung,fone samsung
+29. celular xiaomi,capinha xiaomi,película xiaomi,carregador xiaomi,fone xiaomi
+30. iphone,capinha iphone,carregador iphone,película iphone,fone iphone
+31. tablet,caneta stylus,teclado bluetooth,case tablet,carregador portátil
+32. notebook,notebook gamer,base para notebook,suporte notebook,mochila para notebook
+33. mouse sem fio,mouse gamer,mouse bluetooth,mouse pad,mouse ergonomico
+34. teclado mecânico,teclado gamer,teclado bluetooth,teclado sem fio,kit teclado mouse
+35. monitor,monitor gamer,monitor 144hz,monitor 4k,suporte para monitor
+36. placa de vídeo,memória ram,fonte computador,gabinete gamer,ssd nvme
+37. roteador wifi,mesh wifi,modem,roteador gamer,repetidor wifi
+38. adaptador usb,hub usb,ssd externo,pendrive,cabo usb c
+39. webcam,microfone gamer,headset gamer,teclado rgb,mouse rgb
+40. impressora,cartucho,toner,scanner,cabo usb
+41. fone bluetooth,headphone,earbuds,caixa de som bluetooth,microfone sem fio
+42. headset gamer,fone gamer,headset bluetooth,fone com microfone,fone usb
+43. caixinha de som,caixa de som bluetooth,caixa de som portátil,speaker bluetooth,soundbar
+44. camera de segurança,câmera de segurança,drone,tripé,microfone lapela
+45. câmera esportiva,tripé selfie,ring light,adaptador tipo c,cartão de memória
+46. air fryer,air fryer oven,forno elétrico,panela elétrica,panela de pressão elétrica
+47. liquidificador,liquidificador industrial,espremedor de frutas,processador de alimentos,centrífuga
+48. cafeteira,moedor de café,cápsulas de café,coador,jarra térmica
+49. geladeira,freezer,micro-ondas,cooktop,depurador
+50. aspirador de pó,aspirador vertical,aspirador robô,robô limpador,vassoura elétrica
+51. secador de cabelo,chapinha,escova secadora,escova modeladora,prancha cabelo
+52. batedeira,panela antiaderente,jogo de facas,pote hermético,forma de silicone
+53. panela de pressão,frigideira,wok,caçarola,jogo de panelas
+54. tábua de corte,ralador,conjunto utensílios,escorredor prato,porta copos
+55. organização de cozinha,porta temperos,escorredor de louça,toalheiro,suporte de papel
+56. porta mantimentos,pote hermético,pote organizador,organizador cozinha,armário de cozinha
+57. cesta organizadora,caixa organizadora,organizador gaveta,prateleira,armário auxiliar
+58. tapete para sala,almofada,cobertor,manta decorativa,kit banheiro
+59. capa de sofá,protetor de colchão,lençol casal,travesseiro ortopédico,edredom casal
+60. cama box,travesseiro,edredom,cortina blackout,organizador de casa
+61. papel higiênico,suporte de papel higiênico,suporte de papel higiênico de chão,porta papel higiênico,halter porta rolo
+62. banheiro organizado,cozinha organizada,quarto organizado,sala organizada,home office
+63. luminária led,lâmpada inteligente,fita led,abajur,arandela
+64. lâmpada automotiva,lanterna,pilhas,recarregador,extensão elétrica
+65. vela aromática,incenso,difusor de ambiente,essência,aromatizador
+66. copa cozinha,mesa posta,porta talheres,porta copos,organizador de pia
+67. bebê fralda,fralda descartável,roupinha bebê,mamadeira,chupeta
+68. body bebê,macacão bebê,meia infantil,kit bebê,banheira bebê
+69. brinquedo infantil,boneca infantil,lego,jogo educativo,pelúcia
+70. brinquedo montessori,blocos de montar,quebra-cabeça infantil,patinete infantil,skate infantil
+71. brinquedo educativo,jogo de tabuleiro,painel sensorial,blocos pedagógicos,livro infantil
+72. ração para cachorro,coleira pet,brinquedo pet,arranhador pet,petisco pet
+73. ração gato,caixa de areia,pá higiênica,petisco gato,arranhador gato
+74. suporte celular carro,capa volante,som automotivo,lâmpada automotiva,aspirador automotivo
+75. bicicleta,capacete,luva esportiva,garrafa squeeze,mochila esportiva
+76. bicicleta ergométrica,halter,faixa elástica,elíptico,esteira
+77. capacete bike,luva bike,óculos ciclismo,suporte garrafa,bomba pneu
+78. livro infantil,livro de autoajuda,romance,literatura brasileira,coleção livros
+79. caderno,agenda,caneta premium,estojo,mochila escolar
+80. maquiagem,batom,base facial,corretivo,esponja de maquiagem
+81. perfume feminino,perfume masculino,body splash,desodorante,creme corporal
+82. shampoo,condicionador,creme para pentear,escova de cabelo,óleo capilar
+83. shampoo anticaspa,creme hidratação,protetor térmico,óleo de argan,escova modeladora
+84. barbeador elétrico,aparador de pelos,lâmina de barbear,kit barba,perfume masculino
+85. massageador elétrico,balança digital,termômetro digital,colágeno,vitamina c
+86. copo térmico,garrafa térmica,marmita térmica,lunch box,mochila térmica
+87. cozinha casa,organizador de cozinha,banheiro casa,lavanderia,despensa
+88. casa e construção,construção,material de construção,ferramentas,manutenção residencial
+89. ferro de solda,alicate,kit ferramentas,chave de fenda,parafusadeira
+90. suporte tv,controle remoto universal,cabo hdmi,antena digital,caixa som tv
+91. videogame,controle ps5,jogo de xbox,jogo de ps5,volante gamer
+92. camisa social masculina,blazer masculino,gravata,calça social,sapato social
+93. moda feminina,moda masculina,calçados femininos,calçados masculinos,acessórios de moda
+94. cozinha gourmet,cozinha americana,cozinha compacta,organizador de armário,porta temperos
+95. casa decoracao,decoração casa,quarto decorado,sala decorada,banheiro decorado
+96. escritório home office,cadeira escritório,mesa escritório,mouse pad,organizador de mesa
+97. material escolar,volta às aulas,estojo escolar,caderno escolar,mochila escolar
+98. pet shop,acessórios pet,brinquedos pet,ração cachorro,ração gato
+99. beleza e cuidados,cosméticos,cuidados com cabelo,cuidados com pele,maquiagem profissional
+100. utilidades domésticas,organizadores,limpeza,cozinha,banheiro
+101. tecnologia,eletrônicos,informática,acessórios para celular,acessórios para computador
+102. ofertas shopee,shopee brasil,compras online,produtos em oferta,cupom shopee

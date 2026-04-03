@@ -4,6 +4,7 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Painel Admin · Melhores Ofertas</title>
+  <meta name="robots" content="noindex, nofollow" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; script-src 'self' https://www.gstatic.com https://www.googletagmanager.com; connect-src 'self' https://www.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.gstatic.com https://www.googletagmanager.com; font-src 'self' https://cdnjs.cloudflare.com data:; upgrade-insecure-requests">
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CJZX1ZJ2GM"></script>
@@ -181,6 +182,33 @@ Preço promocional sujeito a alteração sem aviso prévio.</textarea>
               <label>Ordem na 1ª linha</label>
               <input type="number" id="prodHomeOrder" placeholder="1" min="1" step="1"/>
               <small class="helper-note">Use para fixar a posição do produto na primeira linha.</small>
+            </div>
+            <div class="form-group">
+              <label>ID da campanha</label>
+              <input type="text" id="prodCampaignId" placeholder="ex: semana-tech-01"/>
+              <small class="helper-note">Agrupa produtos numa vitrine de campanha.</small>
+            </div>
+            <div class="form-group">
+              <label>Categoria da campanha</label>
+              <select id="prodCampaignCategory">
+                <option value="">Usar categoria do produto</option>
+                <option value="tech">Tecnologia</option>
+                <option value="moda">Moda</option>
+                <option value="casa">Casa</option>
+                <option value="beleza">Beleza</option>
+                <option value="esporte">Esporte</option>
+                <option value="bebes">Mãe e Bebê</option>
+                <option value="brinquedos">Brinquedos</option>
+                <option value="animais">Pet</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Início da campanha</label>
+              <input type="datetime-local" id="prodCampaignStart"/>
+            </div>
+            <div class="form-group">
+              <label>Fim da campanha</label>
+              <input type="datetime-local" id="prodCampaignEnd"/>
             </div>
             <div class="form-group">
               <label>⏰ Oferta até (data/hora)</label>
