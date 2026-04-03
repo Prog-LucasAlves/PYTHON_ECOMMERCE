@@ -74,19 +74,15 @@ function normalizeText(value) {
 }
 
 function productFingerprint(item) {
-  const itemId = String(item?.itemId || '').trim();
-  const shopId = String(item?.shopId || '').trim();
-  const offerLink = String(item?.offerLink || '').trim();
-  const productLink = String(item?.productLink || '').trim();
-  const link = String(item?.link || '').trim();
   const image = String(getImages(item)[0] || '').trim();
   const name = normalizeText(item?.name || '');
-  if (itemId || shopId) return `ids:${itemId}:${shopId}`;
-  if (offerLink) return `offer:${offerLink}`;
-  if (productLink) return `product:${productLink}`;
-  if (link) return `link:${link}`;
-  if (image) return `img:${image}|${name}`;
-  return `name:${name}`;
+  const category = String(item?.category || '').trim();
+  const price = Number.isFinite(Number(item?.price)) ? Number(Number(item.price)).toFixed(2) : '';
+  const link = String(item?.offerLink || item?.productLink || item?.link || '').trim();
+  if (image || name || category || price || link) {
+    return [image, name, category, price, link].join('|');
+  }
+  return `id:${String(item?.id || '').trim()}`;
 }
 
 function dedupeProducts(items) {
