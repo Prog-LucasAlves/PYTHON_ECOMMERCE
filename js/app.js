@@ -102,6 +102,18 @@ function dedupeByContent(items) {
   return dedupeProducts(items);
 }
 
+function pickUnique(items, used, limit) {
+  const picked = [];
+  for (const item of items) {
+    const key = productFingerprint(item);
+    if (used.has(key)) continue;
+    used.add(key);
+    picked.push(item);
+    if (picked.length >= limit) break;
+  }
+  return picked;
+}
+
 function updateShareableUrl() {
   const params = new URLSearchParams();
   if (currentCategory && currentCategory !== 'todos') params.set('cat', currentCategory);
@@ -772,16 +784,23 @@ function _renderFiltered(grid, empty, search) {
   if (!filtered.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
   try {
-    const pinned = sortFeaturedFirst(uniqueFiltered.filter(p => p.featured || p.homeOrder)).slice(0, HOME_SECTION_LIMIT);
-    const campaignItems = getCampaignItems(uniqueFiltered);
+    const usedFingerprints = new Set();
+    const pinned = pickUnique(
+      sortFeaturedFirst(uniqueFiltered.filter(p => p.featured || p.homeOrder)),
+      usedFingerprints,
+      HOME_SECTION_LIMIT,
+    );
+    const campaignItems = pickUnique(getCampaignItems(uniqueFiltered), usedFingerprints, CAMPAIGN_SECTION_LIMIT);
     const rotatingSource = uniqueFiltered.filter(p => !(p.featured || p.homeOrder || getCampaignGroupKey(p)));
     const rotatingGroups = groupByCategory(rotatingSource);
     const categoryOrder = Object.entries(rotatingGroups)
       .map(([cat, items]) => ({
         cat,
-        items: rotateHomeProducts(items)
-          .sort((a, b) => getProductScore(b) - getProductScore(a))
-          .slice(0, HOME_CATEGORY_LIMIT),
+        items: pickUnique(
+          rotateHomeProducts(items).sort((a, b) => getProductScore(b) - getProductScore(a)),
+          usedFingerprints,
+          HOME_CATEGORY_LIMIT,
+        ),
       }))
       .sort((a, b) => b.items.length - a.items.length || a.cat.localeCompare(b.cat));
     const featured = pinned.filter(Boolean);
@@ -826,13 +845,16 @@ function _renderFiltered(grid, empty, search) {
           </div>
         `).join('')}
       </section>` : '';
-    const seasonalCollections = getActiveSeasonalCollections(rotatingSource);
+    const seasonalCollections = getActiveSeasonalCollections(rotatingSource).map(collection => ({
+      ...collection,
+      items: pickUnique(collection.items, usedFingerprints, SEASONAL_COLLECTION_LIMIT),
+    })).filter(collection => collection.items.length);
     const feedSource = uniqueFiltered
       .filter(p => !p.featured && !p.homeOrder)
       .sort((a, b) => getProductScore(b) - getProductScore(a))
       .filter((p, i, arr) => arr.findIndex(x => productFingerprint(x) === productFingerprint(p)) === i)
       .slice(0, HOME_FEED_LIMIT);
-    const feedBlocks = groupByCategory(feedSource);
+    const feedBlocks = groupByCategory(feedSource.filter(p => !usedFingerprints.has(productFingerprint(p))));
     const feedHTML = Object.entries(feedBlocks).length ? `
       <section class="home-vitrine home-vitrine-feed">
         <div class="section-head">
@@ -848,7 +870,7 @@ function _renderFiltered(grid, empty, search) {
               <h4>${categoryLabel(cat)}</h4>
               <span>${items.length} oferta${items.length === 1 ? '' : 's'}</span>
             </div>
-            <div class="product-grid-inner">${items.slice(0, 12).map(p => cardHTML(p)).join('')}</div>
+            <div class="product-grid-inner">${pickUnique(items, usedFingerprints, 12).map(p => cardHTML(p)).join('')}</div>
           </div>
         `).join('')}
       </section>` : '';
