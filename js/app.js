@@ -5,7 +5,8 @@ const HERO_INTERVAL = 5000;
 const HOME_ROTATION_MINUTES = 20;
 const HOME_CATEGORY_LIMIT = 12;
 const HOME_SECTION_LIMIT = 16;
-const CAMPAIGN_SECTION_LIMIT = 24;
+const CAMPAIGN_SECTION_LIMIT = 36;
+const HOME_FEED_LIMIT = 80;
 const SEASONAL_COLLECTION_LIMIT = 14;
 const FIRESTORE_CACHE_KEY = 'shopee_products_cache';
 const FIRESTORE_CACHE_TTL_MS = 10 * 60 * 1000;
@@ -169,7 +170,7 @@ function getActiveSeasonalCollections(items) {
 }
 
 function getCampaignItems(items) {
-  return items
+  const campaignSet = items
     .filter(p => !p.featured && !p.homeOrder && getCampaignGroupKey(p))
     .sort((a, b) => {
       const aOrder = Number.isFinite(Number(a.homeOrder)) ? Number(a.homeOrder) : Number.MAX_SAFE_INTEGER;
@@ -179,6 +180,14 @@ function getCampaignItems(items) {
     })
     .filter((p, i, arr) => arr.findIndex(x => productFingerprint(x) === productFingerprint(p)) === i)
     .slice(0, CAMPAIGN_SECTION_LIMIT);
+  if (campaignSet.length >= 8) return campaignSet;
+  const fill = items
+    .filter(p => !p.featured && !p.homeOrder)
+    .sort((a, b) => getProductScore(b) - getProductScore(a))
+    .filter((p, i, arr) => arr.findIndex(x => productFingerprint(x) === productFingerprint(p)) === i)
+    .filter(p => !campaignSet.some(x => productFingerprint(x) === productFingerprint(p)))
+    .slice(0, 12 - campaignSet.length);
+  return [...campaignSet, ...fill];
 }
 
 function getProductScore(p) {
@@ -818,6 +827,31 @@ function _renderFiltered(grid, empty, search) {
         `).join('')}
       </section>` : '';
     const seasonalCollections = getActiveSeasonalCollections(rotatingSource);
+    const feedSource = uniqueFiltered
+      .filter(p => !p.featured && !p.homeOrder)
+      .sort((a, b) => getProductScore(b) - getProductScore(a))
+      .filter((p, i, arr) => arr.findIndex(x => productFingerprint(x) === productFingerprint(p)) === i)
+      .slice(0, HOME_FEED_LIMIT);
+    const feedBlocks = groupByCategory(feedSource);
+    const feedHTML = Object.entries(feedBlocks).length ? `
+      <section class="home-vitrine home-vitrine-feed">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Mais produtos</span>
+            <h3>Seleção ampliada da loja</h3>
+          </div>
+          <p>Uma grade extra para mostrar mais variedade sem repetir os itens fixos.</p>
+        </div>
+        ${Object.entries(feedBlocks).map(([cat, items]) => `
+          <div class="category-rotation-block">
+            <div class="category-rotation-head">
+              <h4>${categoryLabel(cat)}</h4>
+              <span>${items.length} oferta${items.length === 1 ? '' : 's'}</span>
+            </div>
+            <div class="product-grid-inner">${items.slice(0, 12).map(p => cardHTML(p)).join('')}</div>
+          </div>
+        `).join('')}
+      </section>` : '';
     const seasonalHTML = seasonalCollections.length ? `
       <section class="home-vitrine home-vitrine-seasonal">
         <div class="section-head">
@@ -837,7 +871,7 @@ function _renderFiltered(grid, empty, search) {
           </div>
         `).join('')}
       </section>` : '';
-    grid.innerHTML = `${featuredHTML}${campaignHTML}${seasonalHTML}${rotatingHTML}`;
+    grid.innerHTML = `${featuredHTML}${campaignHTML}${seasonalHTML}${rotatingHTML}${feedHTML}`;
     animateCards();
     startCountdownTimers();
   } catch (err) {
