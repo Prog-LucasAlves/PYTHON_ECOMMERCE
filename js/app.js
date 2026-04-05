@@ -1192,8 +1192,8 @@ function updateHeroStats() {
 }
 
 function updatePageSeo(filtered, search) {
-  const baseTitle = 'Ofertas na Shopee com Desconto | Melhores Ofertas';
-  const baseDescription = 'Curadoria de ofertas na Shopee com descontos, comparação de preços e links de afiliado. Veja produtos atualizados por categoria, preço, campanha e coleção sazonal.';
+  const baseTitle = 'Ofertas na Shopee por Categoria e Preço | Melhores Ofertas';
+  const baseDescription = 'Curadoria de ofertas na Shopee por categoria, preço e campanha. Veja produtos atualizados, compare valores e descubra promoções com rapidez.';
   const liveCount = filtered.length;
   const activeCategory = currentCategory !== 'todos' ? categoryLabel(currentCategory) : null;
   const searchTerm = search ? `busca por "${search}"` : null;
