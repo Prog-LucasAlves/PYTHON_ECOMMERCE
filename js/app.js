@@ -1192,12 +1192,13 @@ function updateHeroStats() {
 }
 
 function updatePageSeo(filtered, search) {
-  const baseTitle = 'Ofertas na Shopee com Desconto | Melhores Ofertas';
-  const baseDescription = 'Curadoria de ofertas na Shopee com descontos, comparação de preços e links de afiliado. Veja produtos atualizados por categoria, preço, campanha e coleção sazonal.';
+  const baseTitle = 'Ofertas na Shopee por Categoria e Preço | Melhores Ofertas';
+  const baseDescription = 'Curadoria de ofertas na Shopee por categoria, preço e campanha. Veja produtos atualizados, compare valores e descubra promoções com rapidez.';
   const liveCount = filtered.length;
   const activeCategory = currentCategory !== 'todos' ? categoryLabel(currentCategory) : null;
   const searchTerm = search ? `busca por "${search}"` : null;
   const activeCategoryName = activeCategory ? activeCategory.replace(/^.*? /, '') : null;
+  const isCategoryPage = window.location.pathname.endsWith('/categoria.html') || window.location.pathname.endsWith('/categoria');
   const titleBits = [];
   if (activeCategoryName) titleBits.push(activeCategoryName);
   if (searchTerm) titleBits.push(searchTerm);
@@ -1217,9 +1218,13 @@ function updatePageSeo(filtered, search) {
 
   const canonical = document.querySelector('link[rel="canonical"]');
   if (canonical) {
-    canonical.setAttribute('href', hasFilteredView
-      ? `${window.location.origin}${window.location.pathname}${currentCategory !== 'todos' ? `?cat=${encodeURIComponent(currentCategory)}` : ''}`
-      : `${window.location.origin}/`);
+    if (isCategoryPage) {
+      canonical.setAttribute('href', `${window.location.origin}${window.location.pathname}`);
+    } else {
+      canonical.setAttribute('href', hasFilteredView
+        ? `${window.location.origin}${window.location.pathname}${currentCategory !== 'todos' ? `?cat=${encodeURIComponent(currentCategory)}` : ''}`
+        : `${window.location.origin}/`);
+    }
   }
 
   const ogTitle = document.querySelector('meta[property="og:title"]');
@@ -1227,9 +1232,11 @@ function updatePageSeo(filtered, search) {
   const ogUrl = document.querySelector('meta[property="og:url"]');
   if (ogTitle) ogTitle.setAttribute('content', document.title);
   if (ogDesc) ogDesc.setAttribute('content', description);
-  if (ogUrl) ogUrl.setAttribute('content', hasFilteredView && currentCategory !== 'todos'
-    ? `${window.location.origin}${window.location.pathname}?cat=${encodeURIComponent(currentCategory)}`
-    : `${window.location.origin}/`);
+  if (ogUrl) ogUrl.setAttribute('content', isCategoryPage
+    ? `${window.location.origin}${window.location.pathname}`
+    : hasFilteredView && currentCategory !== 'todos'
+      ? `${window.location.origin}${window.location.pathname}?cat=${encodeURIComponent(currentCategory)}`
+      : `${window.location.origin}/`);
 }
 
 function updateResultsSummary(filtered, search) {
