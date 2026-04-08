@@ -88,12 +88,22 @@ function productFingerprint(item) {
   return String(item?.id || '').trim();
 }
 
+// Softer fingerprint: name+price only, ignores image URL differences
+function productSoftKey(item) {
+  const name = normalizeText(item?.name || '');
+  const price = Number.isFinite(Number(item?.price)) ? Number(Number(item.price)).toFixed(2) : '';
+  return name ? `${name}|${price}` : productFingerprint(item);
+}
+
 function dedupeProducts(items) {
-  const seen = new Set();
+  const seenFp = new Set();
+  const seenSoft = new Set();
   return items.filter(item => {
-    const key = productFingerprint(item);
-    if (seen.has(key)) return false;
-    seen.add(key);
+    const fp = productFingerprint(item);
+    const soft = productSoftKey(item);
+    if (seenFp.has(fp) || seenSoft.has(soft)) return false;
+    seenFp.add(fp);
+    seenSoft.add(soft);
     return true;
   });
 }
@@ -104,10 +114,17 @@ function dedupeByContent(items) {
 
 function pickUnique(items, used, limit) {
   const picked = [];
+  const usedSoft = new Set([...used].map(fp => {
+    // Extract soft key from stored fingerprints where possible
+    const parts = fp.split('|');
+    return parts.length >= 2 ? `${parts[0]}|${parts[1]}` : fp;
+  }));
   for (const item of items) {
     const key = productFingerprint(item);
-    if (used.has(key)) continue;
+    const soft = productSoftKey(item);
+    if (used.has(key) || usedSoft.has(soft)) continue;
     used.add(key);
+    usedSoft.add(soft);
     picked.push(item);
     if (picked.length >= limit) break;
   }
