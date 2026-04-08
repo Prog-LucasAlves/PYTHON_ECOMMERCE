@@ -88,7 +88,17 @@ function productFingerprint(item) {
   return String(item?.id || '').trim();
 }
 
-// Softer fingerprint: name+price only, ignores image URL differences
+// Extracts the canonical Shopee product path (strips tracking params)
+function productLinkKey(item) {
+  const raw = String(item?.link || '').trim();
+  if (!raw) return '';
+  try {
+    const url = new URL(raw);
+    return (url.hostname + url.pathname).toLowerCase().replace(/\/+$/, '');
+  } catch { return raw.split('?')[0].toLowerCase(); }
+}
+
+// Soft key: name+price only, ignores image/URL differences
 function productSoftKey(item) {
   const name = normalizeText(item?.name || '');
   const price = Number.isFinite(Number(item?.price)) ? Number(Number(item.price)).toFixed(2) : '';
@@ -96,14 +106,17 @@ function productSoftKey(item) {
 }
 
 function dedupeProducts(items) {
-  const seenFp = new Set();
+  const seenFp   = new Set();
   const seenSoft = new Set();
+  const seenLink = new Set();
   return items.filter(item => {
-    const fp = productFingerprint(item);
+    const fp   = productFingerprint(item);
     const soft = productSoftKey(item);
-    if (seenFp.has(fp) || seenSoft.has(soft)) return false;
+    const link = productLinkKey(item);
+    if (seenFp.has(fp) || seenSoft.has(soft) || (link && seenLink.has(link))) return false;
     seenFp.add(fp);
     seenSoft.add(soft);
+    if (link) seenLink.add(link);
     return true;
   });
 }
@@ -113,18 +126,17 @@ function dedupeByContent(items) {
 }
 
 function pickUnique(items, used, limit) {
-  const picked = [];
-  const usedSoft = new Set([...used].map(fp => {
-    // Extract soft key from stored fingerprints where possible
-    const parts = fp.split('|');
-    return parts.length >= 2 ? `${parts[0]}|${parts[1]}` : fp;
-  }));
+  const picked    = [];
+  const usedSoft  = new Set();
+  const usedLink  = new Set();
   for (const item of items) {
-    const key = productFingerprint(item);
+    const key  = productFingerprint(item);
     const soft = productSoftKey(item);
-    if (used.has(key) || usedSoft.has(soft)) continue;
+    const link = productLinkKey(item);
+    if (used.has(key) || usedSoft.has(soft) || (link && usedLink.has(link))) continue;
     used.add(key);
     usedSoft.add(soft);
+    if (link) usedLink.add(link);
     picked.push(item);
     if (picked.length >= limit) break;
   }
@@ -703,7 +715,7 @@ let currentSort     = 'default';
 let priceMin        = null;
 let priceMax        = null;
 let firstLoad       = true;
-let allProducts = JSON.parse(localStorage.getItem('shopee_products') || '[]');
+let allProducts = dedupeProducts(JSON.parse(localStorage.getItem('shopee_products') || '[]'));
 let firestoreDb = null;
 let firestoreReady = false;
 
