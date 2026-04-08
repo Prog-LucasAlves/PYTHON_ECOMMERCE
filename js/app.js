@@ -5,7 +5,7 @@ const HERO_INTERVAL = 5000;
 const HOME_ROTATION_MINUTES = 20;
 const HOME_ROTATION_MINUTES_LONG = 30;
 const HOME_SECTION_LIMIT = 16;
-const CAMPAIGN_SECTION_LIMIT = 24;
+const CAMPAIGN_SECTION_LIMIT = 250;
 const HOME_ROTATION_LIMIT = 100;
 const SEASONAL_COLLECTION_LIMIT = 14;
 const FIRESTORE_CACHE_KEY = 'shopee_products_cache';
@@ -192,13 +192,33 @@ function getCampaignItems(items) {
     })
     .filter((p, i, arr) => arr.findIndex(x => productFingerprint(x) === productFingerprint(p)) === i)
     .slice(0, CAMPAIGN_SECTION_LIMIT);
-  if (campaignSet.length >= 8) return campaignSet;
-  const fill = items
-    .filter(p => !p.featured && !p.homeOrder)
-    .sort((a, b) => getProductScore(b) - getProductScore(a))
+
+  if (campaignSet.length >= CAMPAIGN_SECTION_LIMIT) return campaignSet;
+
+  // Fill remaining slots with products from all categories, spread evenly
+  const usedFp = new Set(campaignSet.map(p => productFingerprint(p)));
+  const candidates = items
+    .filter(p => !p.featured && !p.homeOrder && !usedFp.has(productFingerprint(p)))
     .filter((p, i, arr) => arr.findIndex(x => productFingerprint(x) === productFingerprint(p)) === i)
-    .filter(p => !campaignSet.some(x => productFingerprint(x) === productFingerprint(p)))
-    .slice(0, 12 - campaignSet.length);
+    .sort((a, b) => getProductScore(b) - getProductScore(a));
+
+  // Interleave by category for diversity
+  const byCategory = {};
+  for (const p of candidates) {
+    const cat = p.category || 'outros';
+    if (!byCategory[cat]) byCategory[cat] = [];
+    byCategory[cat].push(p);
+  }
+  const catQueues = Object.values(byCategory);
+  const fill = [];
+  const needed = CAMPAIGN_SECTION_LIMIT - campaignSet.length;
+  while (fill.length < needed && catQueues.some(q => q.length)) {
+    for (const q of catQueues) {
+      if (fill.length >= needed) break;
+      if (q.length) fill.push(q.shift());
+    }
+  }
+
   return [...campaignSet, ...fill];
 }
 
