@@ -18,17 +18,17 @@ Este roadmap detalha a visão de crescimento para a rede de afiliados Shopee, fo
 9. **[OK] Notificações Push:** Alerta de queda de preço para itens favoritos.
 10. **[OK] Micro-interações:** Feedback visual ao favoritar ou copiar link.
 
-## 🎯 2. Transparência e Sinais de Confiança (Affiliate Trust)
-11. **Página "Como Funcionamos":** Explicar o modelo de afiliados de forma amigável.
-12. **Selos de Segurança:** Parceria simbólica com gateways de pagamento Shopee.
-13. **Disclaimer Dinâmico:** Texto automático no rodapé de cada oferta.
-14. **Verificação de Link:** Ícone visual que o link foi escaneado contra vírus.
-15. **Status da Shopee:** Indicador de "Site da Shopee Operacional".
-16. **Certificação de Curador:** Perfil do Lucas (admin) como especialista em achadinhos.
-17. **Botão "Ver na Shopee" com Preview:** Mostrar o preço na Shopee antes de sair do site.
-18. **Aviso de Frete Grátis:** Destacar produtos elegíveis ao selo de frete grátis.
-19. **Tempo de Entrega Estimado:** Baseado em médias da categoria.
-20. **Garantia Shopee:** Espaço dedicado para explicar a segurança da plataforma oficial.
+## ✅ 2. Transparência e Sinais de Confiança (Affiliate Trust) - [CONCLUÍDO]
+11. **[OK] Página "Como Funcionamos":** Explicar o modelo de afiliados de forma amigável.
+12. **[OK] Selos de Segurança:** Parceria simbólica com gateways de pagamento Shopee.
+13. **[OK] Disclaimer Dinâmico:** Texto automático no rodapé de cada oferta.
+14. **[OK] Verificação de Link:** Ícone visual que o link foi escaneado contra vírus.
+15. **[OK] Status da Shopee:** Indicador de "Site da Shopee Operacional".
+16. **[OK] Certificação de Curador:** Perfil do Lucas (admin) como especialista em achadinhos.
+17. **[OK] Botão "Ver na Shopee" com Preview:** Mostrar o preço na Shopee antes de sair do site.
+18. **[OK] Aviso de Frete Grátis:** Destacar produtos elegíveis ao selo de frete grátis.
+19. **[OK] Tempo de Entrega Estimado:** Baseado em médias da categoria.
+20. **[OK] Garantia Shopee:** Espaço dedicado para explicar a segurança da plataforma oficial.
 
 ## 📊 3. Gamificação e Retenção
 21. **Sistema de Moedas:** Ganhar moedas virtuais ao clicar em ofertas diárias.
