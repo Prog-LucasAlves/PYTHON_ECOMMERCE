@@ -568,40 +568,41 @@ main {
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   flex-direction: column;
   position: relative;
   border: 1px solid var(--border);
 }
 .product-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-6px);
   box-shadow: var(--shadow-lg);
   border-color: var(--brand);
 }
 
-.product-card .badge-featured {
-  position: absolute; top: 8px; left: 8px;
-  background: #ffa724; color: #fff; font-size: 0.7rem; font-weight: 700;
-  padding: 4px 9px; border-radius: 999px; z-index: 1;
+.badge-featured {
+  position: absolute; top: 12px; left: 12px;
+  background: var(--brand); color: #fff; font-size: 0.65rem; font-weight: 800;
+  padding: 4px 10px; border-radius: var(--radius-full); z-index: 10;
+  letter-spacing: 0.05em;
 }
-.product-card .badge-discount {
-  position: absolute; top: 8px; right: 8px;
-  background: var(--brand); color: #111; font-size: 0.72rem; font-weight: 800;
-  padding: 4px 9px; border-radius: 999px;
+.badge-discount {
+  position: absolute; top: 12px; right: 12px;
+  background: #000; color: #fff; font-size: 0.72rem; font-weight: 800;
+  padding: 4px 10px; border-radius: var(--radius-full); z-index: 10;
 }
 
 .card-img-wrap {
   width: 100%;
   aspect-ratio: 1/1;
   overflow: hidden;
-  background: var(--surface);
+  background: #fff;
 }
 .card-img-wrap img {
   width: 100%; height: 100%; object-fit: cover;
-  transition: transform .3s;
+  transition: transform 0.6s ease;
 }
-.product-card:hover .card-img-wrap img { transform: scale(1.06); }
+.product-card:hover .card-img-wrap img { transform: scale(1.08); }
 
 .card-body {
   padding: 16px;
@@ -609,6 +610,27 @@ main {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+.card-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.card-trust {
+  font-size: 0.72rem;
+  color: var(--success);
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.card-seller {
+  font-size: 0.72rem;
+  color: #229ED9;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 .card-name {
   font-size: 0.95rem;
@@ -620,53 +642,74 @@ main {
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-.card-desc {
-  font-size: 0.81rem;
-  color: var(--text-muted);
-  line-height: 1.6;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-.card-prices {
-  margin-top: auto;
+.card-price-row {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: auto;
 }
-.card-original {
-  font-size: 0.78rem;
-  color: var(--text-muted);
-  text-decoration: line-through;
-}
-.card-price {
-  font-size: 1.125rem;
+.card-prices { display: flex; align-items: baseline; gap: 8px; }
+.card-trend {
+  font-size: 0.68rem;
+  color: var(--success);
+  background: var(--success-light);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
   font-weight: 700;
-  color: var(--brand);
-}
-
-/* Trust Badge in Card */
-.card-trust {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--success);
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
 }
-.card-trust i { font-size: 0.75rem; }
 
 .card-btn {
-  display: block; text-align: center;
-  background: linear-gradient(135deg, #141414 0%, #292929 60%, #4a3a16 100%);
-  color: #fff; font-weight: 700;
-  padding: 12px; font-size: 0.88rem;
-  transition: transform .2s ease, filter .2s ease;
+  margin: 0 16px 16px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  background: var(--surface);
+  color: var(--text);
+  text-align: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid var(--border);
 }
-.card-btn:hover { transform: translateY(-1px); filter: brightness(1.04); }
+.product-card:hover .card-btn {
+  background: var(--brand);
+  color: #fff;
+  border-color: var(--brand);
+}
+
+.card-compare-btn {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: rgba(255,255,255,0.9);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--text-muted);
+  visibility: hidden;
+  opacity: 0;
+  transition: all 0.2s;
+  z-index: 20;
+}
+.product-card:hover .card-compare-btn {
+  visibility: visible;
+  opacity: 1;
+}
+.card-compare-btn:hover { transform: scale(1.1); color: var(--brand); }
+.card-compare-btn.active {
+  visibility: visible;
+  opacity: 1;
+  background: var(--brand);
+  color: #fff;
+  border-color: var(--brand);
+}
 
 @media (max-width: 600px) {
   .hero-banner { height: 220px; }
@@ -1861,3 +1904,46 @@ footer div {
 .pwa-close-btn:hover { color: #888; }
 [data-theme="dark"] .pwa-banner { background: #1e1e1e; border-color: #333; }
 [data-theme="dark"] .pwa-banner-inner strong { color: #e0e0e0; }
+
+/* ========== SKELETON LOADING ========== */
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+  padding: 24px;
+}
+.skeleton-card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  border: 1px solid var(--border);
+}
+.skel-img {
+  height: 280px;
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skelLoading 1.5s infinite;
+}
+.skel-body {
+  padding: 16px;
+}
+.skel-line {
+  height: 12px;
+  background: #f0f0f0;
+  margin-bottom: 12px;
+  border-radius: 4px;
+  animation: skelLoading 1.5s infinite;
+}
+.skel-price { width: 40%; }
+.skel-meta { width: 70%; }
+
+@keyframes skelLoading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+[data-theme="dark"] .skel-img,
+[data-theme="dark"] .skel-line {
+  background: linear-gradient(90deg, #2a2a2a 25%, #333 50%, #2a2a2a 75%);
+  background-size: 200% 100%;
+}
