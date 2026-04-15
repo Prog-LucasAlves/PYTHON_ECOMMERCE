@@ -990,7 +990,7 @@ function cardHTML(p) {
   else if (isCampaign) leftBadge = '<span class="badge-featured" style="background:#000;">CAMPANHA</span>';
 
   return `
-  <div class="product-card" data-action="open-product" data-id="${p.id}">
+  <div class="product-card" data-action="open-product" data-id="${p.id}" style="cursor: pointer;">
     ${leftBadge}
     ${discount ? `<span class="badge-discount">-${discount}%</span>` : ''}
     ${p.price >= 19 ? `<span class="badge-shipping"><i class="fas fa-truck-fast"></i> Frete Grátis</span>` : ''}
@@ -1045,8 +1045,10 @@ let modalIndex   = 0;
 function openProductModal(id, startIdx) {
   const p = allProducts.find(x => sameId(x.id, id));
   if (!p) return;
-  // Gamification rewards
-  if (typeof addRewards === 'function') addRewards(10, 5);
+  // Gamification rewards (Safeguarded)
+  try {
+    if (typeof addRewards === 'function') addRewards(10, 5);
+  } catch(e) { console.warn('Gamification reward error:', e); }
   // Track click
   const clicks = JSON.parse(localStorage.getItem('shopee_clicks') || '{}');
   clicks[id] = (clicks[id] || 0) + 1;
@@ -1177,9 +1179,14 @@ function closeModalOutside(e) {
 }
 
 function handleOpenProductAction(el) {
-  const id = el.dataset.id;
-  const startIdx = parseInt(el.dataset.startIndex || '0', 10);
-  if (id) openProductModal(id, Number.isFinite(startIdx) ? startIdx : 0);
+  if (!el) return;
+  const id = el.dataset.id || el.getAttribute('data-id');
+  const startIdx = parseInt(el.dataset.startIndex || el.getAttribute('data-startIndex') || '0', 10);
+  if (id) {
+    if (typeof openProductModal === 'function') {
+      openProductModal(id, Number.isFinite(startIdx) ? startIdx : 0);
+    }
+  }
 }
 
 // Keyboard navigation
