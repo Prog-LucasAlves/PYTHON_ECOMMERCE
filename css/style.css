@@ -190,70 +190,72 @@ header {
 .trust-strip {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  padding: 24px 0;
+  padding: 20px 0;
 }
 .trust-inner {
   max-width: 1200px;
   margin: 0 auto;
   display: flex;
-  justify-content: space-around;
+  justify-content: center;
   align-items: center;
-  gap: 24px;
-  flex-wrap: wrap;
+  gap: 64px;
+  padding: 0 24px;
 }
 .trust-item {
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 0.9rem;
-  font-weight: 600;
+  font-size: 0.95rem;
+  font-weight: 700;
   color: var(--text);
+  white-space: nowrap;
 }
 .trust-item i {
-  color: var(--success);
+  color: var(--brand);
   font-size: 1.25rem;
 }
 .intro-section {
-  padding: 64px 24px;
+  padding: 80px 24px 64px;
   background: var(--bg);
 }
 .intro-shell {
-  max-width: 900px;
+  max-width: 850px;
   margin: 0 auto;
   text-align: center;
 }
+.intro-copy {
+  background: none;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
 .intro-copy h1 {
-  font-size: 3rem;
+  font-size: 3.5rem;
   font-weight: 800;
   line-height: 1.1;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
   margin-bottom: 24px;
+  color: var(--text);
 }
 .intro-copy p {
-  font-size: 1.125rem;
+  font-size: 1.15rem;
   color: var(--text-muted);
   line-height: 1.6;
+  max-width: 700px;
+  margin: 0 auto;
 }
 .intro-kicker {
+  display: inline-block;
+  background: var(--brand-light);
   color: var(--brand);
-  font-weight: 700;
+  font-weight: 800;
   text-transform: uppercase;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   letter-spacing: 0.1em;
-  margin-bottom: 16px;
-  display: block;
+  padding: 6px 16px;
+  border-radius: 99px;
+  margin-bottom: 20px;
 }
-.intro-highlights {
-  padding: 22px;
-  display: grid; gap: 12px;
-}
-.intro-chip {
-  display: grid; gap: 4px; padding: 16px 18px;
-  border-radius: 18px; background: linear-gradient(180deg, rgba(255,249,234,.98), rgba(247,236,208,.9));
-  border: 1px solid rgba(212,160,23,.16);
-}
-.intro-chip strong { font-size: 1rem; color: #20170a; line-height: 1.2; }
-.intro-chip span { font-size: .84rem; color: #6c624f; line-height: 1.5; }
 .home-vitrine {
   margin-bottom: 28px;
 }
@@ -1750,8 +1752,6 @@ footer div {
 .admin-item-featured.admin-item-scheduled { border-left: 3px solid #d17a00; }
 
 .hero-slide-content,
-.intro-copy,
-.intro-highlights,
 .results-inner,
 .results-bar + .controls-bar .controls-inner,
 .trust-card,
@@ -1798,8 +1798,6 @@ footer div {
 }
 
 .hero-slide-content,
-.intro-copy,
-.intro-highlights,
 .results-inner,
 .results-bar + .controls-bar .controls-inner,
 .trust-card,
