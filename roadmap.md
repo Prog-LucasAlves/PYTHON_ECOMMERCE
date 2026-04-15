@@ -6,17 +6,17 @@ Este roadmap detalha a visão de crescimento para a rede de afiliados Shopee, fo
 
 ---
 
-## 🏗️ 1. Infraestrutura e Core (UX/UI)
-1. **PWA (Progressive Web App):** Instalação completa para usuários mobile.
-2. **Offline Mode:** Cache de ofertas visualizadas anteriormente.
-3. **Skeleton Loading:** Transições suaves para carregamento de API.
-4. **Dark Mode Nativo:** Alternância automática baseada no sistema.
-5. **Busca Semântica:** Entender "presente para namorado" em vez de apenas palavras-chave.
-6. **Filtros por Cupom:** Filtrar produtos que aceitam cupons específicos.
-7. **Badge de Vendedor:** Identificar vendedores "Shopee Oficial" ou "Indicado".
-8. **Preço Histórico:** Gráfico simples de evolução de preço nos últimos 30 dias.
-9. **Notificações Push:** Alerta de queda de preço para itens favoritos.
-10. **Micro-interações:** Feedback visual ao favoritar ou copiar link.
+## ✅ 1. Infraestrutura e Core (UX/UI) - [CONCLUÍDO]
+1. **[OK] PWA (Progressive Web App):** Instalação completa para usuários mobile.
+2. **[OK] Offline Mode:** Cache de ofertas visualizadas anteriormente.
+3. **[OK] Skeleton Loading:** Transições suaves para carregamento de API.
+4. **[OK] Dark Mode Nativo:** Alternância automática baseada no sistema.
+5. **[OK] Busca Semântica:** Entender "presente para namorado" em vez de apenas palavras-chave.
+6. **[OK] Filtros por Cupom:** Filtrar produtos que aceitam cupons específicos.
+7. **[OK] Badge de Vendedor:** Identificar vendedores "Shopee Oficial" ou "Indicado".
+8. **[OK] Preço Histórico:** Gráfico simples de evolução de preço nos últimos 30 dias.
+9. **[OK] Notificações Push:** Alerta de queda de preço para itens favoritos.
+10. **[OK] Micro-interações:** Feedback visual ao favoritar ou copiar link.
 
 ## 🎯 2. Transparência e Sinais de Confiança (Affiliate Trust)
 11. **Página "Como Funcionamos":** Explicar o modelo de afiliados de forma amigável.
