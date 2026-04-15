@@ -10,6 +10,7 @@ const HOME_ROTATION_LIMIT = 100;
 const SEASONAL_COLLECTION_LIMIT = 14;
 const FIRESTORE_CACHE_KEY = 'shopee_products_cache_v2';
 const FIRESTORE_CACHE_TTL_MS = 10 * 60 * 1000;
+const GAMIFICATION_KEY = 'shopee_gamification';
 let lastRenderAt = Date.now();
 
 // State variables are declared later in the DATA section to avoid duplicates.
@@ -1491,13 +1492,26 @@ function initAppBindings() {
   document.getElementById('btnRoleta')?.addEventListener('click', luckyRoulette);
 }
 
-initDarkMode();
-renderProducts();
-initHeroBanner();
-initLGPD();
-initGamification();
+try { initDarkMode(); } catch(e) { console.error("Error in initDarkMode:", e); }
+try { renderProducts(); } catch(e) { console.error("Error in renderProducts:", e); }
+try { initHeroBanner(); } catch(e) { console.error("Error in initHeroBanner:", e); }
+try { initLGPD(); } catch(e) { console.error("Error in initLGPD:", e); }
+try { initGamification(); } catch(e) { console.error("Error in initGamification:", e); }
 window.clearAllFilters = clearAllFilters;
-document.addEventListener('DOMContentLoaded', initAppBindings);
+
+function attachEventsSafe() {
+  try {
+    initAppBindings();
+  } catch(e) {
+    console.error("Error in initAppBindings:", e);
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', attachEventsSafe);
+} else {
+  attachEventsSafe();
+}
 
 // ── LGPD CONSENT ──────────────────────────────────────────────
 function initLGPD() {
@@ -1521,11 +1535,16 @@ function initLGPD() {
 }
 
 // ── GAMIFICATION ENGINE ───────────────────────────────────────
-const GAMIFICATION_KEY = 'shopee_gamification';
 
 function getUserData() {
   const defaultData = { coins: 0, xp: 0, level: 1, badges: [], clicks: 0 };
-  return JSON.parse(localStorage.getItem(GAMIFICATION_KEY) || JSON.stringify(defaultData));
+  try {
+    const raw = localStorage.getItem(GAMIFICATION_KEY);
+    return raw ? JSON.parse(raw) : defaultData;
+  } catch(e) {
+    console.error("getUserData JSON error:", e);
+    return defaultData;
+  }
 }
 
 function saveUserData(data) {
