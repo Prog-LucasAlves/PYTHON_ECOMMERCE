@@ -1,4 +1,4 @@
-﻿// ── HERO BANNER CAROUSEL ─────────────────────────────────────
+// ── HERO BANNER CAROUSEL ─────────────────────────────────────
 let heroCurrent  = 0;
 let heroTimer    = null;
 const HERO_INTERVAL = 5000;
@@ -962,60 +962,40 @@ function getDiscount(p) {
 function cardHTML(p) {
   const images   = getImages(p);
   const main     = images[0] || 'https://via.placeholder.com/300x300?text=Sem+Imagem';
-  const hasMore  = images.length > 1 || !!p.video;
   const discount = getDiscount(p);
-  const isNew    = p.id && (Date.now() - p.id) < 7 * 24 * 60 * 60 * 1000;
-  const isHot    = discount >= 30;
   const isCampaign = isCampaignActive(p) || p.campaignId;
 
   let leftBadge = '';
-  if (p.featured)    leftBadge = '<span class="badge-featured">⭐ Destaque</span>';
-  else if (isCampaign) leftBadge = '<span class="badge-featured">🎯 Campanha</span>';
-  else if (isHot)    leftBadge = '<span class="badge-hot">🔥 QUENTE</span>';
-  else if (isNew)    leftBadge = '<span class="badge-new">✨ NOVO</span>';
-
-  const allMedia = [...images, ...(p.video ? ['__video__'] : [])];
-  const thumbsHTML = hasMore ? `
-    <div class="card-thumbs">
-      ${allMedia.slice(0, 5).map((m, i) => {
-        if (m === '__video__') {
-          const vt = getVideoThumb(p.video);
-          return `<div class="thumb video-thumb" data-action="open-product" data-id="${p.id}" data-start-index="${images.length}">
-            ${vt ? `<img src="${vt}" alt="video"/>` : '<div class="vt-placeholder"></div>'}
-            <span class="play-icon">▶</span>
-          </div>`;
-        }
-        return `<div class="thumb ${i===0?'active':''}" data-action="open-product" data-id="${p.id}" data-start-index="${i}">
-          <img src="${m}" alt="" loading="lazy"/>
-        </div>`;
-      }).join('')}
-      ${allMedia.length > 5 ? `<div class="thumb thumb-more">+${allMedia.length - 5}</div>` : ''}
-    </div>` : '';
+  if (p.featured)    leftBadge = '<span class="badge-featured" style="background:var(--brand); color:#fff; border-radius:99px; padding:4px 10px; font-size:0.65rem; font-weight:700; position:absolute; top:12px; left:12px; z-index:10;">DIAMANTE</span>';
+  else if (isCampaign) leftBadge = '<span class="badge-featured" style="background:#000; color:#fff; border-radius:99px; padding:4px 10px; font-size:0.65rem; font-weight:700; position:absolute; top:12px; left:12px; z-index:10;">CAMPANHA</span>';
 
   return `
   <div class="product-card" data-action="open-product" data-id="${p.id}">
     ${leftBadge}
-    ${discount   ? `<span class="badge-discount">-${discount}%</span>` : ''}
-    ${hasMore ? `<span class="badge-gallery"><i class="fas fa-images"></i> ${[...images, ...(p.video?['v']:[])].length}</span>` : ''}
+    ${discount ? `<span class="badge-discount" style="background:#000; color:#fff; border-radius:0 0 0 12px; padding:6px 12px; font-size:0.75rem; font-weight:700; position:absolute; top:0; right:0; z-index:10;">-${discount}%</span>` : ''}
+
     <div class="card-img-wrap">
-      <img src="${main}" alt="${p.name} - imagem principal" loading="lazy"
-           onerror="this.src='https://via.placeholder.com/300x300?text=Sem+Imagem'"/>
+      <img src="${main}" alt="${p.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x300?text=Sem+Imagem'"/>
     </div>
-    ${thumbsHTML}
+
     <div class="card-body">
+      <div class="card-trust">
+        <i class="fas fa-check-circle"></i> Verificado
+      </div>
       <div class="card-name">${p.name}</div>
       ${p.desc ? `<div class="card-desc">${formatDescription(p.desc)}</div>` : ''}
-      ${p.rating ? `<div class="card-stars">${starsHTML(p.rating)}${p.soldCount ? `<span class="card-sold">${p.soldCount}+ vendidos</span>` : ''}</div>` : (p.soldCount ? `<div class="card-stars"><span class="card-sold">${p.soldCount}+ vendidos</span></div>` : '')}
+
       <div class="card-prices">
+        <div class="card-price">R$ ${Number(p.price).toFixed(2).replace('.',',')}</div>
         ${p.originalPrice && p.originalPrice > p.price
           ? `<div class="card-original">R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}</div>` : ''}
-        <div class="card-price">R$ ${Number(p.price).toFixed(2).replace('.',',')}</div>
       </div>
     </div>
-        <div class="card-btn">🛒 Comprar na Shopee</div>
-    ${(() => { const t = p.countdown ? new Date(p.countdown).getTime() : null; const s = t ? renderCountdownStr(t) : null; return s ? `<div class="card-countdown-wrap"><span class="card-countdown" data-countdown="${t}">⏰ Oferta encerra em: ${s}</span></div>` : ''; })()}
+
+    <div class="card-btn">Ver Detalhes</div>
+
     <button class="card-compare-btn ${compareList.some(id => sameId(id, p.id))?'active':''}" data-pid="${p.id}"
-      data-action="toggle-compare" title="Adicionar para comparar">
+      data-action="toggle-compare" title="Comparar" style="position:absolute; bottom:70px; right:12px; background:rgba(255,255,255,0.9); border:1px solid #eee; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-muted);">
       <i class="fas fa-columns"></i>
     </button>
   </div>`;
@@ -1291,24 +1271,14 @@ function updatePageSeo(filtered, search) {
 function updateResultsSummary(filtered, search) {
   const summaryEl = document.getElementById('resultsSummary');
   const contextEl = document.getElementById('activeContext');
-  const updatedEl = document.getElementById('resultsUpdated');
-  if (!summaryEl || !contextEl || !updatedEl) return;
+  if (!summaryEl || !contextEl) return;
 
   const totalLive = allProducts.filter(p => !p.publishDate || new Date(p.publishDate) <= new Date()).length;
-  summaryEl.textContent = `${filtered.length} oferta${filtered.length === 1 ? '' : 's'} encontrada${filtered.length === 1 ? '' : 's'} de ${totalLive}`;
+  summaryEl.textContent = search ? `Resultados para "${search}"` : (currentCategory !== 'todos' ? categoryLabel(currentCategory).split(' ').slice(1).join(' ') : 'Todas as Ofertas');
 
-  const parts = [];
-  if (currentCategory !== 'todos') parts.push(categoryLabel(currentCategory));
-  if (search) parts.push(`busca por "${search}"`);
-  if (priceMin !== null || priceMax !== null) {
-    const minText = priceMin !== null ? `R$ ${priceMin.toFixed(2).replace('.', ',')}` : 'qualquer valor';
-    const maxText = priceMax !== null ? `R$ ${priceMax.toFixed(2).replace('.', ',')}` : 'qualquer valor';
-    parts.push(`faixa de ${minText} até ${maxText}`);
-  }
-  const sortLabel = document.getElementById('sortSelect')?.selectedOptions?.[0]?.textContent?.toLowerCase() || 'destaques';
-  parts.push(currentSort === 'default' ? 'ordenado por destaques' : `ordenado por ${sortLabel}`);
-  contextEl.textContent = parts.join(' · ');
-  updatedEl.textContent = `Última atualização: ${formatUpdatedTime(lastRenderAt)}`;
+  const countText = `${filtered.length} de ${totalLive} produtos encontrados`;
+  contextEl.textContent = countText;
+
   updateHeroStats();
   updatePageSeo(filtered, search);
 }

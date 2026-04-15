@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
 <head>
   <meta charset="UTF-8" />
@@ -96,7 +96,7 @@
         <button class="btn-dark-mode" id="darkToggle" title="Modo escuro">
           <i class="fas fa-moon" id="darkIcon"></i>
         </button>
-        <a href="admin.html" class="btn-admin"><i class="fas fa-cog"></i></a>
+        <a href="painel-shopee-vendas.html" class="btn-admin"><i class="fas fa-cog"></i></a>
       </div>
     </div>
   </header>
@@ -105,43 +105,36 @@
   <section class="hero-banner" id="heroBanner">
     <div class="hero-slides" id="heroSlides"></div>
     <div class="hero-dots"   id="heroDots"></div>
-    <button class="hero-arrow hero-prev" id="heroPrevBtn">&#8249;</button>
-    <button class="hero-arrow hero-next" id="heroNextBtn">&#8250;</button>
+  </section>
+
+  <!-- TRUST STRIP -->
+  <section class="trust-strip">
+    <div class="trust-inner">
+      <div class="trust-item">
+        <i class="fas fa-check-double"></i>
+        <span>Links Verificados Shopee</span>
+      </div>
+      <div class="trust-item">
+        <i class="fas fa-bolt"></i>
+        <span>Ofertas em Tempo Real</span>
+      </div>
+      <div class="trust-item">
+        <i class="fas fa-shield-halved"></i>
+        <span>Curadoria Independente</span>
+      </div>
+    </div>
   </section>
 
   <section class="intro-section">
     <div class="intro-shell">
       <div class="intro-copy">
-        <span class="intro-kicker">Curadoria diária</span>
-        <h1>Ofertas online escolhidas por categoria, campanha e melhor preço</h1>
-        <p>Encontramos produtos com bom custo-benefício, organizamos por intenção de busca e mostramos links diretos para você comparar, descobrir promoções e decidir com mais rapidez.</p>
-      </div>
-      <div class="intro-highlights">
-        <div class="intro-chip"><strong id="heroCount">0</strong><span>ofertas no ar</span></div>
-        <div class="intro-chip"><strong>Atualização</strong><span id="heroUpdated">em tempo real no seu navegador</span></div>
-        <div class="intro-chip"><strong>Transparência afiliada</strong><span>links de afiliado identificados sem custo extra para você</span></div>
+        <span class="intro-kicker">Curadoria Diamante</span>
+        <h1>As Melhores Ofertas da Shopee em um só lugar.</h1>
+        <p>Seleção manual das melhores promoções do dia. Compare preços e economize com links 100% seguros e verificados.</p>
       </div>
     </div>
   </section>
 
-  <section class="content-section" aria-labelledby="homeSeoTitle">
-    <div class="content-shell">
-      <div class="content-copy">
-        <span class="section-kicker">Como usar o site</span>
-        <h2 id="homeSeoTitle">Encontre as melhores ofertas por categoria, compare preços e decida com segurança</h2>
-        <p>Reunimos diariamente ofertas selecionadas de diversas categorias — de eletrônicos a moda — organizadas para facilitar sua comparação. Use a busca para ir direto ao produto que procura, ou aplique os filtros para refinar os resultados e encontrar o melhor custo-benefício.</p>
-        <p>Para uma navegação mais aprofundada, explore a página de categorias: os produtos são agrupados por tema, tornando mais fácil descobrir promoções, comparar opções e tomar a melhor decisão de compra.</p>
-      </div>
-      <div class="content-links" aria-label="Atalhos de navegação">
-        <a href="/categoria.html">Ver categorias</a>
-        <a href="/?cat=celulares">Celulares</a>
-        <a href="/?cat=eletronicos">Eletrônicos</a>
-        <a href="/?cat=beleza">Beleza</a>
-        <a href="/?cat=casa">Casa e Construção</a>
-        <a href="/?cat=moda">Moda</a>
-      </div>
-    </div>
-  </section>
 
   <!-- FILTROS / CATEGORIAS -->
   <section class="cat-section">
@@ -246,42 +239,31 @@
   </section>
 
   <!-- CONTROLES: ORDENAÇÃO + FILTRO DE PREÇO -->
-  <section class="results-bar" aria-label="Resumo dos filtros">
+  <!-- FILTERS & RESULTS -->
+  <section class="results-bar">
     <div class="results-inner">
       <div class="results-copy">
-        <p id="resultsSummary">Carregando ofertas...</p>
-        <span id="activeContext">Use busca, categoria e faixa de preço para refinar sua vitrine.</span>
+        <h2 id="resultsSummary">Todas as Ofertas</h2>
+        <p id="activeContext">Carregando ofertas...</p>
       </div>
-      <div class="results-actions">
+      <div class="controls-inner">
+        <select id="sortSelect" onchange="setSortMode(this.value)">
+          <option value="default">Destaques</option>
+          <option value="price-asc">Menor Preço</option>
+          <option value="price-desc">Maior Preço</option>
+          <option value="discount">Maior Desconto</option>
+        </select>
+        <div class="price-control">
+          <input type="number" id="priceMin" placeholder="Min" min="0"/>
+          <input type="number" id="priceMax" placeholder="Max" min="0"/>
+        </div>
         <button class="btn-secondary" type="button" id="clearFiltersBtn">
-          <i class="fas fa-rotate-left"></i> Limpar filtros
+          <i class="fas fa-rotate-left"></i>
         </button>
-        <span class="results-updated" id="resultsUpdated">Última atualização: agora</span>
       </div>
     </div>
   </section>
 
-  <section class="controls-bar">
-    <div class="controls-inner">
-      <div class="sort-control">
-        <label><i class="fas fa-sort"></i></label>
-        <select id="sortSelect" onchange="setSortMode(this.value)">
-          <option value="default">Destaques primeiro</option>
-          <option value="price-asc">Menor preço</option>
-          <option value="price-desc">Maior preço</option>
-          <option value="discount">Maior desconto</option>
-          <option value="newest">Mais recente</option>
-        </select>
-      </div>
-      <div class="price-control">
-        <label><i class="fas fa-tag"></i> Preço:</label>
-        <input type="number" id="priceMin" placeholder="Min" min="0"/>
-        <span>—</span>
-        <input type="number" id="priceMax" placeholder="Max" min="0"/>
-        <button class="btn-clear-price" id="clearPriceBtn" title="Limpar"><i class="fas fa-times"></i></button>
-      </div>
-    </div>
-  </section>
 
   <!-- PRODUTOS -->
   <main id="mainContent">
@@ -294,57 +276,6 @@
     </div>
   </main>
 
-  <section class="trust-strip" aria-label="Diferenciais do site">
-    <div class="trust-grid">
-      <article class="trust-card">
-        <i class="fas fa-bolt"></i>
-        <h2>Curadoria rápida</h2>
-        <p>Organizamos ofertas em uma vitrine simples para você encontrar oportunidades sem precisar navegar por dezenas de páginas.</p>
-      </article>
-      <article class="trust-card">
-        <i class="fas fa-eye"></i>
-        <h2>Mais clareza</h2>
-        <p>Mostramos preço promocional, preço original, desconto, avaliações e outros sinais úteis para ajudar na decisão.</p>
-      </article>
-      <article class="trust-card">
-        <i class="fas fa-shield-heart"></i>
-        <h2>Transparência afiliada</h2>
-        <p>Quando você compra por nossos links, recebemos comissão sem custo extra para você. A compra acontece na Shopee.</p>
-      </article>
-    </div>
-  </section>
-
-  <section class="editorial-section">
-    <div class="editorial-grid">
-      <article class="editorial-panel">
-        <span class="panel-kicker">Como funciona</span>
-        <h2>Uma vitrine independente para comprar com mais contexto</h2>
-        <ol class="steps-list">
-          <li>Selecionamos produtos com preço competitivo e boa apresentação.</li>
-          <li>Você filtra por categoria, preço e comparação.</li>
-          <li>Ao clicar, a compra é concluída diretamente na Shopee.</li>
-        </ol>
-      </article>
-      <article class="editorial-panel faq-panel">
-        <span class="panel-kicker">Perguntas frequentes</span>
-        <h2>Dúvidas comuns antes de comprar</h2>
-        <div class="faq-list">
-          <details>
-            <summary>Os preços podem mudar?</summary>
-            <p>Sim. Os valores podem ser alterados pela loja ou pela plataforma a qualquer momento. Sempre confira o preço final antes de concluir a compra.</p>
-          </details>
-          <details>
-            <summary>O site vende produtos diretamente?</summary>
-            <p>Não. Este site faz a curadoria e redireciona você para a Shopee, onde a compra é realizada.</p>
-          </details>
-          <details>
-            <summary>Vocês ganham comissão?</summary>
-            <p>Sim. Alguns links são de afiliado, o que ajuda a manter o projeto sem aumentar o valor pago por você.</p>
-          </details>
-        </div>
-      </article>
-    </div>
-  </section>
 
   <!-- PRODUCT DETAIL MODAL -->
   <div id="productModal" class="product-modal">
