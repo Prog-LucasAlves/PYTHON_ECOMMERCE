@@ -12,6 +12,8 @@ const FIRESTORE_CACHE_KEY = 'shopee_products_cache_v2';
 const FIRESTORE_CACHE_TTL_MS = 10 * 60 * 1000;
 let lastRenderAt = Date.now();
 
+// State variables are declared later in the DATA section to avoid duplicates.
+
 const SEASONAL_COLLECTIONS = [
   {
     id: 'easter-2026',
@@ -1387,6 +1389,21 @@ function updateStructuredData(filtered) {
   script.id = 'dynamicStructuredData';
   script.textContent = JSON.stringify(json);
   if (!existing) document.head.appendChild(script);
+}
+
+function initDarkMode() {
+  const isDark = localStorage.getItem('shopee_dark_mode') === 'true';
+  document.body.classList.toggle('dark-mode', isDark);
+  const icon = document.getElementById('darkIcon');
+  if (icon) icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+}
+
+function toggleDarkMode() {
+  const isDark = !document.body.classList.contains('dark-mode');
+  document.body.classList.toggle('dark-mode', isDark);
+  localStorage.setItem('shopee_dark_mode', isDark);
+  const icon = document.getElementById('darkIcon');
+  if (icon) icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
 }
 
 function initAppBindings() {
