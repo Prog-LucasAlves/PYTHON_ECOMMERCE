@@ -8,7 +8,7 @@ const HOME_SECTION_LIMIT = 16;
 const CAMPAIGN_SECTION_LIMIT = 250;
 const HOME_ROTATION_LIMIT = 100;
 const SEASONAL_COLLECTION_LIMIT = 14;
-const FIRESTORE_CACHE_KEY = 'shopee_products_cache';
+const FIRESTORE_CACHE_KEY = 'shopee_products_cache_v2';
 const FIRESTORE_CACHE_TTL_MS = 10 * 60 * 1000;
 let lastRenderAt = Date.now();
 
@@ -61,7 +61,8 @@ function getInitialSearchTerm() {
 }
 
 function sameId(a, b) {
-  return String(a) === String(b);
+  if (!a || !b) return false;
+  return String(a).trim() === String(b).trim();
 }
 
 function normalizeText(value) {
@@ -743,7 +744,7 @@ window.addEventListener('storage', (e) => {
       console.log('[FIRESTORE] Using cached product snapshot');
     } else {
       const snap = await fs.getDocs(fs.query(fs.collection(firestoreDb, 'products'), fs.orderBy('updatedAt', 'desc')));
-      const remote = snap.docs.map(d => d.data()).filter(Boolean);
+      const remote = snap.docs.map(d => ({ ...d.data(), id: d.data().id || d.id })).filter(Boolean);
       if (remote.length) {
         const normalized = dedupeProducts(remote);
         allProducts = normalized;
@@ -1043,8 +1044,13 @@ let modalProduct = null;
 let modalIndex   = 0;
 
 function openProductModal(id, startIdx) {
+  if (!id) return;
   const p = allProducts.find(x => sameId(x.id, id));
-  if (!p) return;
+  if (!p) {
+    console.warn('[MODAL] Product not found:', id);
+    if (typeof showToast === 'function') showToast('Produto não encontrado. Tente atualizar a página.');
+    return;
+  }
   // Gamification rewards (Safeguarded)
   try {
     if (typeof addRewards === 'function') addRewards(10, 5);
