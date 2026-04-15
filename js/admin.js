@@ -1,4 +1,4 @@
-﻿// ── FIREBASE CONFIG ───────────────────────────────────────────
+// ── FIREBASE CONFIG ───────────────────────────────────────────
 // SECURITY NOTE: Firebase API keys for web apps are intentionally public.
 // Real security is enforced via Firebase Security Rules on the console:
 // https://console.firebase.google.com → Authentication → Settings → Authorized domains
@@ -616,6 +616,15 @@ function renderAdminItem(p) {
         <button class="btn-delete" type="button" data-action="delete-product" data-product-id="${p.id}"><i class="fas fa-trash"></i></button>
       </div>
     </div>`;
+          ${isScheduled ? `· <span style="color:#ff9800">Pub: ${new Date(p.publishDate).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span>` : ''}
+        </div>
+      </div>
+      <div class="admin-item-actions">
+        <button class="btn-tg-share" type="button" data-action="share-telegram" data-product-id="${p.id}" title="Compartilhar no Telegram"><i class="fab fa-telegram-plane"></i></button>
+        <button class="btn-edit" type="button" data-action="edit-product" data-product-id="${p.id}"><i class="fas fa-pen"></i></button>
+        <button class="btn-delete" type="button" data-action="delete-product" data-product-id="${p.id}"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>`;
 }
 
 function handleAdminListClick(e) {
@@ -665,46 +674,6 @@ function shareTelegramAdmin(id) {
   });
   const discount = p.originalPrice && p.originalPrice > p.price
     ? Math.round((1 - p.price / p.originalPrice) * 100) : null;
-  const priceLine = p.originalPrice && p.originalPrice > p.price
-    ? `~~R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}~~  →  *R$ ${Number(p.price).toFixed(2).replace('.',',')}*`
-    : `*R$ ${Number(p.price).toFixed(2).replace('.',',')}*`;
-  const summary = [
-    `🔥 *${p.name}*`,
-    `📂 ${categoryLabel(p.category)}`,
-    discount ? `🏷️ Economia de *${discount}%*` : null,
-    `💰 ${priceLine}`,
-    `⚠️ Preço promocional sujeito a alteração sem aviso prévio.`,
-    p.desc ? `📝 ${stripHtml(p.desc)}` : null,
-    `🛒 Confira na Shopee: ${p.link}`,
-  ].filter(Boolean).join('\n');
-  const url = `https://t.me/share/url?url=${encodeURIComponent(p.link)}&text=${encodeURIComponent(summary)}`;
-  window.open(url, '_blank');
-}
-
-async function loadProductsFromFirestore() {
-  if (!db || !getDocs_fn || !collection_fn) return;
-  try {
-    const snap = await getDocs_fn(query_fn(collection_fn(db, 'products'), orderBy_fn('updatedAt', 'desc')));
-    const remote = snap.docs.map(d => d.data()).filter(Boolean);
-    if (remote.length) {
-      products = remote;
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-      console.log('[FIRESTORE] ✅ Loaded', products.length, 'products from Firestore');
-    }
-  } catch (e) {
-    console.warn('[FIRESTORE] Failed to load products:', e.message);
-  }
-}
-
-async function migrateLocalStorageProductsToFirestore() {
-  if (!db || !collection_fn || !doc_fn || !setDoc_fn) return;
-  try {
-    const localProducts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
-    if (!localProducts.length) return;
-
-    const remoteIds = new Set(products.map(p => String(p.id)));
-    const legacy = localProducts.filter(p => !remoteIds.has(String(p.id)));
-    if (!legacy.length) return;
 
     const col = collection_fn(db, 'products');
     await Promise.all(legacy.map(product =>
