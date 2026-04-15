@@ -204,15 +204,41 @@ header {
 .trust-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--text);
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-muted);
   white-space: nowrap;
 }
 .trust-item i {
   color: var(--brand);
-  font-size: 1.25rem;
+  font-size: 1.1rem;
+}
+.status-badge {
+  background: var(--surface);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+}
+.status-dot {
+  width: 8px;
+  height: 8px;
+  background: var(--success);
+  border-radius: 50%;
+  position: relative;
+}
+.status-dot::after {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border: 2px solid var(--success);
+  border-radius: 50%;
+  animation: pulseStatus 2s infinite;
+  opacity: 0.5;
+}
+@keyframes pulseStatus {
+  0% { transform: scale(0.8); opacity: 0.8; }
+  100% { transform: scale(1.8); opacity: 0; }
 }
 .intro-section {
   padding: 80px 24px 64px;
@@ -592,6 +618,22 @@ main {
   padding: 4px 10px; border-radius: var(--radius-full); z-index: 10;
 }
 
+.badge-shipping {
+  position: absolute;
+  top: 48px;
+  right: 12px;
+  background: var(--success);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 4px 12px rgba(34,197,94,0.2);
+}
 .card-img-wrap {
   width: 100%;
   aspect-ratio: 1/1;
@@ -1388,35 +1430,36 @@ footer div {
   border-radius: 999px;
 }
 .badge-ssl i { font-size: .85rem; }
-.footer-copy {
-  font-size: .86rem;
-  color: #f1cf70;
-  margin: 8px 0 6px;
+.site-footer {
+  padding: 80px 24px 64px;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+.footer-links {
+  display: flex;
+  justify-content: center;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.footer-links a {
+  font-size: 0.9rem;
   font-weight: 700;
-  letter-spacing: .02em;
+  color: var(--text);
 }
-.footer-affiliate {
-  font-size: .8rem;
-  color: #cfc3b1;
-  margin: 0;
-}
+.footer-links a:hover { color: var(--brand); }
 .footer-disclaimer {
-  font-size: .76rem;
-  color: #aa9e90;
-  margin: 12px auto 0;
-  max-width: 720px;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  max-width: 600px;
+  margin: 0 auto 24px;
   line-height: 1.6;
 }
-.footer-legal {
-  font-size: .77rem;
-  color: #cfc3b1;
-  margin-top: 12px;
+.footer-copy {
+  font-size: 0.85rem;
+  color: var(--text-muted);
 }
-.footer-legal a {
-  color: #f1cf70;
-  text-decoration: underline;
-}
-.footer-legal a:hover { color: #fff3c2; }
+.footer-copy strong { color: var(--text); }
 
 /* ── LGPD CONSENT BANNER ─────────────────────────────────────── */
 .lgpd-banner {
@@ -1551,14 +1594,41 @@ footer div {
   background: linear-gradient(135deg, #d4a017, #b87f00); color: #111; font-size: .75rem; font-weight: 800;
   padding: 3px 8px; border-radius: 4px;
 }
-.modal-desc { font-size: .85rem; color: #666; line-height: 1.5; white-space: pre-line; }
+.modal-guarantee {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(34,197,94,0.05);
+  border: 1px solid rgba(34,197,94,0.15);
+  border-radius: 12px;
+  margin: 4px 0;
+}
+.modal-guarantee i {
+  font-size: 1.4rem;
+  color: var(--success);
+}
+.modal-guarantee strong {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+.modal-guarantee p {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.modal-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; white-space: pre-line; }
 .modal-buy-btn {
   display: flex; align-items: center; justify-content: center; gap: 8px;
-  background: linear-gradient(135deg, #f0c54f 0%, #d4a017 100%); color: #111; font-size: 1rem; font-weight: 800;
-  padding: 14px 20px; border-radius: 14px; margin-top: auto;
+  background: var(--brand); color: #fff; font-size: 1rem; font-weight: 800;
+  padding: 14px 20px; border-radius: var(--radius-md); margin-top: auto;
   transition: transform .2s ease, filter .2s ease;
 }
-.modal-buy-btn:hover { transform: translateY(-1px); filter: brightness(1.04); }
+.modal-buy-btn:hover { transform: translateY(-2px); filter: brightness(1.1); box-shadow: var(--shadow-md); }
 
 /* ── COUNTDOWN TIMER ─────────────────────────────────────────── */
 .card-countdown-wrap { padding: 0 12px 6px; }
@@ -1811,7 +1881,8 @@ footer div {
 .dash-panel,
 .fav-panel-inner,
 .fav-item,
-.pwa-banner {
+.pwa-banner,
+.como-funciona-card {
   border-radius: var(--radius-lg);
 }
 
