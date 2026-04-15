@@ -1455,12 +1455,15 @@ function initAppBindings() {
   document.querySelectorAll('.cat-item[data-cat]').forEach(btn => {
     btn.addEventListener('click', () => setCategory(btn.dataset.cat, btn));
   });
+
+  document.getElementById('btnRoleta')?.addEventListener('click', luckyRoulette);
 }
 
 initDarkMode();
 renderProducts();
 initHeroBanner();
 initLGPD();
+initGamification();
 window.clearAllFilters = clearAllFilters;
 document.addEventListener('DOMContentLoaded', initAppBindings);
 
@@ -1480,6 +1483,94 @@ function initLGPD() {
     // Clear tracking data on decline
     localStorage.removeItem('shopee_search_history');
     localStorage.removeItem('shopee_clicks');
+    localStorage.removeItem('shopee_gamification');
     if (banner) banner.style.display = 'none';
   });
 }
+
+// ── GAMIFICATION ENGINE ───────────────────────────────────────
+const GAMIFICATION_KEY = 'shopee_gamification';
+
+function getUserData() {
+  const defaultData = { coins: 0, xp: 0, level: 1, badges: [], clicks: 0 };
+  return JSON.parse(localStorage.getItem(GAMIFICATION_KEY) || JSON.stringify(defaultData));
+}
+
+function saveUserData(data) {
+  localStorage.setItem(GAMIFICATION_KEY, JSON.stringify(data));
+  updateGamificationUI();
+}
+
+function initGamification() {
+  updateGamificationUI();
+}
+
+function updateGamificationUI() {
+  const data = getUserData();
+  const coinsEl = document.getElementById('userCoins');
+  const levelEl = document.getElementById('userLevel');
+  if (coinsEl) coinsEl.textContent = data.coins;
+  if (levelEl) levelEl.textContent = data.level;
+}
+
+function addRewards(xpGain, coinsGain) {
+  const data = getUserData();
+  data.xp += xpGain;
+  data.coins += coinsGain;
+  data.clicks += 1;
+
+  // Level up logic (Level = floor(sqrt(XP/100)) + 1)
+  const newLevel = Math.floor(Math.sqrt(data.xp / 100)) + 1;
+  if (newLevel > data.level) {
+    data.level = newLevel;
+    showLevelUpToast(newLevel);
+  }
+
+  saveUserData(data);
+}
+
+function showLevelUpToast(level) {
+  const toast = document.createElement('div');
+  toast.className = 'level-up-toast';
+  toast.innerHTML = `<i class="fas fa-arrow-up"></i> Nível ${level}!`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 4000);
+}
+
+function luckyRoulette() {
+  if (!allProducts.length) return;
+  const data = getUserData();
+  if (data.coins < 5) {
+    alert('Você precisa de 5 moedas para girar a roleta! Clique em algumas ofertas para ganhar.');
+    return;
+  }
+
+  data.coins -= 5;
+  saveUserData(data);
+
+  const randomIdx = Math.floor(Math.random() * allProducts.length);
+  const product = allProducts[randomIdx];
+
+  // Highlight effect
+  const btn = document.getElementById('btnRoleta');
+  if (btn) btn.classList.add('spinning');
+
+  setTimeout(() => {
+    if (btn) btn.classList.remove('spinning');
+    openProductModal(product.id);
+    addRewards(50, 0); // 50 XP for using roulette
+  }, 1000);
+}
+
+// Hook into existing actions
+const originalHandleOpen = window.handleOpenProductAction;
+window.handleOpenProductAction = function(el) {
+  addRewards(10, 5); // +10 XP, +5 Coins for opening a product
+  if (typeof originalHandleOpen === 'function') {
+    originalHandleOpen(el);
+  } else {
+    // Fallback if not globally defined yet
+    const pid = el.dataset.id;
+    if (pid) openProductModal(pid);
+  }
+};

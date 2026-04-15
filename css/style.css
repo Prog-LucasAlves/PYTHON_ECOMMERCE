@@ -3,22 +3,32 @@
   --brand: #EE4D2D;
   --brand-hover: #d73d22;
   --brand-light: #fff5f2;
-  --bg: #ffffff;
-  --surface: #f9fafb;
-  --surface-secondary: #f3f4f6;
-  --text: #111827;
-  --text-muted: #6b7280;
-  --border: #e5e7eb;
-  --border-hover: #d1d5db;
+  --bg: #fdfcf8;
+  --surface: #ffffff;
+  --surface-secondary: #f4f2e8;
+  --text: #1f1a12;
+  --text-muted: #7a6a57;
+  --border: #e8e2d2;
+  --border-hover: #d6cfb8;
   --success: #10b981;
   --success-light: #ecfdf5;
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-sm: 0 1px 3px rgba(31,26,18,0.05);
+  --shadow-md: 0 4px 12px rgba(31,26,18,0.08);
+  --shadow-lg: 0 12px 24px rgba(31,26,18,0.12);
   --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
   --radius-full: 9999px;
+}
+
+[data-theme="dark"] {
+  --bg: #15120e;
+  --surface: #1f1a12;
+  --surface-secondary: #2a241a;
+  --text: #f4f2e8;
+  --text-muted: #a29584;
+  --border: #3a3227;
+  --border-hover: #4a4133;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
@@ -97,10 +107,81 @@ header {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: var(--shadow-sm);
 }
-.btn-primary:hover {
-  background: var(--brand-hover);
-  transform: translateY(-1px);
-  box-shadow: var(--shadow-md);
+.user-status-pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface-secondary);
+  padding: 4px 12px 4px 6px;
+  border-radius: var(--radius-full);
+  border: 1.5px solid var(--border);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+.user-status-pill:hover { border-color: var(--brand); transform: translateY(-1px); }
+.user-level-badge {
+  background: var(--text);
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: var(--radius-full);
+}
+.user-coins {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #a96f00;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.user-coins i { color: #d4a017; font-size: 0.95rem; }
+
+.cat-item.special-roleta .cat-circle {
+  background: linear-gradient(135deg, #ee4d2d, #ff7337);
+  color: #fff;
+  animation: roletaPulse 2s infinite ease-in-out;
+}
+@keyframes roletaPulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(238,77,45,0.4); }
+  50% { transform: scale(1.05); box-shadow: 0 0 15px 5px rgba(238,77,45,0.2); }
+}
+
+[data-theme="dark"] .user-status-pill { background: #2a241a; border-color: #3a3227; }
+[data-theme="dark"] .user-level-badge { background: var(--brand); color: #111; }
+[data-theme="dark"] .user-coins { color: #f1cf70; }
+
+.level-up-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text);
+  color: var(--bg);
+  padding: 12px 24px;
+  border-radius: var(--radius-full);
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: var(--shadow-lg);
+  z-index: 3000;
+  animation: toastSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1), toastFadeOut 0.4s 3.6s forwards;
+}
+@keyframes toastSlideUp {
+  from { transform: translateX(-50%) translateY(40px); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+@keyframes toastFadeOut {
+  to { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+}
+
+.special-roleta.spinning .cat-circle {
+  animation: spinRoleta 0.3s infinite linear;
+}
+@keyframes spinRoleta {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 .btn-secondary {
   background: rgba(255,255,255,.88); color: var(--brand-text); border: 1.5px solid rgba(212,160,23,.42); border-radius: 999px;
@@ -142,7 +223,7 @@ header {
 .hero-slide-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(90deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%);
+  background: linear-gradient(90deg, rgba(31,26,18,0.85) 0%, rgba(31,26,18,0.3) 60%, transparent 100%);
 }
 .hero-slide-content {
   position: relative;
@@ -263,11 +344,11 @@ header {
   padding: 0;
 }
 .intro-copy h1 {
-  font-size: 3.5rem;
+  font-size: clamp(2.5rem, 5vw, 3.8rem);
   font-weight: 800;
-  line-height: 1.1;
-  letter-spacing: -0.03em;
-  margin-bottom: 24px;
+  line-height: 1.05;
+  letter-spacing: -0.04em;
+  margin-bottom: 28px;
   color: var(--text);
 }
 .intro-copy p {
@@ -304,9 +385,11 @@ header {
   flex-wrap: wrap;
 }
 .section-head h3 {
-  font-size: 1.05rem;
-  color: #2f2418;
-  margin-top: 4px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-top: 6px;
+  letter-spacing: -0.01em;
 }
 .section-head p {
   color: #7a6a57;
@@ -610,18 +693,18 @@ main {
 
 /* ========== PRODUCT CARD ========== */
 .product-card {
-  background: var(--bg);
+  background: var(--surface);
   border-radius: var(--radius-lg);
   overflow: hidden;
   box-shadow: var(--shadow-sm);
-  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
   position: relative;
   border: 1px solid var(--border);
 }
 .product-card:hover {
-  transform: translateY(-6px);
+  transform: translateY(-8px);
   box-shadow: var(--shadow-lg);
   border-color: var(--brand);
 }
@@ -887,10 +970,10 @@ main {
 
 /* ========== FOOTER ========== */
 footer {
-  background: var(--bg);
+  background: var(--surface-secondary);
   color: var(--text-muted);
   text-align: center;
-  padding: 64px 24px;
+  padding: 80px 24px 64px;
   font-size: 0.875rem;
   border-top: 1px solid var(--border);
 }
@@ -1926,30 +2009,8 @@ footer div {
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-.product-card:hover .card-name,
-.product-card:hover .card-price {
-  color: #8f6100;
-}
-
-.hero-slide-content,
-.results-inner,
-.results-bar + .controls-bar .controls-inner,
-.trust-card,
-.editorial-panel,
-.product-card,
-.empty-state,
-.modal-box,
-.compare-box,
-.site-footer,
-.search-dropdown,
-.admin-form-card,
-.admin-list-card,
-.dash-card,
-.dash-panel,
-.fav-panel-inner,
-.fav-item,
-.pwa-banner {
-  box-shadow: var(--shadow-soft);
+.product-card:hover .card-name {
+  color: var(--brand);
 }
 
 /* ── ADMIN TELEGRAM SHARE BUTTON ────────────────────────────── */
