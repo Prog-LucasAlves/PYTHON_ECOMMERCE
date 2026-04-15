@@ -1045,6 +1045,8 @@ let modalIndex   = 0;
 function openProductModal(id, startIdx) {
   const p = allProducts.find(x => sameId(x.id, id));
   if (!p) return;
+  // Gamification rewards
+  if (typeof addRewards === 'function') addRewards(10, 5);
   // Track click
   const clicks = JSON.parse(localStorage.getItem('shopee_clicks') || '{}');
   clicks[id] = (clicks[id] || 0) + 1;
@@ -1558,19 +1560,6 @@ function luckyRoulette() {
   setTimeout(() => {
     if (btn) btn.classList.remove('spinning');
     openProductModal(product.id);
-    addRewards(50, 0); // 50 XP for using roulette
+    addRewards(40, 0); // 40 XP + 10 XP from openProductModal = 50 XP
   }, 1000);
 }
-
-// Hook into existing actions
-const originalHandleOpen = window.handleOpenProductAction;
-window.handleOpenProductAction = function(el) {
-  addRewards(10, 5); // +10 XP, +5 Coins for opening a product
-  if (typeof originalHandleOpen === 'function') {
-    originalHandleOpen(el);
-  } else {
-    // Fallback if not globally defined yet
-    const pid = el.dataset.id;
-    if (pid) openProductModal(pid);
-  }
-};
