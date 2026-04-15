@@ -658,7 +658,10 @@ function handleSearchKey(e) {
 
 // ── DARK MODE ─────────────────────────────────────────────────
 function initDarkMode() {
-  if (localStorage.getItem('darkMode') === '1') {
+  const saved = localStorage.getItem('darkMode');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+  if (saved === '1' || (saved === null && prefersDark)) {
     document.documentElement.setAttribute('data-theme', 'dark');
     const icon = document.getElementById('darkIcon');
     if (icon) icon.className = 'fas fa-sun';
@@ -804,7 +807,18 @@ function _renderFiltered(grid, empty, search) {
   // Hide products scheduled for the future
   filtered = filtered.filter(p => !p.publishDate || new Date(p.publishDate) <= new Date());
   if (currentCategory !== 'todos') filtered = filtered.filter(p => p.category === currentCategory);
-  if (search) filtered = filtered.filter(p => p.name.toLowerCase().includes(search));
+  if (search) {
+    const searchTerms = search.split(/\s+/);
+    filtered = filtered.filter(p => {
+      const name = p.name.toLowerCase();
+      const desc = (p.desc || '').toLowerCase();
+      const cat = (p.category || '').toLowerCase();
+      // Match all terms (AND logic) for better precision
+      return searchTerms.every(term =>
+        name.includes(term) || desc.includes(term) || cat.includes(term)
+      );
+    });
+  }
   if (priceMin !== null) filtered = filtered.filter(p => p.price >= priceMin);
   if (priceMax !== null) filtered = filtered.filter(p => p.price <= priceMax);
   const uniqueFiltered = dedupeByContent(filtered);
@@ -893,16 +907,21 @@ function _renderFiltered(grid, empty, search) {
 // ── SKELETON ─────────────────────────────────────────────────
 function showSkeleton() {
   const grid = document.getElementById('productGrid');
-  grid.innerHTML = Array(8).fill(0).map(() => `
-    <div class="skeleton-card">
-      <div class="skel skel-img"></div>
-      <div class="skel-body">
-        <div class="skel skel-line"></div>
-        <div class="skel skel-line skel-short"></div>
-        <div class="skel skel-price"></div>
-      </div>
-      <div class="skel skel-btn"></div>
-    </div>`).join('');
+  if (!grid) return;
+  grid.innerHTML = `
+    <div class="skeleton-grid">
+      ${Array(8).fill(0).map(() => `
+        <div class="skeleton-card">
+          <div class="skel-img"></div>
+          <div class="skel-body">
+            <div class="skel-line"></div>
+            <div class="skel-line skel-meta"></div>
+            <div class="skel-line skel-price"></div>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `;
 }
 
 // ── CARD ANIMATION ────────────────────────────────────────────
@@ -964,38 +983,45 @@ function cardHTML(p) {
   const main     = images[0] || 'https://via.placeholder.com/300x300?text=Sem+Imagem';
   const discount = getDiscount(p);
   const isCampaign = isCampaignActive(p) || p.campaignId;
+  const isOfficial = p.sellerType === 'official' || p.category === 'eletronicos';
 
   let leftBadge = '';
-  if (p.featured)    leftBadge = '<span class="badge-featured" style="background:var(--brand); color:#fff; border-radius:99px; padding:4px 10px; font-size:0.65rem; font-weight:700; position:absolute; top:12px; left:12px; z-index:10;">DIAMANTE</span>';
-  else if (isCampaign) leftBadge = '<span class="badge-featured" style="background:#000; color:#fff; border-radius:99px; padding:4px 10px; font-size:0.65rem; font-weight:700; position:absolute; top:12px; left:12px; z-index:10;">CAMPANHA</span>';
+  if (p.featured)    leftBadge = '<span class="badge-featured">DIAMANTE</span>';
+  else if (isCampaign) leftBadge = '<span class="badge-featured" style="background:#000;">CAMPANHA</span>';
 
   return `
   <div class="product-card" data-action="open-product" data-id="${p.id}">
     ${leftBadge}
-    ${discount ? `<span class="badge-discount" style="background:#000; color:#fff; border-radius:0 0 0 12px; padding:6px 12px; font-size:0.75rem; font-weight:700; position:absolute; top:0; right:0; z-index:10;">-${discount}%</span>` : ''}
+    ${discount ? `<span class="badge-discount">-${discount}%</span>` : ''}
 
     <div class="card-img-wrap">
       <img src="${main}" alt="${p.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x300?text=Sem+Imagem'"/>
     </div>
 
     <div class="card-body">
-      <div class="card-trust">
-        <i class="fas fa-check-circle"></i> Verificado
+      <div class="card-meta">
+        <div class="card-trust">
+          <i class="fas fa-check-circle"></i> Verificado
+        </div>
+        ${isOfficial ? `<div class="card-seller"><i class="fas fa-store"></i> Oficial</div>` : ''}
       </div>
-      <div class="card-name">${p.name}</div>
-      ${p.desc ? `<div class="card-desc">${formatDescription(p.desc)}</div>` : ''}
 
-      <div class="card-prices">
-        <div class="card-price">R$ ${Number(p.price).toFixed(2).replace('.',',')}</div>
-        ${p.originalPrice && p.originalPrice > p.price
-          ? `<div class="card-original">R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}</div>` : ''}
+      <div class="card-name">${p.name}</div>
+
+      <div class="card-price-row">
+        <div class="card-prices">
+          <div class="card-price">R$ ${Number(p.price).toFixed(2).replace('.',',')}</div>
+          ${p.originalPrice && p.originalPrice > p.price
+            ? `<div class="card-original">R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}</div>` : ''}
+        </div>
+        ${discount > 15 ? `<div class="card-trend" title="Menor preço dos últimos 30 dias"><i class="fas fa-chart-line"></i> Queda</div>` : ''}
       </div>
     </div>
 
-    <div class="card-btn">Ver Detalhes</div>
+    <div class="card-btn">Ver na Shopee</div>
 
     <button class="card-compare-btn ${compareList.some(id => sameId(id, p.id))?'active':''}" data-pid="${p.id}"
-      data-action="toggle-compare" title="Comparar" style="position:absolute; bottom:70px; right:12px; background:rgba(255,255,255,0.9); border:1px solid #eee; border-radius:50%; width:32px; height:32px; display:flex; align-items:center; justify-content:center; cursor:pointer; color:var(--text-muted);">
+      data-action="toggle-compare" title="Comparar">
       <i class="fas fa-columns"></i>
     </button>
   </div>`;
