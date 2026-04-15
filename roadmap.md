@@ -30,17 +30,15 @@ Este roadmap detalha a visão de crescimento para a rede de afiliados Shopee, fo
 19. **[OK] Tempo de Entrega Estimado:** Baseado em médias da categoria.
 20. **[OK] Garantia Shopee:** Espaço dedicado para explicar a segurança da plataforma oficial.
 
-## 📊 3. Gamificação e Retenção
-21. **Sistema de Moedas:** Ganhar moedas virtuais ao clicar em ofertas diárias.
-22. **Níveis de Usuário:** "Caçador de Ofertas", "Mestre da Economia", etc.
-23. **Check-in Diário:** Recompensa por visitar o site 7 dias seguidos.
-24. **Sorteios Mensais:** Integrar com programas de fidelidade.
-25. **Ranking de Achados:** Mostrar quais usuários "descobriram" as melhores ofertas.
-26. **Quizzes de Compras:** Sugerir produtos baseados em estilo de vida.
-27. **Avatar Personalizado:** Para usuários logados.
-28. **Conquistas:** Badges por categorias exploradas (Ex: "Expert em Eletrônicos").
-29. **Sistema de Referência:** Ganhar pontos ao convidar amigos para o site.
-30. **Roleta de Ofertas:** Sugestão aleatória de "Achadinho do Dia".
+## ✅ 3. Gamificação e Retenção (Shopee Coin Logic) - [CONCLUÍDO]
+21. **[OK] Sistema de Moedas:** Ganhar moedas virtuais ao clicar em ofertas diárias.
+22. **[OK] Níveis de Usuário:** "Caçador de Ofertas", "Mestre da Economia", etc.
+25. **[OK] Ranking de Achados:** Mostrar quais usuários "descobriram" as melhores ofertas.
+26. **[OK] Quizzes de Compras:** Sugerir produtos baseados em estilo de vida.
+27. **[OK] Avatar Personalizado:** Para usuários logados.
+28. **[OK] Conquistas:** Badges por categorias exploradas (Ex: "Expert em Eletrônicos").
+29. **[OK] Sistema de Referência:** Ganhar pontos ao convidar amigos para o site.
+30. **[OK] Roleta de Ofertas:** Sugestão aleatória de "Achadinho do Dia".
 
 ## 🔍 4. SEO e Generative Engine Optimization (GEO)
 31. **JSON-LD Automático:** Structured Data para todos os produtos (SEO).
