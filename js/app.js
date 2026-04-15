@@ -993,6 +993,7 @@ function cardHTML(p) {
   <div class="product-card" data-action="open-product" data-id="${p.id}">
     ${leftBadge}
     ${discount ? `<span class="badge-discount">-${discount}%</span>` : ''}
+    ${p.price >= 19 ? `<span class="badge-shipping"><i class="fas fa-truck-fast"></i> Frete Grátis</span>` : ''}
 
     <div class="card-img-wrap">
       <img src="${main}" alt="${p.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x300?text=Sem+Imagem'"/>
