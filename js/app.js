@@ -298,8 +298,7 @@ function getCampaignItems(items) {
   return [...campaignSet, ...fill];
 }
 
-function getProductScore(p) {
-  const clicks = JSON.parse(localStorage.getItem('shopee_clicks') || '{}');
+function getProductScore(p, clicks = {}) {
   const clickN = Number(clicks[p.id] || 0);
   const discount = getDiscount(p);
   const featured = p.featured ? 50 : 0;
@@ -984,16 +983,29 @@ function _renderFiltered(grid, empty, search) {
       HOME_SECTION_LIMIT,
     );
     const campaignItems = pickUnique(getCampaignItems(filtered), usedFingerprints, CAMPAIGN_SECTION_LIMIT);
+    const clicksData = JSON.parse(localStorage.getItem('shopee_clicks') || '{}');
     const rotatingItems = pickUnique(
-      rotateHomeProducts(rotationPool).sort((a, b) => getProductScore(b) - getProductScore(a)),
+      rotateHomeProducts(rotationPool),
       usedFingerprints,
       HOME_ROTATION_LIMIT,
     );
 
     (async () => {
-      await renderBatch(featuredItems, 'home-vitrine-featured', 'Produtos fixos e campanhas ativas', 'Primeira linha', 'Itens fixados manualmente, campanhas e promoções temporárias ficam acima da rotação.', 0);
-      await renderBatch(campaignItems, 'home-vitrine-campaign', 'Ofertas temporárias e campanhas semanais', 'Vitrine de campanha', 'Itens com campanha, janela de data ou promoção destacada entram aqui sem misturar com a rotação principal.', featuredItems.length);
-      await renderBatch(rotatingItems, 'home-vitrine-rotating', '100 produtos que mudam a cada 30 minutos', 'Vitrine rotativa', 'Seleção única, sem repetir a primeira linha nem a campanha.', featuredItems.length + campaignItems.length);
+      if (featuredItems.length) {
+        await renderBatch(featuredItems, 'home-vitrine-featured', 'Produtos fixos e campanhas ativas', 'Primeira linha', 'Itens fixados manualmente, campanhas e promoções temporárias ficam acima da rotação.', 0);
+        await new Promise(r => setTimeout(r, 50));
+      }
+
+      if (campaignItems.length) {
+        await renderBatch(campaignItems, 'home-vitrine-campaign', 'Ofertas temporárias e campanhas semanais', 'Vitrine de campanha', 'Itens com campanha, janela de data ou promoção destacada entram aqui sem misturar com a rotação principal.', featuredItems.length);
+        await new Promise(r => setTimeout(r, 50));
+      }
+
+      if (rotatingItems.length) {
+        // Ordenação otimizada (Usa clicksData em vez de reler localStorage N log N vezes)
+        const sortedRotating = rotatingItems.sort((a, b) => getProductScore(b, clicksData) - getProductScore(a, clicksData));
+        await renderBatch(sortedRotating, 'home-vitrine-rotating', '100 produtos que mudam a cada 30 minutos', 'Vitrine rotativa', 'Seleção única, sem repetir a primeira linha nem a campanha.', featuredItems.length + campaignItems.length);
+      }
 
       animateCards();
       startCountdownTimers();
