@@ -1946,10 +1946,16 @@ function initAppBindings() {
 
 try { initDarkMode(); } catch(e) { console.error("Error in initDarkMode:", e); }
 try { renderProducts(); } catch(e) { console.error("Error in renderProducts:", e); }
-try { renderCoupons(); } catch(e) { console.error("Error in renderCoupons:", e); }
 try { initHeroBanner(); } catch(e) { console.error("Error in initHeroBanner:", e); }
-try { initLGPD(); } catch(e) { console.error("Error in initLGPD:", e); }
-try { initGamification(); } catch(e) { console.error("Error in initGamification:", e); }
+
+// DEFER NON-CRITICAL UI: Libera a thread principal (reduz TBT)
+const deferTask = window.requestIdleCallback || ((cb) => setTimeout(cb, 1500));
+deferTask(() => {
+  try { renderCoupons(); } catch(e) { console.error("Error in renderCoupons:", e); }
+  try { initLGPD(); } catch(e) { console.error("Error in initLGPD:", e); }
+  try { initGamification(); } catch(e) { console.error("Error in initGamification:", e); }
+  console.log('[PERF] Non-critical tasks deferred.');
+});
 window.clearAllFilters = clearAllFilters;
 
 function attachEventsSafe() {
