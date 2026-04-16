@@ -33,6 +33,9 @@
 
   <link rel="stylesheet" href="css/style.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
   <!-- PWA -->
   <link rel="manifest" href="manifest.json"/>
   <meta name="theme-color" content="#161616"/>
@@ -87,12 +90,14 @@
       <div class="logo">
         <img src="img/logo-01-icon.svg" alt="Melhores Ofertas" class="site-logo site-logo-icon"/>
       </div>
+
+      <div class="search-wrap">
+        <input type="text" id="searchInput" placeholder="O que você está buscando hoje?"
+          autocomplete="off"/>
+        <div id="searchDropdown" class="search-dropdown hidden-block"></div>
+      </div>
+
       <div class="header-actions">
-        <div class="search-wrap">
-          <input type="text" id="searchInput" placeholder="🔍 Buscar produto..."
-            autocomplete="off"/>
-          <div id="searchDropdown" class="search-dropdown hidden-block"></div>
-        </div>
         <button class="btn-dark-mode" id="darkToggle" title="Modo escuro">
           <i class="fas fa-moon" id="darkIcon"></i>
         </button>
@@ -313,10 +318,10 @@
         </div>
 
         <div class="modal-guarantee">
-          <i class="fas fa-shield-check"></i>
+          <i class="fas fa-certificate"></i>
           <div>
-            <strong>Garantia Shopee</strong>
-            <p>Receba seu pedido ou seu dinheiro de volta. Compra 100% segura.</p>
+            <strong>Link Oficial Shopee</strong>
+            <p>Compra garantida. Pagamento e processamento totalmente gerenciados pela Shopee.</p>
           </div>
         </div>
 
