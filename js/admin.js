@@ -931,31 +931,46 @@ function showToast(msg) {
 }
 
 window.generateSitemapXML = function() {
-  const baseUrl = 'https://melhoresdashopee.com.br/';
-  const today = new Date().toISOString().split('T')[0];
-  let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+  console.log('[SITEMAP] Iniciando geração...');
+  try {
+    const baseUrl = 'https://melhoresdashopee.com.br/';
+    const today = new Date().toISOString().split('T')[0];
+    let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
 
-  const staticPages = ['', 'categoria.html', 'politica-privacidade.html', 'termos-de-uso.html'];
-  staticPages.forEach(p => {
-    xml += `  <url>\n    <loc>${baseUrl}${p}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
-  });
+    // Páginas estáticas
+    const staticPages = ['', 'categoria.html', 'politica-privacidade.html', 'termos-de-uso.html'];
+    staticPages.forEach(p => {
+      xml += `  <url>\n    <loc>${baseUrl}${p}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
+    });
 
-  products.forEach(p => {
-    const slug = p.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-    xml += `  <url>\n    <loc>${baseUrl}?p=${slug}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>\n`;
-  });
+    // Usa a variável products que está no escopo do módulo
+    if (typeof products === 'undefined') {
+      throw new Error('Lista de produtos não encontrada no painel.');
+    }
 
-  xml += '</urlset>';
+    console.log(`[SITEMAP] Processando ${products.length} produtos...`);
 
-  const blob = new Blob([xml], { type: 'text/xml' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'sitemap.xml';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+    products.forEach(p => {
+      if (!p.name) return;
+      const slug = p.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      xml += `  <url>\n    <loc>${baseUrl}?p=${slug}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>\n`;
+    });
 
-  alert('✅ XML do Sitemap gerado e baixado! Agora:\n1. Abra o sitemap.xml baixado.\n2. Cole no seu arquivo do VS Code.\n3. Commit/Push.');
+    xml += '</urlset>';
+
+    const blob = new Blob([xml], { type: 'text/xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'sitemap.xml';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
+    alert('✅ XML do Sitemap gerado e baixado com sucesso!');
+  } catch (err) {
+    console.error('[SITEMAP] Erro:', err);
+    alert('❌ Erro ao gerar sitemap: ' + err.message);
+  }
 };
