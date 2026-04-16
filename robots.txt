@@ -1,4 +1,9 @@
 User-agent: *
 Allow: /
+Disallow: /painel-shopee-vendas.html
+Disallow: /js/admin.js
+Disallow: /sw.js
+Disallow: /manifest.json
 
+# Sitemap
 Sitemap: https://melhoresdashopee.com.br/sitemap.xml
