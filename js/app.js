@@ -384,7 +384,7 @@ function initHeroBanner() {
   }).join('');
 
   dotsEl.innerHTML = slides.map((_, i) =>
-    `<button class="hero-dot ${i===0?'active':''}" data-action="hero-dot" data-index="${i}"></button>`
+    `<button class="hero-dot ${i===0?'active':''}" data-action="hero-dot" data-index="${i}" aria-label="Ver slide ${i + 1}"></button>`
   ).join('');
 
   if (heroTimer) clearInterval(heroTimer);
@@ -583,6 +583,53 @@ window.clearCompare       = clearCompare;
 window.openCompareModal   = openCompareModal;
 window.closeCompareModal  = closeCompareModal;
 window.closeCompareOutside = closeCompareOutside;
+
+
+// ── COUPON CENTER ──────────────────────────────────────────────
+const SHOPEE_COUPONS = [
+  { id: 'c1', val: '50', unit: 'OFF', title: 'Cupom de R$50', desc: 'Em compras acima de R$250', code: 'SHOPEE50', link: 'https://shope.ee/6pZJp...' },
+  { id: 'c2', val: '10', unit: '%', title: '10% de Desconto', desc: 'Válido em Moda e Beleza', code: 'MODA10', link: 'https://shope.ee/6pZJp...' },
+  { id: 'c3', val: 'FRETE', unit: 'GRÁTIS', title: 'Frete Grátis', desc: 'Lojas Oficiais e Selecionadas', code: 'FRETEGRATIS', link: 'https://shope.ee/6pZJp...' }
+];
+
+function renderCoupons() {
+  const grid = document.getElementById('couponGrid');
+  if (!grid) return;
+
+  grid.innerHTML = SHOPEE_COUPONS.map(c => `
+    <div class="coupon-card" onclick="copyCoupon('${c.code}', '${c.link}')" title="Clique para copiar e ir para a Shopee">
+      <div class="coupon-left">
+        <span class="coupon-val-num">${c.val}</span>
+        <span class="coupon-val-unit">${c.unit}</span>
+      </div>
+      <div class="coupon-right">
+        <div>
+          <div class="coupon-title">${escapeHTML(c.title)}</div>
+          <div class="coupon-desc">${escapeHTML(c.desc)}</div>
+        </div>
+        <div class="coupon-footer">
+          <div class="coupon-code-box">${c.code}</div>
+          <div class="coupon-cta">RESGATAR</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function copyCoupon(code, link) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(code).then(() => {
+      showToast(`🎟️ Cupom ${code} copiado! Abrindo a Shopee...`);
+      setTimeout(() => window.open(link, '_blank'), 1200);
+    }).catch(() => {
+      window.open(link, '_blank');
+    });
+  } else {
+    window.open(link, '_blank');
+  }
+}
+
+window.copyCoupon = copyCoupon;
 
 // ── SHARE ─────────────────────────────────────────────────────
 function shareWhatsApp() {
@@ -924,7 +971,40 @@ function _renderFiltered(grid, empty, search) {
   }
 
   if (!filtered.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
-  empty.style.display = 'none';
+  grid.innerHTML = ''; // Limpa o grid antes de começar a nova renderização
+
+  const renderBatch = async (items, containerClass, title, kicker, desc, startIndex = 0) => {
+    if (!items.length) return;
+
+    // Cria a seção
+    const section = document.createElement('section');
+    section.className = `home-vitrine ${containerClass}`;
+    section.innerHTML = `
+      <div class="section-head">
+        <div>
+          <span class="section-kicker">${kicker}</span>
+          <h3>${title}</h3>
+        </div>
+        <p>${desc}</p>
+      </div>
+      <div class="product-grid-inner" id="inner-${containerClass}"></div>
+    `;
+    grid.appendChild(section);
+
+    const inner = section.querySelector('.product-grid-inner');
+
+    // Renderiza em lotes de 12 para não travar a main thread
+    const BATCH_SIZE = 12;
+    for (let i = 0; i < items.length; i += BATCH_SIZE) {
+      const batch = items.slice(i, i + BATCH_SIZE);
+      const html = batch.map((p, idx) => cardHTML(p, startIndex + i + idx)).join('');
+      inner.insertAdjacentHTML('beforeend', html);
+
+      // Pequena pausa para o navegador "respirar"
+      await new Promise(resolve => setTimeout(resolve, 0));
+    }
+  };
+
   try {
     const usedFingerprints = new Set();
     const featured = pickUnique(
@@ -938,42 +1018,16 @@ function _renderFiltered(grid, empty, search) {
       usedFingerprints,
       HOME_ROTATION_LIMIT,
     );
-    const featuredHTML = featured.length ? `
-      <section class="home-vitrine home-vitrine-featured">
-        <div class="section-head">
-          <div>
-            <span class="section-kicker">Primeira linha</span>
-            <h3>Produtos fixos e campanhas ativas</h3>
-          </div>
-          <p>Itens fixados manualmente, campanhas e promoções temporárias ficam acima da rotação.</p>
-        </div>
-        <div class="featured-row">${featured.map(p => cardHTML(p)).join('')}</div>
-      </section>` : '';
-    const campaignHTML = campaignItems.length ? `
-      <section class="home-vitrine home-vitrine-campaign">
-        <div class="section-head">
-          <div>
-            <span class="section-kicker">Vitrine de campanha</span>
-            <h3>Ofertas temporárias e campanhas semanais</h3>
-          </div>
-          <p>Itens com campanha, janela de data ou promoção destacada entram aqui sem misturar com a rotação principal.</p>
-        </div>
-        <div class="product-grid-inner">${campaignItems.map(p => cardHTML(p)).join('')}</div>
-      </section>` : '';
-    const rotatingHTML = rotatingItems.length ? `
-      <section class="home-vitrine home-vitrine-rotating">
-        <div class="section-head">
-          <div>
-            <span class="section-kicker">Vitrine rotativa</span>
-            <h3>100 produtos que mudam a cada 30 minutos</h3>
-          </div>
-          <p>Seleção única, sem repetir a primeira linha nem a campanha.</p>
-        </div>
-        <div class="product-grid-inner">${rotatingItems.map(p => cardHTML(p)).join('')}</div>
-      </section>` : '';
-    grid.innerHTML = `${featuredHTML}${campaignHTML}${rotatingHTML}`;
-    animateCards();
-    startCountdownTimers();
+
+    (async () => {
+      await renderBatch(featured, 'home-vitrine-featured', 'Produtos fixos e campanhas ativas', 'Primeira linha', 'Itens fixados manualmente, campanhas e promoções temporárias ficam acima da rotação.', 0);
+      await renderBatch(campaignItems, 'home-vitrine-campaign', 'Ofertas temporárias e campanhas semanais', 'Vitrine de campanha', 'Itens com campanha, janela de data ou promoção destacada entram aqui sem misturar com a rotação principal.', featured.length);
+      await renderBatch(rotatingItems, 'home-vitrine-rotating', '100 produtos que mudam a cada 30 minutos', 'Vitrine rotativa', 'Seleção única, sem repetir a primeira linha nem a campanha.', featured.length + campaignItems.length);
+
+      animateCards();
+      startCountdownTimers();
+    })();
+
   } catch (err) {
     console.error('[RENDER] Card generation failed:', err);
     grid.innerHTML = '<p class="empty-state">Não foi possível renderizar os produtos agora.</p>';
@@ -1055,25 +1109,35 @@ function getDiscount(p) {
   return Math.round((1 - p.price / p.originalPrice) * 100);
 }
 
-function cardHTML(p) {
+function cardHTML(p, index = 0) {
   const images   = getImages(p, 'thumb');
   const main     = images[0] || 'https://via.placeholder.com/300x300?text=Sem+Imagem';
   const discount = getDiscount(p);
   const isCampaign = isCampaignActive(p) || p.campaignId;
   const isOfficial = p.sellerType === 'official' || p.category === 'eletronicos';
+  const nameEscaped = escapeHTML(p.name);
+
+  // Lazy load images that are NOT in the first row
+  const loadingType = index < 8 ? 'eager' : 'lazy';
+  const fetchPriority = index < 4 ? 'high' : 'low';
 
   let leftBadge = '';
-  if (p.featured)    leftBadge = '<span class="badge-featured">DIAMANTE</span>';
-  else if (isCampaign) leftBadge = '<span class="badge-featured" style="background:#000;">CAMPANHA</span>';
+  if (p.featured)    leftBadge = `<span class="badge-featured" aria-label="Produto Diamante">DIAMANTE</span>`;
+  else if (isCampaign) leftBadge = `<span class="badge-featured" style="background:#000;" aria-label="Campanha Ativa">CAMPANHA</span>`;
 
   return `
-  <div class="product-card" data-action="open-product" data-id="${p.id}" style="cursor: pointer;">
+  <div class="product-card" data-action="open-product" data-id="${p.id}" role="button" aria-label="Ver detalhes de ${nameEscaped}" style="cursor: pointer;">
     ${leftBadge}
-    ${discount ? `<span class="badge-discount">-${discount}%</span>` : ''}
+    ${discount ? `<span class="badge-discount" aria-label="Desconto de ${discount}%">-${discount}%</span>` : ''}
     ${p.price >= 19 ? `<span class="badge-shipping"><i class="fas fa-truck-fast"></i> Frete Grátis</span>` : ''}
 
     <div class="card-img-wrap">
-      <img src="${main}" alt="${escapeHTML(p.name)}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x300?text=Sem+Imagem'"/>
+      <img src="${main}"
+           alt="Foto do produto ${nameEscaped}"
+           loading="${loadingType}"
+           fetchpriority="${fetchPriority}"
+           decoding="async"
+           onerror="this.src='https://via.placeholder.com/300x300?text=Sem+Imagem'"/>
     </div>
 
     <div class="card-body">
@@ -1084,7 +1148,7 @@ function cardHTML(p) {
         ${isOfficial ? `<div class="card-seller"><i class="fas fa-store"></i> Oficial</div>` : ''}
       </div>
 
-      <div class="card-name">${escapeHTML(p.name)}</div>
+      <div class="card-name">${nameEscaped}</div>
 
       <div class="card-price-row">
         <div class="card-prices">
@@ -1097,10 +1161,13 @@ function cardHTML(p) {
       </div>
     </div>
 
-    <div class="card-btn">Ver na Shopee</div>
+    <div class="card-btn" aria-hidden="true">Ver na Shopee</div>
 
-    <button class="card-compare-btn ${compareList.some(id => sameId(id, p.id))?'active':''}" data-pid="${p.id}"
-      data-action="toggle-compare" title="Comparar">
+    <button class="card-compare-btn ${compareList.some(id => sameId(id, p.id))?'active':''}"
+      data-pid="${p.id}"
+      data-action="toggle-compare"
+      aria-label="Adicionar ${nameEscaped} à lista de comparação"
+      title="Comparar">
       <i class="fas fa-columns"></i>
     </button>
   </div>`;
@@ -1879,6 +1946,7 @@ function initAppBindings() {
 
 try { initDarkMode(); } catch(e) { console.error("Error in initDarkMode:", e); }
 try { renderProducts(); } catch(e) { console.error("Error in renderProducts:", e); }
+try { renderCoupons(); } catch(e) { console.error("Error in renderCoupons:", e); }
 try { initHeroBanner(); } catch(e) { console.error("Error in initHeroBanner:", e); }
 try { initLGPD(); } catch(e) { console.error("Error in initLGPD:", e); }
 try { initGamification(); } catch(e) { console.error("Error in initGamification:", e); }

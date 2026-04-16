@@ -153,17 +153,29 @@
     </div>
   </section>
 
+  <!-- CENTRAL DE CUPONS -->
+  <section class="coupon-center">
+    <div class="shell">
+      <div class="coupon-header">
+        <h2><i class="fas fa-ticket-alt" style="color: var(--brand);"></i> Cupons da Shopee do Dia</h2>
+        <span style="font-size: 0.85rem; color: #888;">🔥 Atualizado agora</span>
+      </div>
+      <div class="coupon-grid" id="couponGrid">
+        <!-- Renderizado via JS -->
+      </div>
+    </div>
+  </section>
 
   <!-- FILTROS / CATEGORIAS -->
   <section class="cat-section">
     <div class="cat-track-wrap">
-      <button class="cat-arrow cat-arrow-left" id="catLeft">&#8249;</button>
+      <button class="cat-arrow cat-arrow-left" id="catLeft" aria-label="Rolar categorias para a esquerda">&#8249;</button>
       <div class="cat-track" id="catTrack">
-        <button class="cat-item active" data-cat="todos">
+        <button class="cat-item active" data-cat="todos" aria-label="Ver todas as categorias">
           <span class="cat-circle">🏷️</span>
           <span class="cat-label">Todos</span>
         </button>
-        <button class="cat-item special-roleta" id="btnRoleta" title="Achadinho Aleatório">
+        <button class="cat-item special-roleta" id="btnRoleta" title="Achadinho Aleatório" aria-label="Girar roleta de achadinhos aleatórios">
           <span class="cat-circle">🎲</span>
           <span class="cat-label">Roleta</span>
         </button>
@@ -256,7 +268,7 @@
           <span class="cat-label">Outros</span>
         </button>
       </div>
-      <button class="cat-arrow cat-arrow-right" id="catRight">&#8250;</button>
+      <button class="cat-arrow cat-arrow-right" id="catRight" aria-label="Rolar categorias para a direita">&#8250;</button>
     </div>
   </section>
 
