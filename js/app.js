@@ -1015,11 +1015,12 @@ function cardHTML(p) {
 
       <div class="card-price-row">
         <div class="card-prices">
-          <div class="card-price">R$ ${Number(p.price).toFixed(2).replace('.',',')}</div>
+          <span class="card-price-label">Menor preço</span>
+          <div class="card-price-value">R$ ${Number(p.price).toFixed(2).replace('.',',')}</div>
           ${p.originalPrice && p.originalPrice > p.price
             ? `<div class="card-original">R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}</div>` : ''}
         </div>
-        ${discount > 15 ? `<div class="card-trend" title="Menor preço dos últimos 30 dias"><i class="fas fa-chart-line"></i> Queda</div>` : ''}
+        ${discount > 15 ? `<div class="card-trend" title="Preço em queda"><i class="fas fa-chart-line"></i> Queda</div>` : ''}
       </div>
     </div>
 
