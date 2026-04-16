@@ -94,8 +94,8 @@
 
       <div class="search-wrap">
         <div class="search-bar">
-          <input type="text" id="searchInput" placeholder="O que você está buscando hoje?" autocomplete="off"/>
-          <button class="search-btn" id="searchBtn" title="Pesquisar">
+          <input type="text" id="searchInput" placeholder="O que você está buscando hoje?" autocomplete="off" aria-label="O que você está buscando hoje?"/>
+          <button class="search-btn" id="searchBtn" title="Pesquisar" aria-label="Pesquisar">
             <i class="fas fa-search"></i>
           </button>
         </div>
@@ -153,18 +153,7 @@
     </div>
   </section>
 
-  <!-- CENTRAL DE CUPONS -->
-  <section class="coupon-center">
-    <div class="shell">
-      <div class="coupon-header">
-        <h2><i class="fas fa-ticket-alt" style="color: var(--brand);"></i> Cupons da Shopee do Dia</h2>
-        <span style="font-size: 0.85rem; color: #888;">🔥 Atualizado agora</span>
-      </div>
-      <div class="coupon-grid" id="couponGrid">
-        <!-- Renderizado via JS -->
-      </div>
-    </div>
-  </section>
+
 
   <!-- FILTROS / CATEGORIAS -->
   <section class="cat-section">
@@ -281,17 +270,17 @@
         <p id="activeContext">Carregando ofertas...</p>
       </div>
       <div class="controls-inner">
-        <select id="sortSelect" onchange="setSortMode(this.value)">
+        <select id="sortSelect" onchange="setSortMode(this.value)" aria-label="Ordenar produtos por">
           <option value="default">Destaques</option>
           <option value="price-asc">Menor Preço</option>
           <option value="price-desc">Maior Preço</option>
           <option value="discount">Maior Desconto</option>
         </select>
         <div class="price-control">
-          <input type="number" id="priceMin" placeholder="Min" min="0"/>
-          <input type="number" id="priceMax" placeholder="Max" min="0"/>
+          <input type="number" id="priceMin" placeholder="Min" min="0" aria-label="Preço mínimo"/>
+          <input type="number" id="priceMax" placeholder="Max" min="0" aria-label="Preço máximo"/>
         </div>
-        <button class="btn-secondary" type="button" id="clearFiltersBtn">
+        <button class="btn-secondary" type="button" id="clearFiltersBtn" aria-label="Limpar todos os filtros">
           <i class="fas fa-rotate-left"></i>
         </button>
       </div>
@@ -364,10 +353,10 @@
           <i class="fas fa-shopping-cart"></i> Ver na Shopee
         </a>
         <div class="modal-actions-row">
-          <button class="modal-share-btn" id="shareWhatsAppBtn">
+          <button class="modal-share-btn" id="shareWhatsAppBtn" aria-label="Compartilhar no WhatsApp">
             <i class="fab fa-whatsapp"></i>
           </button>
-          <button class="modal-share-btn telegram" id="shareTelegramBtn">
+          <button class="modal-share-btn telegram" id="shareTelegramBtn" aria-label="Compartilhar no Telegram">
             <i class="fab fa-telegram-plane"></i>
           </button>
         </div>
