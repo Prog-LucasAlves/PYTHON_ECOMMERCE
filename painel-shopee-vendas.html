@@ -6,7 +6,6 @@
   <title>Painel Admin · Melhores Ofertas</title>
   <meta name="robots" content="noindex, nofollow" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; script-src 'self' https://www.gstatic.com https://www.googletagmanager.com; connect-src 'self' https://www.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.gstatic.com https://www.googletagmanager.com https://www.google-analytics.com https://analytics.google.com; font-src 'self' https://cdnjs.cloudflare.com data:; upgrade-insecure-requests">
-  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CJZX1ZJ2GM"></script>
   <script src="js/analytics.js" defer></script>
   <link rel="stylesheet" href="css/style.css"/>
@@ -14,8 +13,7 @@
 </head>
 <body class="admin-page">
 
-  <!-- LOGIN OVERLAY -->
-    <div id="loginOverlay" class="login-overlay">
+  <div id="loginOverlay" class="login-overlay">
     <div class="login-box">
       <div class="logo admin-login-logo"><img src="img/logo-01-icon.svg" alt="Melhores Ofertas" class="site-logo site-logo-icon"/></div>
       <h2>Painel Admin</h2>
@@ -26,7 +24,6 @@
     </div>
   </div>
 
-  <!-- ADMIN PANEL -->
   <div id="adminPanel" class="admin-panel-hidden">
     <header>
       <div class="header-inner">
@@ -41,7 +38,6 @@
     </header>
 
     <main class="admin-main">
-      <!-- DASHBOARD -->
       <section class="admin-form-card admin-form-pad">
         <div class="admin-dashboard-head">
           <h2><i class="fas fa-chart-bar"></i> Dashboard</h2>
@@ -55,7 +51,6 @@
         <div id="dashboardSection"></div>
       </section>
 
-      <!-- FORM -->
       <section class="admin-form-card">
         <h2 id="formTitle"><i class="fas fa-plus-circle"></i> Adicionar Produto</h2>
         <form id="productForm">
@@ -128,7 +123,6 @@
               <input type="text" id="prodShopId" placeholder="Preenchido automaticamente" readonly/>
             </div>
 
-            <!-- MULTI-IMAGE SECTION -->
             <div class="form-group full-width">
               <label>🖼️ Imagens do Produto * <span class="helper-note">(adicione quantas quiser)</span></label>
               <div id="imagesList"></div>
@@ -137,13 +131,11 @@
               </button>
             </div>
 
-            <!-- IMAGE PREVIEWS -->
             <div class="form-group full-width hidden-block" id="imagesPreviewBox">
               <label>Preview das Imagens</label>
               <div id="imagesPreviewStrip" class="admin-preview-strip"></div>
             </div>
 
-            <!-- VIDEO SECTION -->
             <div class="form-group full-width">
               <label>🎬 Vídeo do Produto <span class="helper-note">(opcional · YouTube ou link direto)</span></label>
               <input type="text" id="prodVideo" placeholder="https://www.youtube.com/watch?v=... ou link .mp4"/>
@@ -153,9 +145,11 @@
             </div>
             <div class="form-group full-width">
               <label>Descrição curta</label>
-              <textarea id="prodDesc" rows="3">Frete grátis com cupom - Produto original - Entrega rápida -
-Preço promocional sujeito a alteração sem aviso prévio.</textarea>
-              <small class="helper-note">Você pode editar esse texto antes de salvar.</small>
+              <textarea id="prodDesc" rows="2">Frete grátis com cupom - Produto original - Entrega rápida</textarea>
+            </div>
+            <div class="form-group full-width">
+              <label>📝 Review do Especialista (SEO/GEO)</label>
+              <textarea id="prodExpertReview" rows="4" placeholder="Por que este produto é bom?"></textarea>
             </div>
             <div class="form-group">
               <label>⭐ Avaliação (1.0 – 5.0)</label>
@@ -176,12 +170,10 @@ Preço promocional sujeito a alteração sem aviso prévio.</textarea>
             <div class="form-group">
               <label>Ordem na 1ª linha</label>
               <input type="number" id="prodHomeOrder" placeholder="1" min="1" step="1"/>
-              <small class="helper-note">Use para fixar a posição do produto na primeira linha.</small>
             </div>
             <div class="form-group">
               <label>ID da campanha</label>
               <input type="text" id="prodCampaignId" placeholder="ex: semana-tech-01"/>
-              <small class="helper-note">Agrupa produtos numa vitrine de campanha.</small>
             </div>
             <div class="form-group">
               <label>Categoria da campanha</label>
@@ -192,9 +184,6 @@ Preço promocional sujeito a alteração sem aviso prévio.</textarea>
                 <option value="casa">Casa</option>
                 <option value="beleza">Beleza</option>
                 <option value="esporte">Esporte</option>
-                <option value="bebes">Mãe e Bebê</option>
-                <option value="brinquedos">Brinquedos</option>
-                <option value="animais">Pet</option>
               </select>
             </div>
             <div class="form-group">
@@ -208,19 +197,16 @@ Preço promocional sujeito a alteração sem aviso prévio.</textarea>
             <div class="form-group">
               <label>⏰ Oferta até (data/hora)</label>
               <input type="datetime-local" id="prodCountdown"/>
-              <small class="helper-note">Deixe em branco se não tiver prazo.</small>
             </div>
             <div class="form-group">
               <label>🗓️ Publicar em (agendar)</label>
               <input type="datetime-local" id="prodPublishDate"/>
-              <small class="helper-note">Produto ficará oculto até essa data/hora.</small>
             </div>
           </div>
           <div class="form-actions">
             <button type="submit" class="btn-primary" id="submitBtn"><i class="fas fa-save"></i> Salvar Produto</button>
             <button type="button" class="btn-secondary" id="resetFormBtn"><i class="fas fa-times"></i> Cancelar</button>
           </div>
-          <!-- Compartilhar após salvar -->
           <div id="shareAfterSave" class="share-banner hidden-block">
             <span class="share-banner-text"><i class="fas fa-check-circle"></i> Produto salvo!</span>
             <button id="btnShareTgAfterSave" class="btn-tg-share share-banner-btn">
@@ -231,7 +217,6 @@ Preço promocional sujeito a alteração sem aviso prévio.</textarea>
         </form>
       </section>
 
-      <!-- LISTA DE PRODUTOS -->
       <section class="admin-list-card">
         <div class="list-header">
           <h2><i class="fas fa-list"></i> Produtos Cadastrados <span id="prodCount" class="badge">0</span></h2>
@@ -251,7 +236,6 @@ Preço promocional sujeito a alteração sem aviso prévio.</textarea>
     </main>
   </div>
 
-  <!-- Firebase SDK -->
   <script type="module" src="js/admin.js" defer></script>
 </body>
 </html>

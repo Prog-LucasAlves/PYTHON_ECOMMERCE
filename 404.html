@@ -6,81 +6,77 @@
   <title>Página não encontrada · Melhores Ofertas</title>
   <meta name="robots" content="noindex, follow" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; script-src 'self' https://www.gstatic.com https://www.googletagmanager.com; connect-src 'self' https://www.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.gstatic.com https://www.googletagmanager.com https://www.google-analytics.com https://analytics.google.com; font-src 'self' https://cdnjs.cloudflare.com data:; upgrade-insecure-requests">
-  <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CJZX1ZJ2GM"></script>
   <script src="js/analytics.js" defer></script>
   <link rel="stylesheet" href="css/style.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --brand: #ffda00;
+      --brand-dark: #001c3d;
+      --brand-text: #1a1a1a;
+    }
+    body { font-family: 'Outfit', sans-serif; background: #fff; color: #1a1a1a; }
     .page-404 {
-      min-height: 80vh;
+      min-height: 50vh;
       display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      text-align: center; padding: 40px 20px;
+      text-align: center; padding: 60px 20px;
+      background: #fdfdfd; border-bottom: 1px solid #eee;
     }
     .page-404 .err-code {
-      font-size: 7rem; font-weight: 900; color: #d4a017;
+      font-size: 8rem; font-weight: 800; color: var(--brand-dark);
       line-height: 1; margin-bottom: 8px;
-      text-shadow: 4px 4px 0 rgba(212,160,23,.12);
     }
-    .page-404 h2 { font-size: 1.5rem; margin-bottom: 10px; color: #241b0e; }
-    .page-404 p  { color: #6f6557; margin-bottom: 28px; font-size: 1rem; }
+    .page-404 .err-code span { color: var(--brand); }
+    .page-404 h2 { font-size: 1.8rem; margin-bottom: 10px; color: var(--brand-dark); }
+    .page-404 p  { color: #666; margin-bottom: 32px; font-size: 1.1rem; max-width: 500px; }
     .page-404 .btn-home {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: linear-gradient(135deg, #f0c54f 0%, #d4a017 100%); color: #111; padding: 13px 28px;
-      border-radius: 14px; font-weight: 800; font-size: 1rem;
-      text-decoration: none; transition: background .2s, transform .1s;
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--brand); color: var(--brand-text); padding: 14px 32px;
+      border-radius: 12px; font-weight: 700; font-size: 1rem;
+      text-decoration: none; transition: transform 0.2s;
     }
-    .page-404 .btn-home:hover { background: linear-gradient(135deg, #f4cf65 0%, #e0b22d 100%); transform: translateY(-2px); }
-    .featured-section { max-width: 1100px; margin: 40px auto; padding: 0 16px; }
-    .featured-section h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; color: #241b0e; }
-    [data-theme="dark"] .page-404 h2 { color: #e0e0e0; }
-    [data-theme="dark"] .featured-section h3 { color: #e0e0e0; }
+    .page-404 .btn-home:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(255,218,0,0.3); }
+    .featured-section { max-width: 1200px; margin: 40px auto; padding: 0 16px; }
+    .featured-section h3 { font-size: 1.25rem; font-weight: 700; margin-bottom: 24px; color: var(--brand-dark); }
+
+    /* Mock of product card for 404 */
+    .grid-404 { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; }
+
+    [data-theme="dark"] body { background: #121212; color: #e0e0e0; }
+    [data-theme="dark"] .page-404 { background: #1a1a1a; border-color: #333; }
+    [data-theme="dark"] .page-404 h2, [data-theme="dark"] .page-404 .err-code { color: #fff; }
   </style>
 </head>
 <body>
-  <header>
-    <div class="header-inner">
-      <div class="logo">
-        <img src="img/logo-01-icon.svg" alt="Melhores Ofertas" class="site-logo site-logo-icon"/>
-      </div>
-      <div class="header-actions">
-        <a href="index.html" class="btn-secondary"><i class="fas fa-home"></i> Início</a>
-      </div>
-    </div>
-  </header>
-
   <section class="page-404">
-    <div class="err-code">404</div>
-    <h2>Ops! Página não encontrada 😕</h2>
-    <p>O endereço que você acessou não existe ou foi removido.</p>
+    <div class="err-code">4<span>0</span>4</div>
+    <h2>Ops! Perdeu o caminho das ofertas?</h2>
+    <p>A página que você está procurando não existe ou foi removida, mas não se preocupe, os melhores achadinhos estão logo ali.</p>
     <a href="index.html" class="btn-home">
-      <i class="fas fa-home"></i> Voltar às ofertas
+      <i class="fas fa-shopping-basket"></i> Explorar Ofertas Ativas
     </a>
   </section>
 
   <section class="featured-section">
-    <h3>🔥 Confira algumas ofertas enquanto isso:</h3>
-    <div id="featuredGrid" class="product-grid"></div>
+    <h3>🔥 Achadinhos que você pode gostar:</h3>
+    <div id="featuredGrid" class="grid-404"></div>
   </section>
 
   <footer class="site-footer">
     <div class="footer-inner">
-      <div class="footer-badges">
-        <span class="badge-ssl"><i class="fas fa-lock"></i> Site Seguro · SSL</span>
-        <span class="badge-ssl"><i class="fas fa-shield-alt"></i> Compra realizada na Shopee</span>
-        <span class="badge-ssl"><i class="fas fa-tag"></i> Links para produtos na Shopee</span>
-      </div>
-      <p class="footer-copy">© 2026 Melhores Ofertas · Todos os direitos reservados</p>
+      <p class="footer-copy">&copy; 2026 Melhores Ofertas · Links verificados da Shopee</p>
     </div>
   </footer>
 
   <script>
-    // Show up to 4 featured products from localStorage
     (function() {
       try {
-        const products = JSON.parse(localStorage.getItem('shopee_products') || '[]');
-        const featured = [...products.filter(p => p.featured), ...products.filter(p => !p.featured)]
+        const products = JSON.parse(localStorage.getItem('shopee_products_cache_v2') || '[]');
+        const list = products.length ? products : JSON.parse(localStorage.getItem('shopee_products') || '[]');
+        const featured = [...list.filter(p => p.featured), ...list]
           .slice(0, 4);
         const grid = document.getElementById('featuredGrid');
         if (!featured.length) { grid.closest('section').style.display = 'none'; return; }
@@ -88,27 +84,17 @@
           const img = (p.images && p.images[0]) || '';
           const disc = p.originalPrice && p.originalPrice > p.price
             ? Math.round((1 - p.price / p.originalPrice) * 100) : 0;
-          return `<div class="product-card" onclick="location.href='index.html'" style="cursor:pointer">
+          return `<div class="product-card" onclick="location.href='index.html?p=${p.name.toLowerCase().replace(/\\s+/g,'-')}'">
             ${disc ? `<span class="badge-discount">-${disc}%</span>` : ''}
-            <div class="card-img-wrap">
-              <img src="${img}" alt="${p.name}" loading="lazy"
-                   onerror="this.src='https://via.placeholder.com/300x300?text=?'"/>
+            <div class="card-img-wrap" style="background:#fff">
+              <img src="${img}" alt="${p.name}" loading="lazy" style="width:100%;aspect-ratio:1/1;object-fit:contain">
             </div>
-            <div class="card-body">
-              <div class="card-name">${p.name}</div>
-              <div class="card-prices">
-                ${p.originalPrice && p.originalPrice > p.price
-                  ? `<div class="card-original">R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}</div>` : ''}
-                <div class="card-price">R$ ${Number(p.price).toFixed(2).replace('.',',')}</div>
-              </div>
-            </div>
-            <div class="card-btn">🛒 Ver oferta</div>
+            <div class="card-name" style="padding:12px;font-size:0.9rem;font-weight:600;height:45px;overflow:hidden">${p.name}</div>
+            <div class="card-btn" style="background:var(--brand);margin:10px;padding:8px;border-radius:8px;text-align:center;font-weight:700;font-size:0.85rem">🛒 Ver Oferta</div>
           </div>`;
         }).join('');
       } catch(e) {}
     })();
-
-    // Dark mode sync
     if (localStorage.getItem('darkMode') === '1') {
       document.documentElement.setAttribute('data-theme', 'dark');
     }

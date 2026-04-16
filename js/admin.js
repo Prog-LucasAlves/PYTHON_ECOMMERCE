@@ -413,6 +413,7 @@ async function saveProduct(e) {
     campaignEnd:   document.getElementById('prodCampaignEnd')?.value || '',
     countdown:     document.getElementById('prodCountdown')?.value || null,
     publishDate:   document.getElementById('prodPublishDate')?.value || null,
+    expertReview: (document.getElementById('prodExpertReview')?.value || '').trim(),
     updatedAt:     Date.now()
   };
 
@@ -496,6 +497,8 @@ function editProduct(id) {
     document.getElementById('prodCountdown').value = p.countdown || '';
   if (document.getElementById('prodPublishDate'))
     document.getElementById('prodPublishDate').value = p.publishDate || '';
+  if (document.getElementById('prodExpertReview'))
+    document.getElementById('prodExpertReview').value = p.expertReview || '';
 
   // Populate image fields
   const list = document.getElementById('imagesList');
