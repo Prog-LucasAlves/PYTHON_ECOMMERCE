@@ -930,7 +930,7 @@ function showToast(msg) {
   t._to = setTimeout(() => { t.style.opacity = '0'; }, 2500);
 }
 
-window.generateSitemapXML = function() {
+function generateSitemapXML() {
   console.log('[SITEMAP] Iniciando geração...');
   try {
     const baseUrl = 'https://melhoresdashopee.com.br/';
@@ -973,4 +973,15 @@ window.generateSitemapXML = function() {
     console.error('[SITEMAP] Erro:', err);
     alert('❌ Erro ao gerar sitemap: ' + err.message);
   }
-};
+}
+
+// Vincula o botão de sitemap (Aguardar 2s para garantir carregamento do Firebase/UI)
+setTimeout(() => {
+  const sitemapBtn = document.getElementById('btnGenerateSitemap');
+  if (sitemapBtn) {
+    console.log('[SITEMAP] Botão encontrado e vinculado!');
+    sitemapBtn.addEventListener('click', generateSitemapXML);
+  } else {
+    console.warn('[SITEMAP] Botão btnGenerateSitemap não encontrado no HTML.');
+  }
+}, 2500);
