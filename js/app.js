@@ -118,11 +118,13 @@ function stringHash(str) {
 }
 
 function productFingerprint(item) {
+  if (item._fp) return item._fp; // Cache hit
   const name = normalizeText(item?.name || '');
   const price = Number.isFinite(Number(item?.price)) ? Number(Number(item.price)).toFixed(2) : '';
   const image = normalizeImageUrl(getImages(item)[0] || '');
-  if (name || image || price) return [name, price, image].join('|');
-  return String(item?.id || '').trim();
+  const fp = (name || image || price) ? [name, price, image].join('|') : String(item?.id || '').trim();
+  item._fp = fp; // Save to cache
+  return fp;
 }
 
 // Extracts the canonical Shopee product path (strips tracking params)
@@ -137,9 +139,12 @@ function productLinkKey(item) {
 
 // Soft key: name+price only, ignores image/URL differences
 function productSoftKey(item) {
+  if (item._soft) return item._soft;
   const name = normalizeText(item?.name || '');
   const price = Number.isFinite(Number(item?.price)) ? Number(Number(item.price)).toFixed(2) : '';
-  return name ? `${name}|${price}` : productFingerprint(item);
+  const soft = name ? `${name}|${price}` : productFingerprint(item);
+  item._soft = soft;
+  return soft;
 }
 
 function dedupeProducts(items) {
@@ -882,26 +887,33 @@ function renderProducts() {
 
 function _renderFiltered(grid, empty, search) {
   if (!grid || !empty) return;
-  let filtered = dedupeProducts(allProducts).filter(isDisplayableProduct);
-  // Hide products scheduled for the future
-  filtered = filtered.filter(p => !p.publishDate || new Date(p.publishDate) <= new Date());
-  if (currentCategory !== 'todos') filtered = filtered.filter(p => p.category === currentCategory);
+  // allProducts já vem limpo do carregamento inicial (Linh 799/827)
+  let filtered = allProducts.filter(isDisplayableProduct);
+
+  // Filtro de data futura
+  const now = Date.now();
+  filtered = filtered.filter(p => !p.publishDate || new Date(p.publishDate).getTime() <= now);
+
+  if (currentCategory !== 'todos') {
+    filtered = filtered.filter(p => p.category === currentCategory);
+  }
+
   if (search) {
     const searchTerms = search.split(/\s+/);
     filtered = filtered.filter(p => {
       const name = p.name.toLowerCase();
       const desc = (p.desc || '').toLowerCase();
       const cat = (p.category || '').toLowerCase();
-      // Match all terms (AND logic) for better precision
       return searchTerms.every(term =>
         name.includes(term) || desc.includes(term) || cat.includes(term)
       );
     });
   }
+
   if (priceMin !== null) filtered = filtered.filter(p => p.price >= priceMin);
   if (priceMax !== null) filtered = filtered.filter(p => p.price <= priceMax);
-  const uniqueFiltered = dedupeByContent(filtered);
-  const rotationPool = uniqueFiltered.filter(p => !(p.featured || p.homeOrder || getCampaignGroupKey(p)));
+
+  const rotationPool = filtered.filter(p => !(p.featured || p.homeOrder || getCampaignGroupKey(p)));
 
   switch (currentSort) {
     case 'price-asc':  filtered.sort((a, b) => a.price - b.price); break;
@@ -949,26 +961,26 @@ function _renderFiltered(grid, empty, search) {
 
     const inner = section.querySelector('.product-grid-inner');
 
-    // Renderiza em lotes de 12 para não travar a main thread
+    // Renderização suave em lotes
     const BATCH_SIZE = 12;
     for (let i = 0; i < items.length; i += BATCH_SIZE) {
       const batch = items.slice(i, i + BATCH_SIZE);
       const html = batch.map((p, idx) => cardHTML(p, startIndex + i + idx)).join('');
       inner.insertAdjacentHTML('beforeend', html);
 
-      // Pequena pausa para o navegador "respirar"
-      await new Promise(resolve => setTimeout(resolve, 0));
+      // Sincroniza com a atualização da tela (Melhor TBT)
+      await new Promise(resolve => requestAnimationFrame(resolve));
     }
   };
 
   try {
     const usedFingerprints = new Set();
-    const featured = pickUnique(
-      sortFeaturedFirst(uniqueFiltered.filter(p => p.featured || p.homeOrder)),
+    const featuredItems = pickUnique(
+      sortFeaturedFirst(filtered.filter(p => p.featured || p.homeOrder)),
       usedFingerprints,
       HOME_SECTION_LIMIT,
     );
-    const campaignItems = pickUnique(getCampaignItems(uniqueFiltered), usedFingerprints, CAMPAIGN_SECTION_LIMIT);
+    const campaignItems = pickUnique(getCampaignItems(filtered), usedFingerprints, CAMPAIGN_SECTION_LIMIT);
     const rotatingItems = pickUnique(
       rotateHomeProducts(rotationPool).sort((a, b) => getProductScore(b) - getProductScore(a)),
       usedFingerprints,
@@ -976,9 +988,9 @@ function _renderFiltered(grid, empty, search) {
     );
 
     (async () => {
-      await renderBatch(featured, 'home-vitrine-featured', 'Produtos fixos e campanhas ativas', 'Primeira linha', 'Itens fixados manualmente, campanhas e promoções temporárias ficam acima da rotação.', 0);
-      await renderBatch(campaignItems, 'home-vitrine-campaign', 'Ofertas temporárias e campanhas semanais', 'Vitrine de campanha', 'Itens com campanha, janela de data ou promoção destacada entram aqui sem misturar com a rotação principal.', featured.length);
-      await renderBatch(rotatingItems, 'home-vitrine-rotating', '100 produtos que mudam a cada 30 minutos', 'Vitrine rotativa', 'Seleção única, sem repetir a primeira linha nem a campanha.', featured.length + campaignItems.length);
+      await renderBatch(featuredItems, 'home-vitrine-featured', 'Produtos fixos e campanhas ativas', 'Primeira linha', 'Itens fixados manualmente, campanhas e promoções temporárias ficam acima da rotação.', 0);
+      await renderBatch(campaignItems, 'home-vitrine-campaign', 'Ofertas temporárias e campanhas semanais', 'Vitrine de campanha', 'Itens com campanha, janela de data ou promoção destacada entram aqui sem misturar com a rotação principal.', featuredItems.length);
+      await renderBatch(rotatingItems, 'home-vitrine-rotating', '100 produtos que mudam a cada 30 minutos', 'Vitrine rotativa', 'Seleção única, sem repetir a primeira linha nem a campanha.', featuredItems.length + campaignItems.length);
 
       animateCards();
       startCountdownTimers();
