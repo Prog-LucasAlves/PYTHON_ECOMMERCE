@@ -151,15 +151,25 @@ function dedupeProducts(items) {
   const seenFp   = new Set();
   const seenSoft = new Set();
   const seenLink = new Set();
+  const now = Date.now();
+
   return items.filter(item => {
+    // Pré-processamento rápido (Cache/Normalização)
+    if (!item._processed) {
+      item._priceNum = Number(item.price) || 0;
+      item._publishTs = item.publishDate ? new Date(item.publishDate).getTime() : 0;
+      item._startTs = (item.campaignStart || item.publishDate) ? new Date(item.campaignStart || item.publishDate).getTime() : 0;
+      item._endTs = item.campaignEnd ? new Date(item.campaignEnd).getTime() : 9999999999999;
+      item._processed = true;
+    }
+
     const fp   = productFingerprint(item);
     const soft = productSoftKey(item);
     const link = productLinkKey(item);
 
-    // Destaques e itens de 1ª linha ignoram a deduplicação para garantir exibição
     if (item.featured || item.homeOrder) return true;
-
     if (seenFp.has(fp) || seenSoft.has(soft) || (link && seenLink.has(link))) return false;
+
     seenFp.add(fp);
     seenSoft.add(soft);
     if (link) seenLink.add(link);
@@ -230,7 +240,10 @@ function sameDayRange(start, end) {
 }
 
 function isCampaignActive(p) {
-  return sameDayRange(p.campaignStart || p.publishDate, p.campaignEnd || null);
+  const now = Date.now();
+  const start = p._startTs || 0;
+  const end = p._endTs || 9999999999999;
+  return now >= start && now <= end;
 }
 
 function getCampaignGroupKey(p) {
@@ -337,8 +350,10 @@ function isDisplayableProduct(p) {
 function rotateHomeProducts(items) {
   const bucket = getTimeBucket(HOME_ROTATION_MINUTES_LONG);
   return [...items].sort((a, b) => {
-    const aKey = hashString(`${bucket}:${a.category}:${a.id}:${a.name}`);
-    const bKey = hashString(`${bucket}:${b.category}:${b.id}:${b.name}`);
+    // Usa cache de hash se possível
+    const aKey = a._rotKey || hashString(`${bucket}:${a.category}:${a.id}`);
+    const bKey = b._rotKey || hashString(`${bucket}:${b.category}:${b.id}`);
+    a._rotKey = aKey; b._rotKey = bKey;
     if (aKey !== bKey) return aKey - bKey;
     return String(a.id).localeCompare(String(b.id));
   });
@@ -889,12 +904,11 @@ function renderProducts() {
 
 function _renderFiltered(grid, empty, search) {
   if (!grid || !empty) return;
-  // allProducts já vem limpo do carregamento inicial (Linh 799/827)
-  let filtered = allProducts.filter(isDisplayableProduct);
-
-  // Filtro de data futura
   const now = Date.now();
-  filtered = filtered.filter(p => !p.publishDate || new Date(p.publishDate).getTime() <= now);
+  let filtered = allProducts.filter(p => p._priceNum > 0);
+
+  // Filtro de data futura otimizado (sem new Date no loop)
+  filtered = filtered.filter(p => !p._publishTs || p._publishTs <= now);
 
   if (currentCategory !== 'todos') {
     filtered = filtered.filter(p => p.category === currentCategory);
