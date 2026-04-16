@@ -831,20 +831,13 @@ window.addEventListener('storage', (e) => {
 
 (async () => {
   try {
-    // Respiro inicial para o navegador estabilizar a pintura (LCP)
-    await new Promise(r => setTimeout(r, 60));
+    // Dá 200ms para o navegador terminar de desenhar (FCP/LCP) sem interrupção
+    await new Promise(r => setTimeout(r, 200));
 
-    // Carrega do LocalStorage em blocos para não travar a thread
     const localRaw = localStorage.getItem('shopee_products');
     if (localRaw) {
-      const parsed = JSON.parse(localRaw);
-      const CHUNK = 500;
-      for (let i = 0; i < parsed.length; i += CHUNK) {
-        const chunk = parsed.slice(i, i + CHUNK);
-        allProducts.push(...dedupeProducts(chunk));
-        if (i === 0) renderProducts(); // Mostra logo os primeiros 500
-        await new Promise(r => setTimeout(r, 16)); // Cede controle ao navegador
-      }
+      allProducts = dedupeProducts(JSON.parse(localRaw));
+      renderProducts(); // Primeira renderização estável
     }
 
     const { firebaseConfig } = await import("./config.js");
@@ -853,12 +846,16 @@ window.addEventListener('storage', (e) => {
     const app = initializeApp(firebaseConfig);
     firestoreDb = fs.getFirestore(app);
 
-    // Firestore loading... (mesma lógica, mas sem bloquear)
     const snap = await fs.getDocs(fs.query(fs.collection(firestoreDb, 'products'), fs.orderBy('updatedAt', 'desc')));
     const remote = snap.docs.map(d => ({ ...d.data(), id: d.data().id || d.id })).filter(Boolean);
     if (remote.length) {
-      allProducts = dedupeProducts(remote);
-      localStorage.setItem('shopee_products', JSON.stringify(allProducts));
+      const normalized = dedupeProducts(remote);
+      // Só re-renderiza se os dados mudaram
+      if (JSON.stringify(normalized) !== JSON.stringify(allProducts)) {
+        allProducts = normalized;
+        localStorage.setItem('shopee_products', JSON.stringify(normalized));
+        renderProducts();
+      }
     }
     firestoreReady = true;
     firstLoad = false;
