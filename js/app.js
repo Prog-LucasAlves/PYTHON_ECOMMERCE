@@ -1433,6 +1433,12 @@ function initAppBindings() {
   searchInput?.addEventListener('focus', showSearchHistory);
   searchInput?.addEventListener('blur', hideSearchDropdown);
   searchInput?.addEventListener('keydown', handleSearchKey);
+  document.getElementById('searchBtn')?.addEventListener('click', () => {
+    filterProducts();
+    const val = searchInput?.value.trim();
+    if (val) saveSearchTerm(val);
+    document.getElementById('searchDropdown').style.display = 'none';
+  });
   darkToggle?.addEventListener('click', toggleDarkMode);
   heroPrevBtn?.addEventListener('click', heroPrev);
   heroNextBtn?.addEventListener('click', heroNext);
