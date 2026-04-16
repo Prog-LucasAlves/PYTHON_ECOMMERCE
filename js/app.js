@@ -78,10 +78,29 @@ function normalizeText(value) {
     .replace(/\s+/g, ' ');
 }
 
+function escapeHTML(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 function normalizeImageUrl(url) {
   const value = String(url || '').trim();
   if (!value) return '';
   return value.replace(/[?#].*$/, '');
+}
+
+function stringHash(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) - hash) + str.charCodeAt(i);
+    hash |= 0;
+  }
+  return hash;
 }
 
 function productFingerprint(item) {
@@ -218,10 +237,11 @@ function getCampaignItems(items) {
   const campaignSet = items
     .filter(p => !p.featured && !p.homeOrder && getCampaignGroupKey(p))
     .sort((a, b) => {
-      const aOrder = Number.isFinite(Number(a.homeOrder)) ? Number(a.homeOrder) : Number.MAX_SAFE_INTEGER;
-      const bOrder = Number.isFinite(Number(b.homeOrder)) ? Number(b.homeOrder) : Number.MAX_SAFE_INTEGER;
-      if (aOrder !== bOrder) return aOrder - bOrder;
-      return getProductScore(b) - getProductScore(a);
+      // Use time bucket for rotation
+      const bucket = getTimeBucket(5);
+      const hashA = stringHash(productFingerprint(a) + bucket);
+      const hashB = stringHash(productFingerprint(b) + bucket);
+      return hashA - hashB;
     })
     .filter((p, i, arr) => arr.findIndex(x => productFingerprint(x) === productFingerprint(p)) === i)
     .slice(0, CAMPAIGN_SECTION_LIMIT);
@@ -338,7 +358,7 @@ function initHeroBanner() {
       <div class="hero-slide-overlay"></div>
       <div class="hero-slide-content">
         ${discount ? `<span class="hero-badge">-${discount}%</span>` : ''}
-        <h2>${p.name}</h2>
+        <h2>${escapeHTML(p.name)}</h2>
         <p class="hero-slide-price">R$ ${Number(p.price).toFixed(2).replace('.',',')}</p>
         <span class="hero-cta">Ver oferta →</span>
       </div>
@@ -415,9 +435,9 @@ function renderRelated(p) {
   listEl.innerHTML = related.map(r => {
     const img = getImages(r)[0] || '';
     return `<div class="related-item" data-action="open-product" data-id="${r.id}">
-      <img src="${img}" alt="${r.name}" loading="lazy" decoding="async"
+      <img src="${img}" alt="${escapeHTML(r.name)}" loading="lazy" decoding="async"
            onerror="this.src='https://via.placeholder.com/80x80?text=?'"/>
-      <div class="related-name">${r.name.substring(0,40)}${r.name.length>40?'…':''}</div>
+      <div class="related-name">${escapeHTML(r.name.substring(0,40))}${r.name.length>40?'…':''}</div>
       <div class="related-price">R$ ${Number(r.price).toFixed(2).replace('.',',')}</div>
     </div>`;
   }).join('');
@@ -471,8 +491,8 @@ function renderCompareBar() {
     if (!p) return '';
     const img = getImages(p)[0] || '';
     return `<div class="compare-slot">
-      ${img ? `<img src="${img}" alt="${p.name}" loading="lazy" decoding="async"/>` : '<div class="compare-slot-placeholder"></div>'}
-      <span>${p.name.substring(0,22)}${p.name.length>22?'…':''}</span>
+      ${img ? `<img src="${img}" alt="${escapeHTML(p.name)}" loading="lazy" decoding="async"/>` : '<div class="compare-slot-placeholder"></div>'}
+      <span>${escapeHTML(p.name.substring(0,22))}${p.name.length>22?'…':''}</span>
       <button data-action="toggle-compare-remove" data-pid="${p.id}" title="Remover"><i class="fas fa-times"></i></button>
     </div>`;
   }).join('');
@@ -493,9 +513,9 @@ function openCompareModal() {
     .filter(p => p && isDisplayableProduct(p));
 
   const rows = [
-    { label: 'Imagem',     fn: p => `<img src="${getImages(p)[0]||''}" alt="${p.name}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/90x90?text=?'"/>` },
-    { label: 'Nome',       fn: p => p.name },
-    { label: 'Categoria',  fn: p => categoryLabel(p.category) },
+    { label: 'Imagem',     fn: p => `<img src="${getImages(p)[0]||''}" alt="${escapeHTML(p.name)}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/90x90?text=?'"/>` },
+    { label: 'Nome',       fn: p => escapeHTML(p.name) },
+    { label: 'Categoria',  fn: p => escapeHTML(categoryLabel(p.category)) },
     { label: 'Preço',      fn: p => `<strong style="color:#ee4d2d">R$ ${Number(p.price).toFixed(2).replace('.',',')}</strong>` },
     { label: 'Original',   fn: p => p.originalPrice ? `<s>R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}</s>` : '–' },
     { label: 'Desconto',   fn: p => { const d=getDiscount(p); return d ? `<span class="badge-discount">-${d}%</span>` : '–'; } },
@@ -598,7 +618,7 @@ function updateSearchSuggestions() {
   if (!matches.length) { dd.style.display = 'none'; return; }
   dd.innerHTML = matches.map(m => {
     const hi = m.replace(new RegExp(`(${input})`, 'gi'), '<mark>$1</mark>');
-    return `<div class="dd-item" onmousedown="selectSuggestion('${m.replace(/'/g,"\\'")}')">
+    return `<div class="dd-item" onmousedown="selectSuggestion('${escapeHTML(m).replace(/'/g,"\\'")}')">
       <i class="fas fa-search"></i> ${hi}
     </div>`;
   }).join('');
@@ -613,9 +633,9 @@ function showSearchHistory() {
   if (!history.length) { dd.style.display = 'none'; return; }
   dd.innerHTML = `<div class="dd-header">🕐 Buscas recentes</div>` +
     history.map(h => `
-      <div class="dd-item" onmousedown="selectSuggestion('${h.replace(/'/g,"\\'")}')">
-        <i class="fas fa-history"></i> ${h}
-        <button class="dd-remove" onmousedown="event.stopPropagation();removeHistory('${h.replace(/'/g,"\\'")}')">
+      <div class="dd-item" onmousedown="selectSuggestion('${escapeHTML(h).replace(/'/g,"\\'")}')">
+        <i class="fas fa-history"></i> ${escapeHTML(h)}
+        <button class="dd-remove" onmousedown="event.stopPropagation();removeHistory('${escapeHTML(h).replace(/'/g,"\\'")}')">
           <i class="fas fa-times"></i>
         </button>
       </div>`).join('') +
@@ -1000,7 +1020,7 @@ function cardHTML(p) {
     ${p.price >= 19 ? `<span class="badge-shipping"><i class="fas fa-truck-fast"></i> Frete Grátis</span>` : ''}
 
     <div class="card-img-wrap">
-      <img src="${main}" alt="${p.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x300?text=Sem+Imagem'"/>
+      <img src="${main}" alt="${escapeHTML(p.name)}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x300?text=Sem+Imagem'"/>
     </div>
 
     <div class="card-body">
@@ -1011,7 +1031,7 @@ function cardHTML(p) {
         ${isOfficial ? `<div class="card-seller"><i class="fas fa-store"></i> Oficial</div>` : ''}
       </div>
 
-      <div class="card-name">${p.name}</div>
+      <div class="card-name">${escapeHTML(p.name)}</div>
 
       <div class="card-price-row">
         <div class="card-prices">
@@ -1047,7 +1067,7 @@ function starsHTML(rating) {
 let modalProduct = null;
 let modalIndex   = 0;
 
-function openProductModal(id, startIdx) {
+function openProductModal(id, startIdx = 0) {
   if (!id) return;
   const p = allProducts.find(x => sameId(x.id, id));
   if (!p) {
@@ -1149,7 +1169,7 @@ function renderModalMedia(allMedia) {
         style="width:100%;height:100%;border-radius:8px;object-fit:contain;background:#000"></video>`;
     }
   } else {
-    display.innerHTML = `<img src="${m}" alt="${modalProduct?.name || 'Produto'} - imagem ampliada" style="width:100%;height:100%;object-fit:contain;border-radius:8px"
+    display.innerHTML = `<img src="${m}" alt="${escapeHTML(modalProduct?.name || 'Produto')} - imagem ampliada" style="width:100%;height:100%;object-fit:contain;border-radius:8px"
       onerror="this.src='https://via.placeholder.com/500x500?text=Imagem+indisponivel'"/>`;
   }
 }
@@ -1162,7 +1182,7 @@ function renderModalThumbs(allMedia) {
     const src = isVideo ? (getVideoThumb(modalProduct.video) || '') : m;
     return `<div class="modal-thumb ${i===modalIndex?'active':''} ${isVideo?'video-thumb':''}"
       data-action="set-modal-index" data-index="${i}">
-      ${src ? `<img src="${src}" alt="${modalProduct?.name || 'Produto'} ${isVideo ? 'vídeo' : 'imagem'} ${i + 1}"/>` : '<div class="vt-placeholder"></div>'}
+      ${src ? `<img src="${src}" alt="${escapeHTML(modalProduct?.name || 'Produto')} ${isVideo ? 'vídeo' : 'imagem'} ${i + 1}"/>` : '<div class="vt-placeholder"></div>'}
       ${isVideo ? '<span class="play-icon">▶</span>' : ''}
     </div>`;
   }).join('');
@@ -1497,6 +1517,12 @@ function initAppBindings() {
   });
 
   document.getElementById('btnRoleta')?.addEventListener('click', luckyRoulette);
+
+  // Auto-refresh showcase every 5 minutes
+  setInterval(() => {
+    console.log('[AUTO-REFRESH] Updating showcases...');
+    renderProducts();
+  }, 5 * 60 * 1000);
 }
 
 try { initDarkMode(); } catch(e) { console.error("Error in initDarkMode:", e); }
