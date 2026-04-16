@@ -86,6 +86,7 @@ const HISTORY_KEY  = 'shopee_history';
 const CLICKS_KEY   = 'shopee_clicks';
 const DEFAULT_DESC  = 'Frete grátis com cupom - Produto original - Entrega rápida -\nPreço promocional sujeito a alteração sem aviso prévio.';
 const ADMIN_EMAIL   = 'lucasalves01@bol.com.br';
+const FIRESTORE_CACHE_KEY = 'shopee_products_cache_v2';
 const SHOPEE_URL_RE = /\/(?:product|[^/?#]+)\/(\d+)\/(\d+)|[?&](?:vShopId|shopId)=(\d+).*?[?&](?:vItemId|itemId)=(\d+)/i;
 
 // Test if localStorage is available and working
@@ -412,6 +413,7 @@ async function saveProduct(e) {
     campaignEnd:   document.getElementById('prodCampaignEnd')?.value || '',
     countdown:     document.getElementById('prodCountdown')?.value || null,
     publishDate:   document.getElementById('prodPublishDate')?.value || null,
+    updatedAt:     Date.now()
   };
 
   const affiliate = normalizeAffiliateLink(product.link);
@@ -717,8 +719,10 @@ async function saveToStorage() {
   try {
     const json = JSON.stringify(products);
     localStorage.setItem(STORAGE_KEY, json);
+    // Limpa o cache do site para forçar atualização imediata
+    localStorage.removeItem(FIRESTORE_CACHE_KEY);
     await saveProductsToFirestore();
-    console.log('[STORAGE] ✅ Saved', products.length, 'products to localStorage');
+    console.log('[STORAGE] ✅ Saved and cache cleared');
   } catch (e) {
     console.error('[STORAGE] ❌ Failed to save:', e.message);
     alert('⚠️ Erro ao salvar no armazenamento local. Verifique se está em modo incógnito.');
