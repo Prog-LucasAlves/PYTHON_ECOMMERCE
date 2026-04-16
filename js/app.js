@@ -818,7 +818,7 @@ const CAT_MAP = {
   'outros': 'Outros'
 };
 let firstLoad       = true;
-let allProducts = dedupeProducts(JSON.parse(localStorage.getItem('shopee_products') || '[]'));
+let allProducts = []; // Começa vazio para não travar o carregamento inicial
 let firestoreDb = null;
 let firestoreReady = false;
 
@@ -831,28 +831,34 @@ window.addEventListener('storage', (e) => {
 
 (async () => {
   try {
+    // Respiro inicial para o navegador estabilizar a pintura (LCP)
+    await new Promise(r => setTimeout(r, 60));
+
+    // Carrega do LocalStorage em blocos para não travar a thread
+    const localRaw = localStorage.getItem('shopee_products');
+    if (localRaw) {
+      const parsed = JSON.parse(localRaw);
+      const CHUNK = 500;
+      for (let i = 0; i < parsed.length; i += CHUNK) {
+        const chunk = parsed.slice(i, i + CHUNK);
+        allProducts.push(...dedupeProducts(chunk));
+        if (i === 0) renderProducts(); // Mostra logo os primeiros 500
+        await new Promise(r => setTimeout(r, 16)); // Cede controle ao navegador
+      }
+    }
+
     const { firebaseConfig } = await import("./config.js");
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
     const fs = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
     const app = initializeApp(firebaseConfig);
     firestoreDb = fs.getFirestore(app);
-    const cacheRaw = localStorage.getItem(FIRESTORE_CACHE_KEY);
-    const cache = cacheRaw ? JSON.parse(cacheRaw) : null;
-    if (cache?.ts && Array.isArray(cache.items) && Date.now() - cache.ts < FIRESTORE_CACHE_TTL_MS) {
-      allProducts = dedupeProducts(cache.items);
-      console.log('[FIRESTORE] Using cached product snapshot');
-    } else {
-      const snap = await fs.getDocs(fs.query(fs.collection(firestoreDb, 'products'), fs.orderBy('updatedAt', 'desc')));
-      const remote = snap.docs.map(d => ({ ...d.data(), id: d.data().id || d.id })).filter(Boolean);
-      if (remote.length) {
-        const normalized = dedupeProducts(remote);
-        allProducts = normalized;
-        localStorage.setItem('shopee_products', JSON.stringify(normalized));
-        localStorage.setItem(FIRESTORE_CACHE_KEY, JSON.stringify({ ts: Date.now(), items: normalized }));
-      } else if (allProducts.length) {
-        // If Firestore is empty, keep showing the last local snapshot.
-        console.log('[FIRESTORE] No remote products yet; using localStorage snapshot');
-      }
+
+    // Firestore loading... (mesma lógica, mas sem bloquear)
+    const snap = await fs.getDocs(fs.query(fs.collection(firestoreDb, 'products'), fs.orderBy('updatedAt', 'desc')));
+    const remote = snap.docs.map(d => ({ ...d.data(), id: d.data().id || d.id })).filter(Boolean);
+    if (remote.length) {
+      allProducts = dedupeProducts(remote);
+      localStorage.setItem('shopee_products', JSON.stringify(allProducts));
     }
     firestoreReady = true;
     firstLoad = false;
