@@ -136,6 +136,10 @@ function dedupeProducts(items) {
     const fp   = productFingerprint(item);
     const soft = productSoftKey(item);
     const link = productLinkKey(item);
+
+    // Destaques e itens de 1ª linha ignoram a deduplicação para garantir exibição
+    if (item.featured || item.homeOrder) return true;
+
     if (seenFp.has(fp) || seenSoft.has(soft) || (link && seenLink.has(link))) return false;
     seenFp.add(fp);
     seenSoft.add(soft);
