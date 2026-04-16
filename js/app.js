@@ -615,6 +615,8 @@ function shareTelegram() {
   const priceLine = modalProduct.originalPrice && modalProduct.originalPrice > modalProduct.price
     ? `~~R$ ${Number(modalProduct.originalPrice).toFixed(2).replace('.',',')}~~  →  *R$ ${Number(modalProduct.price).toFixed(2).replace('.',',')}*`
     : `*R$ ${Number(modalProduct.price).toFixed(2).replace('.',',')}*`;
+  const imgs = getImages(modalProduct);
+  const mainImg = imgs[0] || '';
   const text = [
     `🔥 *${modalProduct.name}*`,
     `📂 ${categoryLabel(modalProduct.category)}`,
@@ -623,6 +625,7 @@ function shareTelegram() {
     `⚠️ Preço promocional sujeito a alteração sem aviso prévio.`,
     modalProduct.desc ? `📝 ${formatDescription(modalProduct.desc)}` : null,
     `🛒 Confira na Shopee: ${modalProduct.link}`,
+    `🖼️ Ver foto: ${mainImg}`
   ].filter(Boolean).join('\n');
   window.open(`https://t.me/share/url?url=${encodeURIComponent(modalProduct.link)}&text=${encodeURIComponent(text)}`, '_blank');
 }

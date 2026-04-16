@@ -651,20 +651,25 @@ function shareTelegramAdmin(id) {
     item_name: p.name,
     item_category: p.category,
   });
+  const imgs = p.images && p.images.length ? p.images : (p.image ? [p.image] : []);
+  const mainImg = imgs[0] || '';
   const discount = p.originalPrice && p.originalPrice > p.price
     ? Math.round((1 - p.price / p.originalPrice) * 100) : null;
   const priceLine = p.originalPrice && p.originalPrice > p.price
     ? `~~R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}~~    *R$ ${Number(p.price).toFixed(2).replace('.',',')}*`
     : `*R$ ${Number(p.price).toFixed(2).replace('.',',')}*`;
+
   const summary = [
-    ` *${p.name}*`,
-    ` ${categoryLabel(p.category)}`,
-    discount ? ` Economia de *${discount}%*` : null,
-    ` ${priceLine}`,
-    ` Preo promocional sujeito a alterao sem aviso prvio.`,
-    p.desc ? ` ${stripHtml(p.desc)}` : null,
-    ` Confira na Shopee: ${p.link}`,
+    `🔥 *${p.name}*`,
+    `📂 ${categoryLabel(p.category)}`,
+    discount ? `🏷️ Economia de *${discount}%*` : null,
+    `💰 ${priceLine}`,
+    `⚠️ Preço promocional sujeito a alteração sem aviso prévio.`,
+    p.desc ? `📝 ${stripHtml(p.desc)}` : null,
+    `🛒 Confira na Shopee: ${p.link}`,
+    `🖼️ Ver foto: ${mainImg}`
   ].filter(Boolean).join('\n');
+
   const url = `https://t.me/share/url?url=${encodeURIComponent(p.link)}&text=${encodeURIComponent(summary)}`;
   window.open(url, '_blank');
 }
