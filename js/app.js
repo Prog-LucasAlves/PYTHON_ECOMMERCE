@@ -1005,22 +1005,33 @@ function _renderFiltered(grid, empty, search) {
     );
 
     (async () => {
+      // Vitrines Críticas (Topo)
       if (featuredItems.length) {
         await renderBatch(featuredItems, 'home-vitrine-featured', 'Produtos fixos e campanhas ativas', 'Primeira linha', 'Itens fixados manualmente, campanhas e promoções temporárias ficam acima da rotação.', 0);
-        await new Promise(r => setTimeout(r, 50));
       }
-
       if (campaignItems.length) {
         await renderBatch(campaignItems, 'home-vitrine-campaign', 'Ofertas temporárias e campanhas semanais', 'Vitrine de campanha', 'Itens com campanha, janela de data ou promoção destacada entram aqui sem misturar com a rotação principal.', featuredItems.length);
-        await new Promise(r => setTimeout(r, 50));
       }
 
+      // Vitrine Pesada (Lazy Load ao Scrolar)
       if (rotatingItems.length) {
-        // Ordenação otimizada (Usa clicksData em vez de reler localStorage N log N vezes)
-        const sortedRotating = rotatingItems.sort((a, b) => getProductScore(b, clicksData) - getProductScore(a, clicksData));
-        await renderBatch(sortedRotating, 'home-vitrine-rotating', '100 produtos que mudam a cada 30 minutos', 'Vitrine rotativa', 'Seleção única, sem repetir a primeira linha nem a campanha.', featuredItems.length + campaignItems.length);
-      }
+        const trigger = document.createElement('div');
+        trigger.id = 'lazy-rotating-trigger';
+        trigger.innerHTML = '<div class="loading-placeholder">Carregando mais ofertas...</div>';
+        grid.appendChild(trigger);
 
+        const observer = new IntersectionObserver(async (entries) => {
+          if (entries[0].isIntersecting) {
+            observer.unobserve(trigger);
+            trigger.remove();
+            const sortedRotating = rotatingItems.sort((a, b) => getProductScore(b, clicksData) - getProductScore(a, clicksData));
+            await renderBatch(sortedRotating, 'home-vitrine-rotating', '100 produtos que mudam a cada 30 minutos', 'Vitrine rotativa', 'Seleção única, sem repetir a primeira linha nem a campanha.', featuredItems.length + campaignItems.length);
+            animateCards();
+            startCountdownTimers();
+          }
+        }, { rootMargin: '300px' });
+        observer.observe(trigger);
+      }
       animateCards();
       startCountdownTimers();
     })();
