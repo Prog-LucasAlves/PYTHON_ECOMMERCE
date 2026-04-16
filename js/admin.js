@@ -117,6 +117,16 @@ function sameId(a, b) {
   return String(a) === String(b);
 }
 
+function escapeHTML(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 function trackEvent(name, params = {}) {
   if (typeof window.gtag === 'function') {
     window.gtag('event', name, params);
@@ -595,27 +605,18 @@ function renderAdminItem(p) {
     const isHomeTop = p.featured || p.homeOrder || isCampaign;
     return `
     <div class="admin-item${isScheduled ? ' admin-item-scheduled' : ''}${isHomeTop ? ' admin-item-featured' : ''}">
-      <img src="${mainImg}" alt="${p.name}" onerror="this.src='https://via.placeholder.com/60x60?text=?'"/>
+      <img src="${mainImg}" alt="${escapeHTML(p.name)}" onerror="this.src='https://via.placeholder.com/60x60?text=?'"/>
       <div class="admin-item-info">
-        <div class="name">${p.featured ? 'Destaque · ' : ''}${isCampaign ? 'Campanha · ' : ''}${isScheduled ? 'Agendado · ' : ''}${p.name}</div>
+        <div class="name">${p.featured ? 'Destaque · ' : ''}${isCampaign ? 'Campanha · ' : ''}${isScheduled ? 'Agendado · ' : ''}${escapeHTML(p.name)}</div>
         <div class="meta">
           R$ ${Number(p.price).toFixed(2).replace('.',',')}
           ${discount ? `· <span style="color:#ee4d2d">-${discount}%</span>` : ''}
-          · ${categoryLabel(p.category)}
+          · ${escapeHTML(categoryLabel(p.category))}
           ${p.homeOrder ? `· <span style="color:#1976d2">1ª linha #${p.homeOrder}</span>` : ''}
           ${isCampaign ? `· <span style="color:#d97706">Campanha${p.campaignId ? ` #${p.campaignId}` : ''}</span>` : ''}
           ${mediaCount > 1 ? `· <span style="color:#888">📷 ${mediaCount} mídias</span>` : ''}
           ${p.video ? '· <span style="color:#888">🎬 vídeo</span>' : ''}
           ${clickN ? `· <span style="color:#1976d2"><i class="fas fa-mouse-pointer"></i> ${clickN}</span>` : ''}
-          ${isScheduled ? `· <span style="color:#ff9800">Pub: ${new Date(p.publishDate).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span>` : ''}
-        </div>
-      </div>
-      <div class="admin-item-actions">
-        <button class="btn-tg-share" type="button" data-action="share-telegram" data-product-id="${p.id}" title="Compartilhar no Telegram"><i class="fab fa-telegram-plane"></i></button>
-        <button class="btn-edit" type="button" data-action="edit-product" data-product-id="${p.id}"><i class="fas fa-pen"></i></button>
-        <button class="btn-delete" type="button" data-action="delete-product" data-product-id="${p.id}"><i class="fas fa-trash"></i></button>
-      </div>
-    </div>`;
           ${isScheduled ? `· <span style="color:#ff9800">Pub: ${new Date(p.publishDate).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span>` : ''}
         </div>
       </div>
