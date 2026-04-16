@@ -585,51 +585,7 @@ window.closeCompareModal  = closeCompareModal;
 window.closeCompareOutside = closeCompareOutside;
 
 
-// ── COUPON CENTER ──────────────────────────────────────────────
-const SHOPEE_COUPONS = [
-  { id: 'c1', val: '50', unit: 'OFF', title: 'Cupom de R$50', desc: 'Em compras acima de R$250', code: 'SHOPEE50', link: 'https://shope.ee/6pZJp...' },
-  { id: 'c2', val: '10', unit: '%', title: '10% de Desconto', desc: 'Válido em Moda e Beleza', code: 'MODA10', link: 'https://shope.ee/6pZJp...' },
-  { id: 'c3', val: 'FRETE', unit: 'GRÁTIS', title: 'Frete Grátis', desc: 'Lojas Oficiais e Selecionadas', code: 'FRETEGRATIS', link: 'https://shope.ee/6pZJp...' }
-];
 
-function renderCoupons() {
-  const grid = document.getElementById('couponGrid');
-  if (!grid) return;
-
-  grid.innerHTML = SHOPEE_COUPONS.map(c => `
-    <div class="coupon-card" onclick="copyCoupon('${c.code}', '${c.link}')" title="Clique para copiar e ir para a Shopee">
-      <div class="coupon-left">
-        <span class="coupon-val-num">${c.val}</span>
-        <span class="coupon-val-unit">${c.unit}</span>
-      </div>
-      <div class="coupon-right">
-        <div>
-          <div class="coupon-title">${escapeHTML(c.title)}</div>
-          <div class="coupon-desc">${escapeHTML(c.desc)}</div>
-        </div>
-        <div class="coupon-footer">
-          <div class="coupon-code-box">${c.code}</div>
-          <div class="coupon-cta">RESGATAR</div>
-        </div>
-      </div>
-    </div>
-  `).join('');
-}
-
-function copyCoupon(code, link) {
-  if (navigator.clipboard && navigator.clipboard.writeText) {
-    navigator.clipboard.writeText(code).then(() => {
-      showToast(`🎟️ Cupom ${code} copiado! Abrindo a Shopee...`);
-      setTimeout(() => window.open(link, '_blank'), 1200);
-    }).catch(() => {
-      window.open(link, '_blank');
-    });
-  } else {
-    window.open(link, '_blank');
-  }
-}
-
-window.copyCoupon = copyCoupon;
 
 // ── SHARE ─────────────────────────────────────────────────────
 function shareWhatsApp() {
@@ -1951,7 +1907,6 @@ try { initHeroBanner(); } catch(e) { console.error("Error in initHeroBanner:", e
 // DEFER NON-CRITICAL UI: Libera a thread principal (reduz TBT)
 const deferTask = window.requestIdleCallback || ((cb) => setTimeout(cb, 1500));
 deferTask(() => {
-  try { renderCoupons(); } catch(e) { console.error("Error in renderCoupons:", e); }
   try { initLGPD(); } catch(e) { console.error("Error in initLGPD:", e); }
   try { initGamification(); } catch(e) { console.error("Error in initGamification:", e); }
   console.log('[PERF] Non-critical tasks deferred.');
