@@ -728,29 +728,6 @@ async function saveToStorage() {
 // ── TELEGRAM SHARE ────────────────────────────────────────────
 const TG_GROUP = 'https://t.me/ofertasshopeeday';
 
-function shareTelegramAdmin(id) {
-  const p = products.find(x => sameId(x.id, id));
-  if (!p) return;
-  trackEvent('share_telegram_admin', {
-    item_id: p.id,
-    item_name: p.name,
-    item_category: p.category,
-  });
-  const discount = p.originalPrice && p.originalPrice > p.price
-    ? Math.round((1 - p.price / p.originalPrice) * 100) : null;
-
-    const col = collection_fn(db, 'products');
-    await Promise.all(legacy.map(product =>
-      setDoc_fn(doc_fn(col, String(product.id)), { ...product, updatedAt: Date.now() }, { merge: true })
-    ));
-    products = [...legacy, ...products];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-    console.log('[FIRESTORE] ✅ Migrated', legacy.length, 'legacy products from localStorage');
-  } catch (e) {
-    console.warn('[FIRESTORE] Migration skipped:', e.message);
-  }
-}
-
 async function saveProductsToFirestore() {
   if (!db || !collection_fn || !doc_fn || !setDoc_fn || !deleteDoc_fn) return;
   try {
