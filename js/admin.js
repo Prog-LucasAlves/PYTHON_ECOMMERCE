@@ -1,7 +1,7 @@
-// ── FIREBASE CONFIG ───────────────────────────────────────────
+//  FIREBASE CONFIG
 // SECURITY NOTE: Firebase API keys for web apps are intentionally public.
 // Real security is enforced via Firebase Security Rules on the console:
-// https://console.firebase.google.com → Authentication → Settings → Authorized domains
+// https://console.firebase.google.com  Authentication  Settings  Authorized domains
 // Ensure only melhoresdashopee.com.br and localhost are authorized.
 
 let auth = null;
@@ -39,7 +39,7 @@ let orderBy_fn = null;
     query_fn = fs.query;
     orderBy_fn = fs.orderBy;
 
-    console.log('[FIREBASE] ✅ Firebase loaded successfully');
+    console.log('[FIREBASE]  Firebase loaded successfully');
 
     // Setup auth listener
     onAuthStateChanged_fn(auth, user => {
@@ -58,7 +58,7 @@ let orderBy_fn = null;
           signOut_fn(auth).catch(() => {});
           const errorBox = document.getElementById('loginError');
           if (errorBox) {
-            errorBox.textContent = 'Esta conta não tem acesso ao painel admin.';
+            errorBox.textContent = 'Esta conta no tem acesso ao painel admin.';
             errorBox.style.display = 'block';
             errorBox.style.color = '#b00020';
           }
@@ -68,10 +68,10 @@ let orderBy_fn = null;
       }
     });
   } catch (e) {
-    console.error('[FIREBASE] ⚠️ Firebase failed to load:', e.message);
+    console.error('[FIREBASE]  Firebase failed to load:', e.message);
     const errorBox = document.getElementById('loginError');
     if (errorBox) {
-      errorBox.textContent = 'Falha ao carregar o painel. Verifique Firebase/Auth e recarregue a página.';
+      errorBox.textContent = 'Falha ao carregar o painel. Verifique Firebase/Auth e recarregue a pgina.';
       errorBox.style.display = 'block';
       errorBox.style.color = '#b00020';
     }
@@ -80,11 +80,11 @@ let orderBy_fn = null;
   }
 })();
 
-// ── CONFIG ────────────────────────────────────────────────────
+//  CONFIG
 const STORAGE_KEY  = 'shopee_products';
 const HISTORY_KEY  = 'shopee_history';
 const CLICKS_KEY   = 'shopee_clicks';
-const DEFAULT_DESC  = 'Frete grátis com cupom - Produto original - Entrega rápida -\nPreço promocional sujeito a alteração sem aviso prévio.';
+const DEFAULT_DESC  = 'Frete grtis com cupom - Produto original - Entrega rpida -\nPreo promocional sujeito a alterao sem aviso prvio.';
 const ADMIN_EMAIL   = 'lucasalves01@bol.com.br';
 const FIRESTORE_CACHE_KEY = 'shopee_products_cache_v2';
 const SHOPEE_URL_RE = /\/(?:product|[^/?#]+)\/(\d+)\/(\d+)|[?&](?:vShopId|shopId)=(\d+).*?[?&](?:vItemId|itemId)=(\d+)/i;
@@ -96,10 +96,10 @@ function testLocalStorage() {
     localStorage.setItem(test, 'ok');
     const result = localStorage.getItem(test);
     localStorage.removeItem(test);
-    console.log('[STORAGE] ✅ localStorage is working');
+    console.log('[STORAGE]  localStorage is working');
     return true;
   } catch (e) {
-    console.error('[STORAGE] ❌ localStorage not available:', e.message);
+    console.error('[STORAGE]  localStorage not available:', e.message);
     console.error('[STORAGE] This might be because: incognito mode, localStorage disabled, or CORS issue');
     return false;
   }
@@ -107,7 +107,7 @@ function testLocalStorage() {
 
 testLocalStorage();
 
-// ── STATE ─────────────────────────────────────────────────────
+//  STATE
 let products  = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
 console.log('[ADMIN.JS] Loaded', products.length, 'products from localStorage at', new Date().toLocaleTimeString());
 console.log('[ADMIN.JS] localStorage.getItem result:', localStorage.getItem(STORAGE_KEY) ? 'HAS DATA' : 'IS NULL/EMPTY');
@@ -134,14 +134,14 @@ function trackEvent(name, params = {}) {
   }
 }
 
-// ── HISTORY HELPER ────────────────────────────────────────────
+//  HISTORY HELPER
 function addHistory(action, product) {
   const hist = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
   hist.unshift({ ts: Date.now(), action, id: product.id, name: product.name });
   localStorage.setItem(HISTORY_KEY, JSON.stringify(hist.slice(0, 100)));
 }
 
-// ── STORAGE EVENT LISTENER ────────────────────────────────────
+//  STORAGE EVENT LISTENER
 // Sync data across tabs when localStorage changes from another tab
 window.addEventListener('storage', (e) => {
   if (e.key === STORAGE_KEY) {
@@ -153,7 +153,7 @@ window.addEventListener('storage', (e) => {
 
 function doLogin() {
   if (!auth || !signInWithEmailAndPassword_fn) {
-    alert('❌ Firebase não carregou. Tente novamente ou abra em modo offline.');
+    alert(' Firebase no carregou. Tente novamente ou abra em modo offline.');
     return;
   }
   const email = document.getElementById('loginEmail').value;
@@ -216,7 +216,7 @@ function initAdminBindings() {
 
 document.addEventListener('DOMContentLoaded', initAdminBindings);
 
-// Expõe funções ao escopo global (necessário com type="module")
+// Expe funes ao escopo global (necessrio com type="module")
 window.doLogin            = doLogin;
 window.doLogout           = doLogout;
 window.saveProduct        = saveProduct;
@@ -233,7 +233,7 @@ window.importCSV          = importCSV;
 window.triggerCSVImport   = triggerCSVImport;
 window.shareTelegramAdmin = shareTelegramAdmin;
 
-// ── IMAGE LIST MANAGEMENT ──────────────────────────────────────
+//  IMAGE LIST MANAGEMENT
 function initImageFields() {
   const list = document.getElementById('imagesList');
   if (!list) return;
@@ -292,7 +292,7 @@ function updateImagesPreview() {
   ).join('');
 }
 
-// ── VIDEO PREVIEW ──────────────────────────────────────────────
+//  VIDEO PREVIEW
 function previewVideo() {
   const url = (document.getElementById('prodVideo')?.value || '').trim();
   const box  = document.getElementById('videoPreviewBox');
@@ -304,7 +304,7 @@ function previewVideo() {
     const thumb = `https://img.youtube.com/vi/${m[1]}/mqdefault.jpg`;
     cont.innerHTML = `<div style="display:flex;align-items:center;gap:12px">
       <img src="${thumb}" style="height:64px;border-radius:6px;border:1px solid #eee"/>
-      <span style="font-size:.85rem;color:#555">YouTube detectado ✅</span></div>`;
+      <span style="font-size:.85rem;color:#555">YouTube detectado </span></div>`;
   } else {
     cont.innerHTML = `<video src="${url}" controls style="max-height:100px;border-radius:6px"></video>`;
   }
@@ -335,16 +335,16 @@ function formatSoldCount(value) {
 }
 
 function validateProductPayload(product) {
-  if (!product.name || product.name.length < 3) return 'Nome do produto inválido.';
-  if (!product.category) return 'Categoria é obrigatória.';
-  if (!Number.isFinite(product.price) || product.price <= 0) return 'Preço com desconto deve ser maior que zero.';
-  if (!product.link || !/^https?:\/\//i.test(product.link)) return 'Link de afiliado inválido.';
+  if (!product.name || product.name.length < 3) return 'Nome do produto invlido.';
+  if (!product.category) return 'Categoria  obrigatria.';
+  if (!Number.isFinite(product.price) || product.price <= 0) return 'Preo com desconto deve ser maior que zero.';
+  if (!product.link || !/^https?:\/\//i.test(product.link)) return 'Link de afiliado invlido.';
   if (!Array.isArray(product.images) || !product.images.length) return 'Adicione pelo menos uma imagem.';
   if (product.originalPrice !== null && (!Number.isFinite(product.originalPrice) || product.originalPrice < 0)) {
-    return 'Preço original inválido.';
+    return 'Preo original invlido.';
   }
   if (product.soldCount !== null && (!Number.isInteger(product.soldCount) || product.soldCount < 0)) {
-    return 'Campo vendidos inválido.';
+    return 'Campo vendidos invlido.';
   }
   return null;
 }
@@ -382,12 +382,12 @@ function updateAffiliatePreview() {
     status.textContent = `IDs detectados: shopId ${affiliate.shopId} e itemId ${affiliate.itemId}.`;
     status.style.color = '#2e7d32';
   } else {
-    status.textContent = 'Este link não trouxe os IDs no navegador. Use a URL completa do produto/variação, ou resolva o link antes de salvar.';
+    status.textContent = 'Este link no trouxe os IDs no navegador. Use a URL completa do produto/variao, ou resolva o link antes de salvar.';
     status.style.color = '#b26a00';
   }
 }
 
-// ── SAVE PRODUCT ───────────────────────────────────────────────
+//  SAVE PRODUCT
 async function saveProduct(e) {
   e.preventDefault();
   const images = getImageUrls();
@@ -458,7 +458,7 @@ async function saveProduct(e) {
   }
 }
 
-// ── EDIT ──────────────────────────────────────────────────────
+//  EDIT
 function editProduct(id) {
   const p = products.find(pr => sameId(pr.id, id));
   if (!p) return;
@@ -512,7 +512,7 @@ function editProduct(id) {
   document.getElementById('prodName').scrollIntoView({ behavior: 'smooth' });
 }
 
-// ── DELETE ────────────────────────────────────────────────────
+//  DELETE
 function deleteProduct(id) {
   if (!confirm('Tem certeza que quer remover este produto?')) return;
   const p = products.find(x => sameId(x.id, id));
@@ -521,14 +521,14 @@ function deleteProduct(id) {
   const after = products.length;
   console.log(`[DELETE] "${p?.name}" - antes: ${before}, depois: ${after}`);
   saveToStorage();
-  console.log(`[DELETE] localStorage após save:`, localStorage.getItem(STORAGE_KEY)?.substring(0, 100));
+  console.log(`[DELETE] localStorage aps save:`, localStorage.getItem(STORAGE_KEY)?.substring(0, 100));
   if (p) addHistory('delete', p);
   renderAdminList();
   renderDashboard();
-  showToast('Produto removido. 🗑️');
+  showToast('Produto removido. ');
 }
 
-// ── RESET FORM ────────────────────────────────────────────────
+//  RESET FORM
 function resetForm() {
   editingId = null;
   document.getElementById('productForm').reset();
@@ -550,7 +550,7 @@ function resetForm() {
   initImageFields();
 }
 
-// ── ADMIN LIST ────────────────────────────────────────────────
+//  ADMIN LIST
 function renderAdminList() {
   const search = (document.getElementById('adminSearch')?.value || '').toLowerCase();
   const list   = document.getElementById('adminProductList');
@@ -586,7 +586,7 @@ function renderAdminList() {
   if (homeTopList) {
     homeTopList.innerHTML = homeTop.length
       ? homeTop.map(renderAdminItem).join('')
-      : '<p class="admin-empty-inline">Nenhum item fixado na 1ª linha.</p>';
+      : '<p class="admin-empty-inline">Nenhum item fixado na 1 linha.</p>';
   }
 
   if (!remaining.length) {
@@ -612,17 +612,17 @@ function renderAdminItem(p) {
     <div class="admin-item${isScheduled ? ' admin-item-scheduled' : ''}${isHomeTop ? ' admin-item-featured' : ''}">
       <img src="${mainImg}" alt="${escapeHTML(p.name)}" onerror="this.src='https://via.placeholder.com/60x60?text=?'"/>
       <div class="admin-item-info">
-        <div class="name">${p.featured ? 'Destaque · ' : ''}${isCampaign ? 'Campanha · ' : ''}${isScheduled ? 'Agendado · ' : ''}${escapeHTML(p.name)}</div>
+        <div class="name">${p.featured ? 'Destaque  ' : ''}${isCampaign ? 'Campanha  ' : ''}${isScheduled ? 'Agendado  ' : ''}${escapeHTML(p.name)}</div>
         <div class="meta">
           R$ ${Number(p.price).toFixed(2).replace('.',',')}
-          ${discount ? `· <span style="color:#ee4d2d">-${discount}%</span>` : ''}
-          · ${escapeHTML(categoryLabel(p.category))}
-          ${p.homeOrder ? `· <span style="color:#1976d2">1ª linha #${p.homeOrder}</span>` : ''}
-          ${isCampaign ? `· <span style="color:#d97706">Campanha${p.campaignId ? ` #${p.campaignId}` : ''}</span>` : ''}
-          ${mediaCount > 1 ? `· <span style="color:#888">📷 ${mediaCount} mídias</span>` : ''}
-          ${p.video ? '· <span style="color:#888">🎬 vídeo</span>' : ''}
-          ${clickN ? `· <span style="color:#1976d2"><i class="fas fa-mouse-pointer"></i> ${clickN}</span>` : ''}
-          ${isScheduled ? `· <span style="color:#ff9800">Pub: ${new Date(p.publishDate).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span>` : ''}
+          ${discount ? ` <span style="color:#ee4d2d">-${discount}%</span>` : ''}
+           ${escapeHTML(categoryLabel(p.category))}
+          ${p.homeOrder ? ` <span style="color:#1976d2">1 linha #${p.homeOrder}</span>` : ''}
+          ${isCampaign ? ` <span style="color:#d97706">Campanha${p.campaignId ? ` #${p.campaignId}` : ''}</span>` : ''}
+          ${mediaCount > 1 ? ` <span style="color:#888"> ${mediaCount} mdias</span>` : ''}
+          ${p.video ? ' <span style="color:#888"> vdeo</span>' : ''}
+          ${clickN ? ` <span style="color:#1976d2"><i class="fas fa-mouse-pointer"></i> ${clickN}</span>` : ''}
+          ${isScheduled ? ` <span style="color:#ff9800">Pub: ${new Date(p.publishDate).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span>` : ''}
         </div>
       </div>
       <div class="admin-item-actions">
@@ -654,16 +654,16 @@ function shareTelegramAdmin(id) {
   const discount = p.originalPrice && p.originalPrice > p.price
     ? Math.round((1 - p.price / p.originalPrice) * 100) : null;
   const priceLine = p.originalPrice && p.originalPrice > p.price
-    ? `~~R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}~~  →  *R$ ${Number(p.price).toFixed(2).replace('.',',')}*`
+    ? `~~R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}~~    *R$ ${Number(p.price).toFixed(2).replace('.',',')}*`
     : `*R$ ${Number(p.price).toFixed(2).replace('.',',')}*`;
   const summary = [
-    `🔥 *${p.name}*`,
-    `📂 ${categoryLabel(p.category)}`,
-    discount ? `🏷️ Economia de *${discount}%*` : null,
-    `💰 ${priceLine}`,
-    `⚠️ Preço promocional sujeito a alteração sem aviso prévio.`,
-    p.desc ? `📝 ${stripHtml(p.desc)}` : null,
-    `🛒 Confira na Shopee: ${p.link}`,
+    ` *${p.name}*`,
+    ` ${categoryLabel(p.category)}`,
+    discount ? ` Economia de *${discount}%*` : null,
+    ` ${priceLine}`,
+    ` Preo promocional sujeito a alterao sem aviso prvio.`,
+    p.desc ? ` ${stripHtml(p.desc)}` : null,
+    ` Confira na Shopee: ${p.link}`,
   ].filter(Boolean).join('\n');
   const url = `https://t.me/share/url?url=${encodeURIComponent(p.link)}&text=${encodeURIComponent(summary)}`;
   window.open(url, '_blank');
@@ -677,7 +677,7 @@ async function loadProductsFromFirestore() {
     if (remote.length) {
       products = remote;
       localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-      console.log('[FIRESTORE] ✅ Loaded', products.length, 'products from Firestore');
+      console.log('[FIRESTORE]  Loaded', products.length, 'products from Firestore');
     }
   } catch (e) {
     console.warn('[FIRESTORE] Failed to load products:', e.message);
@@ -700,7 +700,7 @@ async function migrateLocalStorageProductsToFirestore() {
     ));
     products = [...legacy, ...products];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
-    console.log('[FIRESTORE] ✅ Migrated', legacy.length, 'legacy products from localStorage');
+    console.log('[FIRESTORE]  Migrated', legacy.length, 'legacy products from localStorage');
   } catch (e) {
     console.warn('[FIRESTORE] Migration skipped:', e.message);
   }
@@ -717,22 +717,22 @@ function handleImageListClick(e) {
   if (rowId) removeImageField(rowId);
 }
 
-// ── HELPERS ───────────────────────────────────────────────────
+//  HELPERS
 async function saveToStorage() {
   try {
     const json = JSON.stringify(products);
     localStorage.setItem(STORAGE_KEY, json);
-    // Limpa o cache do site para forçar atualização imediata
+    // Limpa o cache do site para forar atualizao imediata
     localStorage.removeItem(FIRESTORE_CACHE_KEY);
     await saveProductsToFirestore();
-    console.log('[STORAGE] ✅ Saved and cache cleared');
+    console.log('[STORAGE]  Saved and cache cleared');
   } catch (e) {
-    console.error('[STORAGE] ❌ Failed to save:', e.message);
-    alert('⚠️ Erro ao salvar no armazenamento local. Verifique se está em modo incógnito.');
+    console.error('[STORAGE]  Failed to save:', e.message);
+    alert(' Erro ao salvar no armazenamento local. Verifique se est em modo incgnito.');
   }
 }
 
-// ── TELEGRAM SHARE ────────────────────────────────────────────
+//  TELEGRAM SHARE
 const TG_GROUP = 'https://t.me/ofertasshopeeday';
 
 async function saveProductsToFirestore() {
@@ -749,7 +749,7 @@ async function saveProductsToFirestore() {
     await Promise.all(snap.docs
       .filter(d => !ids.has(d.id))
       .map(d => deleteDoc_fn(d.ref)));
-    console.log('[FIRESTORE] ✅ Synced products to Firestore');
+    console.log('[FIRESTORE]  Synced products to Firestore');
   } catch (e) {
     console.warn('[FIRESTORE] Failed to save products:', e.message);
   }
@@ -761,33 +761,33 @@ function shareTelegramGroupAdmin(id) {
 
 function categoryLabel(cat) {
   const map = {
-    'roupas-fem':  '👗 Roupas Femininas',
-    'roupas-masc': '👔 Roupas Masculinas',
-    'sapatos':     '👟 Sapatos',
-    'moda':        '💍 Acessórios de Moda',
-    'celulares':   '📱 Celulares',
-    'eletronicos': '💻 Eletrônicos',
-    'computadores':'🖥️ Computadores',
-    'jogos':       '🎮 Jogos e Consoles',
-    'cameras':     '📷 Câmeras e Drones',
-    'audio':       '🎧 Áudio',
-    'eletrodom':   '🏠 Eletrodomésticos',
-    'casa':        '🏡 Casa e Construção',
-    'alimentos':   '🍎 Alimentos e Bebidas',
-    'beleza':      '💄 Beleza',
-    'saude':       '💊 Saúde',
-    'esporte':     '⚽ Esportes e Lazer',
-    'bebes':       '👶 Mãe e Bebê',
-    'brinquedos':  '🧸 Brinquedos e Hobbies',
-    'animais':     '🐾 Animais Domésticos',
-    'automoveis':  '🚗 Automóveis',
-    'livros':      '📚 Livros e Revistas',
-    'outros':      '✨ Outros',
+    'roupas-fem':  ' Roupas Femininas',
+    'roupas-masc': ' Roupas Masculinas',
+    'sapatos':     ' Sapatos',
+    'moda':        ' Acessrios de Moda',
+    'celulares':   ' Celulares',
+    'eletronicos': ' Eletrnicos',
+    'computadores':' Computadores',
+    'jogos':       ' Jogos e Consoles',
+    'cameras':     ' Cmeras e Drones',
+    'audio':       ' udio',
+    'eletrodom':   ' Eletrodomsticos',
+    'casa':        ' Casa e Construo',
+    'alimentos':   ' Alimentos e Bebidas',
+    'beleza':      ' Beleza',
+    'saude':       ' Sade',
+    'esporte':     ' Esportes e Lazer',
+    'bebes':       ' Me e Beb',
+    'brinquedos':  ' Brinquedos e Hobbies',
+    'animais':     ' Animais Domsticos',
+    'automoveis':  ' Automveis',
+    'livros':      ' Livros e Revistas',
+    'outros':      ' Outros',
   };
   return map[cat] || cat;
 }
 
-// ── DASHBOARD ─────────────────────────────────────────────────
+//  DASHBOARD
 function renderDashboard() {
   const el = document.getElementById('dashboardSection');
   if (!el) return;
@@ -823,7 +823,7 @@ function renderDashboard() {
       </div>
       <div class="dash-card">
         <div class="dash-icon cat"><i class="fas fa-tag"></i></div>
-        <div class="dash-info"><div class="dash-value">${topCat ? categoryLabel(topCat[0]) : '–'}</div><div class="dash-label">Cat. principal</div></div>
+        <div class="dash-info"><div class="dash-value">${topCat ? categoryLabel(topCat[0]) : ''}</div><div class="dash-label">Cat. principal</div></div>
       </div>
     </div>
 
@@ -833,29 +833,29 @@ function renderDashboard() {
         ${topClicked.length ? topClicked.map(({p, n}) => `
           <div class="dash-top-item">
             <img src="${(p.images&&p.images[0])||''}" alt="" onerror="this.src='https://via.placeholder.com/36?text=?'"/>
-            <div class="dash-top-name">${p.name.substring(0,40)}${p.name.length>40?'…':''}</div>
+            <div class="dash-top-name">${p.name.substring(0,40)}${p.name.length>40?'':''}</div>
             <span class="dash-top-count">${n} abertura${n > 1 ? 's' : ''}</span>
           </div>`).join('') : '<p class="dash-empty">Nenhum clique registrado ainda.</p>'}
       </div>
 
       <div class="dash-panel">
-        <h3><i class="fas fa-history"></i> Histórico</h3>
+        <h3><i class="fas fa-history"></i> Histrico</h3>
         ${history.length ? history.slice(0,10).map(h => {
           const icons = { create:'fas fa-plus-circle', edit:'fas fa-pen', delete:'fas fa-trash' };
           const labels = { create:'Adicionado', edit:'Editado', delete:'Removido' };
           const dt = new Date(h.ts).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
           return `<div class="dash-hist-item">
             <i class="hist-icon ${h.action} ${icons[h.action]||'fas fa-circle'}"></i>
-            <div class="dash-top-name">${h.name.substring(0,38)}${h.name.length>38?'…':''}</div>
+            <div class="dash-top-name">${h.name.substring(0,38)}${h.name.length>38?'':''}</div>
             <span class="dash-hist-dt">${dt}</span>
             <span class="dash-hist-lbl ${h.action}">${labels[h.action]||h.action}</span>
           </div>`;
-        }).join('') : '<p class="dash-empty">Nenhum histórico ainda.</p>'}
+        }).join('') : '<p class="dash-empty">Nenhum histrico ainda.</p>'}
       </div>
     </div>`;
 }
 
-// ── CSV IMPORT ────────────────────────────────────────────────
+//  CSV IMPORT
 function triggerCSVImport() {
   document.getElementById('csvFileInput').click();
 }
@@ -866,7 +866,7 @@ function importCSV(e) {
   const reader = new FileReader();
   reader.onload = ev => {
     const lines = ev.target.result.split('\n').map(l => l.trim()).filter(Boolean);
-    if (lines.length < 2) { alert('CSV inválido ou vazio.'); return; }
+    if (lines.length < 2) { alert('CSV invlido ou vazio.'); return; }
     const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g,''));
     let imported = 0, errors = 0;
     lines.slice(1).forEach(line => {
@@ -876,7 +876,7 @@ function importCSV(e) {
       const get   = key => { const i = headers.indexOf(key); return i>=0 ? clean(cols[i]) : ''; };
 
       const name  = get('name') || get('nome');
-      const price = parseFloat(get('price') || get('preco') || get('preço'));
+      const price = parseFloat(get('price') || get('preco') || get('preo'));
       const link  = get('link') || get('url');
       if (!name || isNaN(price) || !link) { errors++; return; }
 
@@ -893,7 +893,7 @@ function importCSV(e) {
         link,
         images:        [get('image') || get('imagem') || get('img')].filter(Boolean),
         video:         get('video') || '',
-        desc:          get('desc') || get('descricao') || get('descrição') || '',
+        desc:          get('desc') || get('descricao') || get('descrio') || '',
         rating:        parseFloat(get('rating') || get('avaliacao')) || null,
         soldCount:     parseSoldCount(get('soldcount') || get('vendidos')),
         featured:      (get('featured') || get('destaque')) === 'true',
@@ -911,7 +911,7 @@ function importCSV(e) {
     renderAdminList();
     renderDashboard();
     e.target.value = '';
-    showToast(`${imported} produto${imported === 1 ? '' : 's'} importado${imported === 1 ? '' : 's'}${errors ? `, ${errors} linha${errors === 1 ? '' : 's'} ignorada${errors === 1 ? '' : 's'}` : ''} ✅`);
+    showToast(`${imported} produto${imported === 1 ? '' : 's'} importado${imported === 1 ? '' : 's'}${errors ? `, ${errors} linha${errors === 1 ? '' : 's'} ignorada${errors === 1 ? '' : 's'}` : ''} `);
   };
   reader.readAsText(file);
 }
@@ -929,6 +929,33 @@ function showToast(msg) {
   clearTimeout(t._to);
   t._to = setTimeout(() => { t.style.opacity = '0'; }, 2500);
 }
-w i n d o w . g e n e r a t e S i t e m a p X M L   =   f u n c t i o n ( )   {   c o n s t   b a s e U r l   =   ' h t t p s : / / m e l h o r e s d a s h o p e e . c o m . b r / ' ;   c o n s t   t o d a y   =   n e w   D a t e ( ) . t o I S O S t r i n g ( ) . s p l i t ( ' T ' ) [ 0 ] ;   l e t   x m l   =   ' < ? x m l   v e r s i o n = \  
- 1 . 0 \   e n c o d i n g = \ U T F - 8 \ ? > \ n < u r l s e t   x m l n s = \ h t t p : / / w w w . s i t e m a p s . o r g / s c h e m a s / s i t e m a p / 0 . 9 \ > \ n ' ;   c o n s t   s t a t i c P a g e s   =   [ ' ' ,   ' c a t e g o r i a . h t m l ' ,   ' p o l i t i c a - p r i v a c i d a d e . h t m l ' ,   ' t e r m o s - d e - u s o . h t m l ' ] ;   s t a t i c P a g e s . f o r E a c h ( p   = >   {   x m l   + =   '     < u r l > \ n         < l o c > '   +   b a s e U r l   +   p   +   ' < / l o c > \ n         < l a s t m o d > '   +   t o d a y   +   ' < / l a s t m o d > \ n         < c h a n g e f r e q > d a i l y < / c h a n g e f r e q > \ n         < p r i o r i t y > 0 . 8 < / p r i o r i t y > \ n     < / u r l > \ n ' ;   } ) ;   p r o d u c t s . f o r E a c h ( p   = >   {   c o n s t   s l u g   =   p . n a m e . t o L o w e r C a s e ( ) . n o r m a l i z e ( ' N F D ' ) . r e p l a c e ( / [ \ u 0 3 0 0 - \ u 0 3 6 f ] / g ,   ' ' ) . r e p l a c e ( / [ ^ a - z 0 - 9 ] + / g ,   ' - ' ) . r e p l a c e ( / ( ^ - | - $ ) / g ,   ' ' ) ;   x m l   + =   '     < u r l > \ n         < l o c > '   +   b a s e U r l   +   ' ? p = '   +   s l u g   +   ' < / l o c > \ n         < l a s t m o d > '   +   t o d a y   +   ' < / l a s t m o d > \ n         < c h a n g e f r e q > w e e k l y < / c h a n g e f r e q > \ n         < p r i o r i t y > 0 . 7 < / p r i o r i t y > \ n     < / u r l > \ n ' ;   } ) ;   x m l   + =   ' < / u r l s e t > ' ;   c o n s t   b l o b   =   n e w   B l o b ( [ x m l ] ,   {   t y p e :   ' t e x t / x m l '   } ) ;   c o n s t   u r l   =   U R L . c r e a t e O b j e c t U R L ( b l o b ) ;   c o n s t   a   =   d o c u m e n t . c r e a t e E l e m e n t ( ' a ' ) ;   a . h r e f   =   u r l ;   a . d o w n l o a d   =   ' s i t e m a p . x m l ' ;   d o c u m e n t . b o d y . a p p e n d C h i l d ( a ) ;   a . c l i c k ( ) ;   d o c u m e n t . b o d y . r e m o v e C h i l d ( a ) ;   U R L . r e v o k e O b j e c t U R L ( u r l ) ;   a l e r t ( ' '  X M L   d o   S i t e m a p   g e r a d o   e   b a i x a d o !   A g o r a   s i g a   o s   p a s s o s : \ n 1 .   A b r a   o   a r q u i v o   b a i x a d o . \ n 2 .   C o p i e   o   c o n t e � d o . \ n 3 .   C o l e   n o   s e u   s i t e m a p . x m l   e   d �   c o m m i t / p u s h . ' ) ;   } ;  
- 
+
+window.generateSitemapXML = function() {
+  const baseUrl = 'https://melhoresdashopee.com.br/';
+  const today = new Date().toISOString().split('T')[0];
+  let xml = '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n';
+
+  const staticPages = ['', 'categoria.html', 'politica-privacidade.html', 'termos-de-uso.html'];
+  staticPages.forEach(p => {
+    xml += `  <url>\n    <loc>${baseUrl}${p}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>daily</changefreq>\n    <priority>0.8</priority>\n  </url>\n`;
+  });
+
+  products.forEach(p => {
+    const slug = p.name.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+    xml += `  <url>\n    <loc>${baseUrl}?p=${slug}</loc>\n    <lastmod>${today}</lastmod>\n    <changefreq>weekly</changefreq>\n    <priority>0.7</priority>\n  </url>\n`;
+  });
+
+  xml += '</urlset>';
+
+  const blob = new Blob([xml], { type: 'text/xml' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'sitemap.xml';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  alert('✅ XML do Sitemap gerado e baixado! Agora:\n1. Abra o sitemap.xml baixado.\n2. Cole no seu arquivo do VS Code.\n3. Commit/Push.');
+};
