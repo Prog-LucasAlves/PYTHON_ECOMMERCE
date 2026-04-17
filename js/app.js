@@ -831,46 +831,64 @@ window.addEventListener('storage', (e) => {
 
 (async () => {
   try {
-    // Respiro ultra-curto para priorizar FCP/LCP
-    await new Promise(r => setTimeout(r, 30));
-
+    // 1. Carregamento Ultra-rápido do Cache Local (LCP Crítico)
     const localRaw = localStorage.getItem('shopee_products');
-    if (localRaw && !allProducts.length) {
+    if (localRaw) {
       const parsed = JSON.parse(localRaw);
       allProducts = dedupeProducts(parsed);
+
+      // Renderização síncrona imediata para evitar CLS/LCP atrasado
       renderProducts();
+      initHeroBanner();
     }
+
+    // 2. Importação Diferida das Dependências Pesadas (Firebase)
+    // Pequeno respiro para não travar a interatividade do usuário
+    await new Promise(r => window.requestIdleCallback ? requestIdleCallback(() => r()) : setTimeout(r, 100));
 
     const { firebaseConfig } = await import("./config.js");
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
     const fs = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+
     const app = initializeApp(firebaseConfig);
     firestoreDb = fs.getFirestore(app);
 
+    // 3. Sync com Firestore (Background)
     const snap = await fs.getDocs(fs.query(fs.collection(firestoreDb, 'products'), fs.orderBy('updatedAt', 'desc')));
     const remote = snap.docs.map(d => ({ ...d.data(), id: d.data().id || d.id })).filter(Boolean);
+
     if (remote.length) {
       const prevCount = allProducts.length;
       allProducts = dedupeProducts(remote);
 
-      // Só re-renderiza e salva se o número de itens mudar (muito mais rápido que stringify)
+      // Só re-renderiza e salva se houver novos itens
       if (allProducts.length !== prevCount) {
         localStorage.setItem('shopee_products', JSON.stringify(allProducts));
         renderProducts();
+        initHeroBanner();
       }
     }
+
     firestoreReady = true;
     firstLoad = false;
+
+    // 4. Aplifica filtros da URL
     const initialSearch = getInitialSearchTerm();
     const searchInput = document.getElementById('searchInput');
-    if (initialSearch && searchInput && !searchInput.value) searchInput.value = initialSearch;
-    currentCategory = getInitialCategory();
-    renderProducts();
-    initHeroBanner();
+    if (initialSearch && searchInput && !searchInput.value) {
+      searchInput.value = initialSearch;
+      filterProducts();
+    }
+
     handleDeepLink();
-    updateResultsSummary(allProducts.filter(p => !p.publishDate || new Date(p.publishDate) <= new Date()), (document.getElementById('searchInput')?.value || '').toLowerCase().trim());
+
+    // 5. Verificações de Preço (Deixe o navegador respirar primeiro)
+    setTimeout(() => {
+      if (typeof checkPriceDrops === 'function') checkPriceDrops();
+    }, 5000);
+
   } catch (e) {
-    console.warn('[FIRESTORE] Falling back to localStorage:', e.message);
+    console.warn('[BOOT] Fallback or error:', e.message);
   }
 })();
 
@@ -953,10 +971,15 @@ function _renderFiltered(grid, empty, search) {
   lastRenderAt = Date.now();
   updateResultsSummary(filtered, search);
   updateBreadcrumbs(currentCategory);
-  try {
-    updateStructuredData(filtered);
-  } catch (err) {
-    console.warn('[SEO] Structured data skipped:', err);
+  // Defer structured data update (Non-critical, saves TBT)
+  if (window.requestIdleCallback) {
+    requestIdleCallback(() => {
+      try { updateStructuredData(filtered); } catch (err) { }
+    });
+  } else {
+    setTimeout(() => {
+      try { updateStructuredData(filtered); } catch (err) { }
+    }, 2000);
   }
 
   if (!filtered.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
@@ -1957,9 +1980,8 @@ function initAppBindings() {
   }, 5 * 60 * 1000);
 }
 
-try { initDarkMode(); } catch(e) { console.error("Error in initDarkMode:", e); }
-try { renderProducts(); } catch(e) { console.error("Error in renderProducts:", e); }
-try { initHeroBanner(); } catch(e) { console.error("Error in initHeroBanner:", e); }
+// initDarkMode() and other initializations are handled inside the async BOOT block or via bindings
+// Removed duplicate render calls to reduce CPU usage on start
 
 // DEFER NON-CRITICAL UI: Libera a thread principal (reduz TBT)
 const deferTask = window.requestIdleCallback || ((cb) => setTimeout(cb, 1500));
