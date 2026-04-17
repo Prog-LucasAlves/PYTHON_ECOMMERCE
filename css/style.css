@@ -2091,6 +2091,7 @@ footer div {
 
 /* ── PWA INSTALL BANNER ──────────────────────────────────────── */
 .pwa-banner {
+  position: relative;
   position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
   background: #fff; border: 1.5px solid #eee; border-radius: 14px;
   box-shadow: 0 8px 32px rgba(0,0,0,0.15); z-index: 2000;
@@ -2116,11 +2117,13 @@ footer div {
 }
 .pwa-install-btn:hover { background: #e4b63c; }
 .pwa-close-btn {
-  background: none; border: none; cursor: pointer;
-  color: #666; font-size: 1.1rem; padding: 8px; flex-shrink: 0;
+  position: absolute; top: -14px; right: -14px; width: 34px; height: 34px; background: #fff !important; border: 2.5px solid #ffdb00 !important; border-radius: 50% !important; color: #333 !important; cursor: pointer; display: flex !important; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important; z-index: 2010;
+  transition: transform 0.2s;
 }
-.pwa-close-btn:hover { color: #888; }
-[data-theme="dark"] .pwa-banner { background: #1e1e1e; border-color: #333; }
+.pwa-close-btn:hover { transform: scale(1.1); color: #000; }
+
+[data-theme="dark"] .pwa-banner {
+  position: relative; background: #1e1e1e; border-color: #333; }
 [data-theme="dark"] .pwa-banner-inner strong { color: #e0e0e0; }
 
 /* ========== SKELETON LOADING ========== */
