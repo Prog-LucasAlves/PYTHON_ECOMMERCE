@@ -100,13 +100,8 @@ function normalizeImageUrl(url, size = 'large') {
 
   // Otimização para CDN da Shopee
   if (value.includes('shopee') && value.includes('/file/')) {
-    // Sufixos comuns do CDN Shopee: _tn (100), _200, _400, _640
-    // Usamos WebP sempre que possível
-    if (size === 'thumb') value += '_tn';
-    else if (size === 'medium') value += '_400';
-    else if (size === 'large') value += '_640';
-
-    if (!value.endsWith('.webp')) value += '.webp';
+    // _tn é o único sufixo universalmente seguro para miniaturas no CDN Shopee
+    if (size === 'thumb' && !value.endsWith('_tn')) value += '_tn';
   }
   return value;
 }
@@ -1178,7 +1173,7 @@ function getDiscount(p) {
 }
 
 function cardHTML(p, index = 0) {
-  const images   = getImages(p, index < 20 ? 'large' : 'medium');
+  const images   = getImages(p, 'large');
   const main     = images[0] || 'https://via.placeholder.com/300x300?text=Sem+Imagem';
   const discount = getDiscount(p);
   const isCampaign = isCampaignActive(p) || p.campaignId;
