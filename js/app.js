@@ -960,8 +960,8 @@ function _renderFiltered(grid, empty, search) {
     case 'discount':   filtered.sort((a, b) => getDiscount(b) - getDiscount(a)); break;
     case 'newest':     filtered.sort((a, b) => b.id - a.id); break;
     default: {
-      const featured = sortFeaturedFirst(uniqueFiltered.filter(p => p.featured || p.homeOrder));
-      const campaignPreview = getCampaignItems(uniqueFiltered);
+      const featured = sortFeaturedFirst(filtered.filter(p => p.featured || p.homeOrder));
+      const campaignPreview = getCampaignItems(filtered);
       const rotating = rotateHomeProducts(rotationPool).slice(0, HOME_ROTATION_LIMIT);
       filtered = [...featured, ...campaignPreview, ...rotating];
       break;
