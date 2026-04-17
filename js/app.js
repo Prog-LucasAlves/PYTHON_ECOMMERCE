@@ -100,9 +100,12 @@ function normalizeImageUrl(url, size = 'large') {
 
   // Otimização para CDN da Shopee
   if (value.includes('shopee') && value.includes('/file/')) {
-    // Adiciona sufixo de WebP se suportado (via query param ou sufixo)
-    // Muitos CDNs da Shopee suportam _tn para miniaturas e sufixo .webp
+    // Sufixos comuns do CDN Shopee: _tn (100), _200, _400, _640
+    // Usamos WebP sempre que possível
     if (size === 'thumb') value += '_tn';
+    else if (size === 'medium') value += '_400';
+    else if (size === 'large') value += '_640';
+
     if (!value.endsWith('.webp')) value += '.webp';
   }
   return value;
@@ -840,6 +843,21 @@ window.addEventListener('storage', (e) => {
       // Renderização síncrona imediata para evitar CLS/LCP atrasado
       renderProducts();
       initHeroBanner();
+
+      // Otimização de LCP: Preload imediato da primeira imagem do Hero
+      const heroItem = allProducts.filter(isDisplayableProduct).find(p => p.featured) || allProducts[0];
+      if (heroItem) {
+        const heroImg = getImages(heroItem, 'large')[0];
+        if (heroImg) {
+          const lcpPreload = document.createElement('link');
+          lcpPreload.rel = 'preload';
+          lcpPreload.as = 'image';
+          lcpPreload.href = heroImg;
+          lcpPreload.imageSrcset = ""; // Prevents browser from waiting if using srcset
+          lcpPreload.fetchPriority = "high";
+          document.head.appendChild(lcpPreload);
+        }
+      }
     }
 
     // 2. Importação Diferida das Dependências Pesadas (Firebase)
@@ -882,10 +900,24 @@ window.addEventListener('storage', (e) => {
 
     handleDeepLink();
 
-    // 5. Verificações de Preço (Deixe o navegador respirar primeiro)
-    setTimeout(() => {
-      if (typeof checkPriceDrops === 'function') checkPriceDrops();
-    }, 5000);
+    // 5. Inicializações Não-Critícas (Defer para melhorar TBT)
+    if (window.requestIdleCallback) {
+      requestIdleCallback(() => {
+        try {
+          if (typeof initSearchHistory === 'function') initSearchHistory();
+          if (typeof initStats === 'function') initStats();
+          if (typeof initPWA === 'function') initPWA();
+          if (typeof checkPriceDrops === 'function') checkPriceDrops();
+          if (typeof initGamification === 'function') initGamification();
+        } catch(e) {}
+      });
+    } else {
+      setTimeout(() => {
+        try {
+          if (typeof checkPriceDrops === 'function') checkPriceDrops();
+        } catch(e) {}
+      }, 5000);
+    }
 
   } catch (e) {
     console.warn('[BOOT] Fallback or error:', e.message);
@@ -1005,8 +1037,8 @@ function _renderFiltered(grid, empty, search) {
 
     const inner = section.querySelector('.product-grid-inner');
 
-    // Renderização suave em lotes
-    const BATCH_SIZE = 12;
+    // Renderização suave em lotes (BATCH_SIZE menor melhora o TBT)
+    const BATCH_SIZE = containerClass.includes('rotating') ? 8 : 12;
     for (let i = 0; i < items.length; i += BATCH_SIZE) {
       const batch = items.slice(i, i + BATCH_SIZE);
       const html = batch.map((p, idx) => cardHTML(p, startIndex + i + idx)).join('');
@@ -1146,7 +1178,7 @@ function getDiscount(p) {
 }
 
 function cardHTML(p, index = 0) {
-  const images   = getImages(p, 'thumb');
+  const images   = getImages(p, index < 20 ? 'large' : 'medium');
   const main     = images[0] || 'https://via.placeholder.com/300x300?text=Sem+Imagem';
   const discount = getDiscount(p);
   const isCampaign = isCampaignActive(p) || p.campaignId;
@@ -1341,6 +1373,25 @@ function openProductModal(id, startIdx = 0) {
   renderSpecs(p);
   updateUrgency(p);
   updateSocialMeta(p);
+
+  // Compartilhamento Social
+  const shareWpp = document.getElementById('shareWhatsAppBtn');
+  const shareTlg = document.getElementById('shareTelegramBtn');
+  const shareUrl = `${window.location.origin}${window.location.pathname}?p=${slugify(p.name)}`;
+  const shareText = `🔥 Olha que oferta incrível que encontrei no Melhores Ofertas!\n\n🛍️ *${p.name}*\n💰 Por apenas *R$ ${p.price.toFixed(2).replace('.', ',')}*\n\n🔗 Confira aqui: ${shareUrl}`;
+
+  if (shareWpp) {
+    shareWpp.onclick = (e) => {
+      e.preventDefault();
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, '_blank');
+    };
+  }
+  if (shareTlg) {
+    shareTlg.onclick = (e) => {
+      e.preventDefault();
+      window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`, '_blank');
+    };
+  }
 
   document.getElementById('productModal').classList.add('open');
   document.body.style.overflow = 'hidden';
@@ -1707,7 +1758,14 @@ function updateUrgency(p) {
   if (!box || !bar || !text) return;
 
   // Usa o ID do produto como semente para manter consistência
-  const seed = (p.id % 20) + 5;
+  // Obtém um número a partir do ID (mesmo que seja string)
+  const idStr = String(p.id);
+  let idHash = 0;
+  for (let i = 0; i < idStr.length; i++) {
+    idHash = ((idHash << 5) - idHash) + idStr.charCodeAt(i);
+    idHash |= 0; // Convert to 32bit integer
+  }
+  const seed = (Math.abs(idHash) % 20) + 5;
   const percent = (seed / 25) * 100;
 
   text.textContent = `Restam apenas ${seed} unidades em estoque!`;
