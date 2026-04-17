@@ -1342,6 +1342,25 @@ function openProductModal(id, startIdx = 0) {
   updateUrgency(p);
   updateSocialMeta(p);
 
+  // Compartilhamento Social
+  const shareWpp = document.getElementById('shareWhatsAppBtn');
+  const shareTlg = document.getElementById('shareTelegramBtn');
+  const shareUrl = `${window.location.origin}${window.location.pathname}?p=${slugify(p.name)}`;
+  const shareText = `🔥 Olha que oferta incrível que encontrei no Melhores Ofertas!\n\n🛍️ *${p.name}*\n💰 Por apenas *R$ ${p.price.toFixed(2).replace('.', ',')}*\n\n🔗 Confira aqui: ${shareUrl}`;
+
+  if (shareWpp) {
+    shareWpp.onclick = (e) => {
+      e.preventDefault();
+      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, '_blank');
+    };
+  }
+  if (shareTlg) {
+    shareTlg.onclick = (e) => {
+      e.preventDefault();
+      window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`, '_blank');
+    };
+  }
+
   document.getElementById('productModal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1707,7 +1726,14 @@ function updateUrgency(p) {
   if (!box || !bar || !text) return;
 
   // Usa o ID do produto como semente para manter consistência
-  const seed = (p.id % 20) + 5;
+  // Obtém um número a partir do ID (mesmo que seja string)
+  const idStr = String(p.id);
+  let idHash = 0;
+  for (let i = 0; i < idStr.length; i++) {
+    idHash = ((idHash << 5) - idHash) + idStr.charCodeAt(i);
+    idHash |= 0; // Convert to 32bit integer
+  }
+  const seed = (Math.abs(idHash) % 20) + 5;
   const percent = (seed / 25) * 100;
 
   text.textContent = `Restam apenas ${seed} unidades em estoque!`;
