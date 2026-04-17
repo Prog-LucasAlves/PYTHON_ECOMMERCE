@@ -4,9 +4,9 @@ let heroTimer    = null;
 const HERO_INTERVAL = 5000;
 const HOME_ROTATION_MINUTES = 20;
 const HOME_ROTATION_MINUTES_LONG = 30;
-const HOME_SECTION_LIMIT = 16;
-const CAMPAIGN_SECTION_LIMIT = 250;
-const HOME_ROTATION_LIMIT = 100;
+const HOME_SECTION_LIMIT = 12;
+const CAMPAIGN_SECTION_LIMIT = 12;
+const HOME_ROTATION_LIMIT = 150;
 const SEASONAL_COLLECTION_LIMIT = 14;
 const FIRESTORE_CACHE_KEY = 'shopee_products_cache_v2';
 const FIRESTORE_CACHE_TTL_MS = 10 * 60 * 1000;
@@ -831,8 +831,8 @@ window.addEventListener('storage', (e) => {
 
 (async () => {
   try {
-    // Respiro curto para o navegador pintar a tela inicial
-    await new Promise(r => setTimeout(r, 100));
+    // Respiro ultra-curto para priorizar FCP/LCP
+    await new Promise(r => setTimeout(r, 30));
 
     const localRaw = localStorage.getItem('shopee_products');
     if (localRaw && !allProducts.length) {
