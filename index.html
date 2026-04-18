@@ -33,12 +33,15 @@
   <meta name="twitter:image" content="https://melhoresdashopee.com.br/img/logo-01-header.svg" />
 
   <link rel="stylesheet" href="css/style.css"/>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- Font Awesome: carregada de forma não-bloqueante -->
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"></noscript>
 
-  <!-- Preload da fonte crítica -->
+  <!-- Google Fonts: carregada de forma não-bloqueante -->
   <link rel="preload" href="https://fonts.gstatic.com/s/outfit/v11/Q_3_9mv92BPiz809IDRzY6z.woff2" as="font" type="font/woff2" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap"></noscript>
 
   <!-- PWA -->
   <link rel="manifest" href="manifest.json"/>
@@ -422,7 +425,7 @@
       </div>
       <button class="pwa-install-btn" id="pwaBtnInstall">Instalar</button>
     </div>
-    <button class="pwa-close-btn" id="pwaBtnClose" title="Fechar"><i class="fas fa-times"></i></button>
+    <button class="pwa-close-btn" id="pwaBtnClose" title="Fechar" aria-label="Fechar banner"><i class="fa-solid fa-xmark"></i></button>
   </div>
 
   <!-- Rodapé -->

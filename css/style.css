@@ -1,4 +1,4 @@
-﻿/* ========== RESET & BASE ========== */
+/* ========== RESET & BASE ========== */
 :root {
   --brand: #ffdb00;
   --brand-hover: #f0ce00;
@@ -267,13 +267,16 @@ header {
   transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
+  will-change: opacity; /* Composite animation */
 }
 .hero-slide.active { opacity: 1; z-index: 1; }
-.hero-slide-bg {
+.hero-slide-img {
   position: absolute;
   inset: 0;
-  background-size: cover;
-  background-position: center;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
 }
 .hero-slide-overlay {
   position: absolute;
@@ -750,6 +753,14 @@ main {
   position: relative;
   border: 1px solid #eef1f4;
   cursor: pointer;
+  will-change: transform, opacity; /* Composite animation */
+  opacity: 0;
+  transform: translateY(15px);
+}
+.product-card.card-visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition-delay: var(--delay, 0ms);
 }
 .product-card:hover {
   transform: translateY(-4px);
@@ -2117,10 +2128,10 @@ footer div {
 }
 .pwa-install-btn:hover { background: #e4b63c; }
 .pwa-close-btn {
-  position: absolute; top: -14px; right: -14px; width: 34px; height: 34px; background: #fff !important; border: 2.5px solid #ffdb00 !important; border-radius: 50% !important; color: #333 !important; cursor: pointer; display: flex !important; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.2) !important; z-index: 2010;
+  position: absolute; top: -16px; right: -16px; width: 36px; height: 36px; background: #fff !important; border: 2.5px solid #333 !important; border-radius: 50% !important; color: #333 !important; cursor: pointer; display: flex !important; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 4px 16px rgba(0,0,0,0.3) !important; z-index: 2100;
   transition: transform 0.2s;
 }
-.pwa-close-btn:hover { transform: scale(1.1); color: #000; }
+.pwa-close-btn:hover { transform: scale(1.1); color: #ee4d2d !important; border-color: #ee4d2d !important; }
 
 [data-theme="dark"] .pwa-banner {
   position: relative; background: #1e1e1e; border-color: #333; }
