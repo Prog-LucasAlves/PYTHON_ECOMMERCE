@@ -1,9 +1,10 @@
-const CACHE_NAME = 'shopee-ofertas-v2';
+const CACHE_NAME = 'shopee-ofertas-v3';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/css/style.css',
   '/js/app.js',
+  '/js/worker.js',
   '/js/pwa.js',
   '/img/favicon.png',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css'
@@ -55,14 +56,27 @@ self.addEventListener('fetch', e => {
     return;
   }
 
-  // 2. HTML, JS, CSS: Stale-While-Revalidate (Interface sempre atualizada sem travar carregamento)
+  // 2. JS/CSS: Stale-While-Revalidate with long cache headers
   e.respondWith(
     caches.open(CACHE_NAME).then(cache => {
       return cache.match(e.request).then(cached => {
         const fetched = fetch(e.request).then(res => {
-          cache.put(e.request, res.clone());
+          // Only cache successful responses
+          if (res.ok) {
+            const cloned = res.clone();
+            const headers = new Headers(cloned.headers);
+            // Instruct browser to cache JS/CSS for 1 week
+            if (url.pathname.match(/\.(js|css)$/)) {
+              headers.set('Cache-Control', 'public, max-age=604800');
+            }
+            cache.put(e.request, new Response(cloned.body, {
+              status: cloned.status,
+              statusText: cloned.statusText,
+              headers,
+            }));
+          }
           return res;
-        });
+        }).catch(() => null);
         return cached || fetched;
       });
     })

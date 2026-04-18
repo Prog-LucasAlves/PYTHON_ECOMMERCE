@@ -4,19 +4,50 @@ let heroTimer    = null;
 const HERO_INTERVAL = 5000;
 const HOME_ROTATION_MINUTES = 20;
 const HOME_ROTATION_MINUTES_LONG = 30;
-const HOME_SECTION_LIMIT = 20;
-const CAMPAIGN_SECTION_LIMIT = 48;
-const HOME_ROTATION_LIMIT = 300;
+const HOME_SECTION_LIMIT = 60;
+const CAMPAIGN_SECTION_LIMIT = 120;
+const HOME_ROTATION_LIMIT = 200;
 const SEASONAL_COLLECTION_LIMIT = 24;
 const FIRESTORE_CACHE_KEY = 'shopee_products_cache_v2';
 const FIRESTORE_CACHE_TTL_MS = 10 * 60 * 1000;
 const GAMIFICATION_KEY = 'shopee_gamification';
 let lastRenderAt = Date.now();
 
-// Start Background Checks
-setTimeout(() => {
-  if (typeof checkPriceDrops === 'function') checkPriceDrops();
-}, 2000);
+// ── WEB WORKER SETUP ─────────────────────────────────────────
+let dataWorker = null;
+const workerCallbacks = new Map();
+let workerCallId = 0;
+
+function getWorker() {
+  if (!dataWorker && typeof Worker !== 'undefined') {
+    try {
+      dataWorker = new Worker('js/worker.js');
+      dataWorker.onmessage = (e) => {
+        const { id, type, result, error } = e.data;
+        if (workerCallbacks.has(id)) {
+          const { resolve, reject } = workerCallbacks.get(id);
+          workerCallbacks.delete(id);
+          if (type === 'ERROR') reject(new Error(error));
+          else resolve(result);
+        }
+      };
+      dataWorker.onerror = (err) => console.warn('[Worker] Error:', err.message);
+    } catch (e) {
+      console.warn('[Worker] Not supported, falling back to main thread:', e.message);
+    }
+  }
+  return dataWorker;
+}
+
+function workerCall(type, payload) {
+  const worker = getWorker();
+  if (!worker) return Promise.reject(new Error('No worker'));
+  return new Promise((resolve, reject) => {
+    const id = ++workerCallId;
+    workerCallbacks.set(id, { resolve, reject });
+    worker.postMessage({ id, type, payload });
+  });
+}
 
 // State variables are declared later in the DATA section to avoid duplicates.
 
@@ -277,7 +308,6 @@ function getCampaignItems(items) {
       const hashB = stringHash(productFingerprint(b) + bucket);
       return hashA - hashB;
     })
-    .filter((p, i, arr) => arr.findIndex(x => productFingerprint(x) === productFingerprint(p)) === i)
     .slice(0, CAMPAIGN_SECTION_LIMIT);
 
   if (campaignSet.length >= CAMPAIGN_SECTION_LIMIT) return campaignSet;
@@ -286,7 +316,6 @@ function getCampaignItems(items) {
   const usedFp = new Set(campaignSet.map(p => productFingerprint(p)));
   const candidates = items
     .filter(p => !p.featured && !p.homeOrder && !usedFp.has(productFingerprint(p)))
-    .filter((p, i, arr) => arr.findIndex(x => productFingerprint(x) === productFingerprint(p)) === i)
     .sort((a, b) => getProductScore(b) - getProductScore(a));
 
   // Interleave by category for diversity
@@ -308,6 +337,7 @@ function getCampaignItems(items) {
 
   return [...campaignSet, ...fill];
 }
+
 
 function getProductScore(p, clicks = {}) {
   const clickN = Number(clicks[p.id] || 0);
@@ -386,10 +416,10 @@ function initHeroBanner() {
   }
 
   slidesEl.innerHTML = slides.map((p, i) => {
-    const img      = getImages(p)[0] || '';
+    const img      = getImages(p, 'large')[0] || '';
     const discount = getDiscount(p);
     return `<div class="hero-slide ${i === 0 ? 'active' : ''}" data-action="open-product" data-id="${p.id}">
-      ${img ? `<div class="hero-slide-bg" style="background-image:url('${img}')"></div>` : ''}
+      ${img ? `<img src="${img}" class="hero-slide-img" alt="${escapeHTML(p.name)}" fetchpriority="${i === 0 ? 'high' : 'low'}" loading="${i === 0 ? 'eager' : 'lazy'}" decoding="async" />` : ''}
       <div class="hero-slide-overlay"></div>
       <div class="hero-slide-content">
         ${discount ? `<span class="hero-badge">-${discount}%</span>` : ''}
@@ -955,10 +985,9 @@ function renderProducts() {
 function _renderFiltered(grid, empty, search) {
   if (!grid || !empty) return;
   const now = Date.now();
-  let filtered = allProducts.filter(p => p._priceNum > 0);
 
-  // Filtro de data futura otimizado (sem new Date no loop)
-  filtered = filtered.filter(p => !p._publishTs || p._publishTs <= now);
+  // Apply filters synchronously (fast)
+  let filtered = allProducts.filter(p => p._priceNum > 0 && (!p._publishTs || p._publishTs <= now));
 
   if (currentCategory !== 'todos') {
     filtered = filtered.filter(p => p.category === currentCategory);
@@ -967,135 +996,137 @@ function _renderFiltered(grid, empty, search) {
   if (search) {
     const searchTerms = search.split(/\s+/);
     filtered = filtered.filter(p => {
-      const name = p.name.toLowerCase();
-      const desc = (p.desc || '').toLowerCase();
-      const cat = (p.category || '').toLowerCase();
-      return searchTerms.every(term =>
-        name.includes(term) || desc.includes(term) || cat.includes(term)
-      );
+      const name = p._nameNorm || (p._nameNorm = p.name.toLowerCase());
+      const desc = p._descNorm || (p._descNorm = (p.desc || '').toLowerCase());
+      const cat  = p._catNorm  || (p._catNorm  = (p.category || '').toLowerCase());
+      return searchTerms.every(t => name.includes(t) || desc.includes(t) || cat.includes(t));
     });
   }
 
   if (priceMin !== null) filtered = filtered.filter(p => p.price >= priceMin);
   if (priceMax !== null) filtered = filtered.filter(p => p.price <= priceMax);
 
-  const rotationPool = filtered.filter(p => !(p.featured || p.homeOrder || getCampaignGroupKey(p)));
+  if (!filtered.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+  grid.innerHTML = '';
 
-  switch (currentSort) {
-    case 'price-asc':  filtered.sort((a, b) => a.price - b.price); break;
-    case 'price-desc': filtered.sort((a, b) => b.price - a.price); break;
-    case 'discount':   filtered.sort((a, b) => getDiscount(b) - getDiscount(a)); break;
-    case 'newest':     filtered.sort((a, b) => b.id - a.id); break;
-    default: {
-      const featured = sortFeaturedFirst(filtered.filter(p => p.featured || p.homeOrder));
-      const campaignPreview = getCampaignItems(filtered);
-      const rotating = rotateHomeProducts(rotationPool).slice(0, HOME_ROTATION_LIMIT);
-      filtered = [...featured, ...campaignPreview, ...rotating];
-      break;
-    }
+  // Show skeleton immediately while worker processes
+  showSkeleton();
+  updateResultsSummary(filtered, search);
+  updateBreadcrumbs(currentCategory);
+
+  // Defer structured data
+  if (window.requestIdleCallback) {
+    requestIdleCallback(() => { try { updateStructuredData(filtered); } catch (err) {} });
+  } else {
+    setTimeout(() => { try { updateStructuredData(filtered); } catch (err) {} }, 2000);
   }
 
   lastRenderAt = Date.now();
-  updateResultsSummary(filtered, search);
-  updateBreadcrumbs(currentCategory);
-  // Defer structured data update (Non-critical, saves TBT)
-  if (window.requestIdleCallback) {
-    requestIdleCallback(() => {
-      try { updateStructuredData(filtered); } catch (err) { }
-    });
-  } else {
-    setTimeout(() => {
-      try { updateStructuredData(filtered); } catch (err) { }
-    }, 2000);
-  }
 
-  if (!filtered.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
-  grid.innerHTML = ''; // Limpa o grid antes de começar a nova renderização
+  // Offload heavy processing to worker
+  (async () => {
+    let featuredItems, campaignItems, rotatingItems;
 
-  const renderBatch = async (items, containerClass, title, kicker, desc, startIndex = 0) => {
-    if (!items.length) return;
-
-    // Cria a seção
-    const section = document.createElement('section');
-    section.className = `home-vitrine ${containerClass}`;
-    section.innerHTML = `
-      <div class="section-head">
-        <div>
-          <span class="section-kicker">${kicker}</span>
-          <h3>${title}</h3>
-        </div>
-        <p>${desc}</p>
-      </div>
-      <div class="product-grid-inner" id="inner-${containerClass}"></div>
-    `;
-    grid.appendChild(section);
-
-    const inner = section.querySelector('.product-grid-inner');
-
-    // Renderização suave em lotes (BATCH_SIZE menor melhora o TBT)
-    const BATCH_SIZE = containerClass.includes('rotating') ? 8 : 12;
-    for (let i = 0; i < items.length; i += BATCH_SIZE) {
-      const batch = items.slice(i, i + BATCH_SIZE);
-      const html = batch.map((p, idx) => cardHTML(p, startIndex + i + idx)).join('');
-      inner.insertAdjacentHTML('beforeend', html);
-
-      // Sincroniza com a atualização da tela (Melhor TBT)
-      await new Promise(resolve => requestAnimationFrame(resolve));
+    try {
+      if (currentSort !== 'default') {
+        // Simple sorts don't need worker
+        switch (currentSort) {
+          case 'price-asc':  filtered.sort((a, b) => a.price - b.price); break;
+          case 'price-desc': filtered.sort((a, b) => b.price - a.price); break;
+          case 'discount':   filtered.sort((a, b) => getDiscount(b) - getDiscount(a)); break;
+          case 'newest':     filtered.sort((a, b) => String(b.id).localeCompare(String(a.id))); break;
+        }
+        featuredItems = filtered.slice(0, HOME_SECTION_LIMIT);
+        campaignItems = [];
+        rotatingItems = [];
+      } else {
+        // Use worker for the heavy default-sort processing
+        const result = await workerCall('PROCESS_RENDER', {
+          items: filtered,
+          homeSectionLimit: HOME_SECTION_LIMIT,
+          campaignLimit: CAMPAIGN_SECTION_LIMIT,
+          rotationLimit: HOME_ROTATION_LIMIT,
+          rotationMinutes: HOME_ROTATION_MINUTES_LONG,
+          now,
+        });
+        featuredItems  = result.featuredItems;
+        campaignItems  = result.campaignItems;
+        rotatingItems  = result.rotatingItems;
+      }
+    } catch (workerErr) {
+      // Fallback: process on main thread if worker fails
+      console.warn('[Render] Worker failed, falling back:', workerErr.message);
+      const rotationPool = filtered.filter(p => !(p.featured || p.homeOrder || getCampaignGroupKey(p)));
+      const usedFingerprints = new Set();
+      featuredItems = pickUnique(sortFeaturedFirst(filtered.filter(p => p.featured || p.homeOrder)), usedFingerprints, HOME_SECTION_LIMIT);
+      campaignItems = pickUnique(getCampaignItems(filtered), usedFingerprints, CAMPAIGN_SECTION_LIMIT);
+      rotatingItems = pickUnique(rotateHomeProducts(rotationPool), usedFingerprints, HOME_ROTATION_LIMIT);
     }
-  };
 
-  try {
-    const usedFingerprints = new Set();
-    const featuredItems = pickUnique(
-      sortFeaturedFirst(filtered.filter(p => p.featured || p.homeOrder)),
-      usedFingerprints,
-      HOME_SECTION_LIMIT,
-    );
-    const campaignItems = pickUnique(getCampaignItems(filtered), usedFingerprints, CAMPAIGN_SECTION_LIMIT);
-    const clicksData = JSON.parse(localStorage.getItem('shopee_clicks') || '{}');
-    const rotatingItems = pickUnique(
-      rotateHomeProducts(rotationPool),
-      usedFingerprints,
-      HOME_ROTATION_LIMIT,
-    );
+    // Clear skeleton and render
+    grid.innerHTML = '';
 
-    (async () => {
-      // Vitrines Críticas (Topo)
+    const renderBatch = async (items, containerClass, title, kicker, desc, startIndex = 0) => {
+      if (!items.length) return;
+      const section = document.createElement('section');
+      section.className = `home-vitrine ${containerClass}`;
+      section.innerHTML = `
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">${kicker}</span>
+            <h3>${title}</h3>
+          </div>
+          <p>${desc}</p>
+        </div>
+        <div class="product-grid-inner" id="inner-${containerClass}"></div>
+      `;
+      grid.appendChild(section);
+      const inner = section.querySelector('.product-grid-inner');
+
+      const BATCH_SIZE = 8;
+      for (let i = 0; i < items.length; i += BATCH_SIZE) {
+        const batch = items.slice(i, i + BATCH_SIZE);
+        inner.insertAdjacentHTML('beforeend', batch.map((p, idx) => cardHTML(p, startIndex + i + idx)).join(''));
+        // Yield to browser between batches
+        await new Promise(resolve => setTimeout(resolve, 0));
+      }
+    };
+
+    try {
       if (featuredItems.length) {
         await renderBatch(featuredItems, 'home-vitrine-featured', 'Produtos fixos e campanhas ativas', 'Primeira linha', 'Itens fixados manualmente, campanhas e promoções temporárias ficam acima da rotação.', 0);
       }
       if (campaignItems.length) {
         await renderBatch(campaignItems, 'home-vitrine-campaign', 'Ofertas temporárias e campanhas semanais', 'Vitrine de campanha', 'Itens com campanha, janela de data ou promoção destacada entram aqui sem misturar com a rotação principal.', featuredItems.length);
       }
+      animateCards();
+      startCountdownTimers();
 
-      // Vitrine Pesada (Lazy Load ao Scrolar)
+      // Rotating vitrine lazy-loaded on scroll
       if (rotatingItems.length) {
         const trigger = document.createElement('div');
         trigger.id = 'lazy-rotating-trigger';
         trigger.innerHTML = '<div class="loading-placeholder">Carregando mais ofertas...</div>';
         grid.appendChild(trigger);
-
         const observer = new IntersectionObserver(async (entries) => {
           if (entries[0].isIntersecting) {
             observer.unobserve(trigger);
             trigger.remove();
-            const sortedRotating = rotatingItems.sort((a, b) => getProductScore(b, clicksData) - getProductScore(a, clicksData));
-            await renderBatch(sortedRotating, 'home-vitrine-rotating', '100 produtos que mudam a cada 30 minutos', 'Vitrine rotativa', 'Seleção única, sem repetir a primeira linha nem a campanha.', featuredItems.length + campaignItems.length);
+            const clicksData = JSON.parse(localStorage.getItem('shopee_clicks') || '{}');
+            const sortedRotating = [...rotatingItems].sort((a, b) => getProductScore(b, clicksData) - getProductScore(a, clicksData));
+            await renderBatch(sortedRotating, 'home-vitrine-rotating', 'Ofertas rotativas', 'Vitrine rotativa', 'Seleção que muda a cada 30 minutos.', featuredItems.length + campaignItems.length);
             animateCards();
             startCountdownTimers();
           }
-        }, { rootMargin: '300px' });
+        }, { rootMargin: '400px' });
         observer.observe(trigger);
       }
-      animateCards();
-      startCountdownTimers();
-    })();
-
-  } catch (err) {
-    console.error('[RENDER] Card generation failed:', err);
-    grid.innerHTML = '<p class="empty-state">Não foi possível renderizar os produtos agora.</p>';
-    empty.style.display = 'none';
-  }
+    } catch (err) {
+      console.error('[RENDER] Card generation failed:', err);
+      grid.innerHTML = '<p class="empty-state">Não foi possível renderizar os produtos agora.</p>';
+      empty.style.display = 'none';
+    }
+  })();
 }
 
 // ── SKELETON ─────────────────────────────────────────────────
@@ -1121,7 +1152,11 @@ function showSkeleton() {
 // ── CARD ANIMATION ────────────────────────────────────────────
 function animateCards() {
   if (typeof IntersectionObserver === 'undefined') return;
-  if (window.matchMedia('(max-width: 768px)').matches) return;
+  // Desativa em mobile para economizar bateria/CPU se não for estético
+  if (window.matchMedia('(max-width: 768px)').matches) {
+    document.querySelectorAll('.product-card').forEach(c => c.classList.add('card-visible'));
+    return;
+  }
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(e => {
       if (e.isIntersecting) {
@@ -1129,9 +1164,9 @@ function animateCards() {
         observer.unobserve(e.target);
       }
     });
-  }, { threshold: 0.05 });
-  document.querySelectorAll('.product-card').forEach((card, i) => {
-    card.style.animationDelay = `${Math.min(i * 60, 500)}ms`;
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.product-card:not(.card-visible)').forEach((card, i) => {
+    card.style.setProperty('--delay', `${Math.min(i * 40, 400)}ms`);
     observer.observe(card);
   });
 }
@@ -2026,10 +2061,13 @@ function initAppBindings() {
 
   document.getElementById('btnRoleta')?.addEventListener('click', luckyRoulette);
 
-  // Auto-refresh showcase every 5 minutes
+  // Auto-refresh showcase every 5 minutes (Non-blocking)
   setInterval(() => {
-    console.log('[AUTO-REFRESH] Updating showcases...');
-    renderProducts();
+    const defer = window.requestIdleCallback || ((cb) => setTimeout(cb, 5000));
+    defer(() => {
+      console.log('[AUTO-REFRESH] Updating showcases idle...');
+      renderProducts();
+    });
   }, 5 * 60 * 1000);
 }
 
