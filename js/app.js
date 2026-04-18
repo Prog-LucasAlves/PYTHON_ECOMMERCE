@@ -4,9 +4,9 @@ let heroTimer    = null;
 const HERO_INTERVAL = 5000;
 const HOME_ROTATION_MINUTES = 20;
 const HOME_ROTATION_MINUTES_LONG = 30;
-const HOME_SECTION_LIMIT = 20;
-const CAMPAIGN_SECTION_LIMIT = 48;
-const HOME_ROTATION_LIMIT = 100;  // Reduced from 300 - fewer DOM nodes = less TBT
+const HOME_SECTION_LIMIT = 60;
+const CAMPAIGN_SECTION_LIMIT = 120;
+const HOME_ROTATION_LIMIT = 200;
 const SEASONAL_COLLECTION_LIMIT = 24;
 const FIRESTORE_CACHE_KEY = 'shopee_products_cache_v2';
 const FIRESTORE_CACHE_TTL_MS = 10 * 60 * 1000;
@@ -416,10 +416,10 @@ function initHeroBanner() {
   }
 
   slidesEl.innerHTML = slides.map((p, i) => {
-    const img      = getImages(p)[0] || '';
+    const img      = getImages(p, 'large')[0] || '';
     const discount = getDiscount(p);
     return `<div class="hero-slide ${i === 0 ? 'active' : ''}" data-action="open-product" data-id="${p.id}">
-      ${img ? `<div class="hero-slide-bg" style="background-image:url('${img}')"></div>` : ''}
+      ${img ? `<img src="${img}" class="hero-slide-img" alt="${escapeHTML(p.name)}" fetchpriority="${i === 0 ? 'high' : 'low'}" loading="${i === 0 ? 'eager' : 'lazy'}" decoding="async" />` : ''}
       <div class="hero-slide-overlay"></div>
       <div class="hero-slide-content">
         ${discount ? `<span class="hero-badge">-${discount}%</span>` : ''}
@@ -1152,7 +1152,11 @@ function showSkeleton() {
 // ── CARD ANIMATION ────────────────────────────────────────────
 function animateCards() {
   if (typeof IntersectionObserver === 'undefined') return;
-  if (window.matchMedia('(max-width: 768px)').matches) return;
+  // Desativa em mobile para economizar bateria/CPU se não for estético
+  if (window.matchMedia('(max-width: 768px)').matches) {
+    document.querySelectorAll('.product-card').forEach(c => c.classList.add('card-visible'));
+    return;
+  }
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(e => {
       if (e.isIntersecting) {
@@ -1160,9 +1164,9 @@ function animateCards() {
         observer.unobserve(e.target);
       }
     });
-  }, { threshold: 0.05 });
-  document.querySelectorAll('.product-card').forEach((card, i) => {
-    card.style.animationDelay = `${Math.min(i * 60, 500)}ms`;
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.product-card:not(.card-visible)').forEach((card, i) => {
+    card.style.setProperty('--delay', `${Math.min(i * 40, 400)}ms`);
     observer.observe(card);
   });
 }
@@ -2057,10 +2061,13 @@ function initAppBindings() {
 
   document.getElementById('btnRoleta')?.addEventListener('click', luckyRoulette);
 
-  // Auto-refresh showcase every 5 minutes
+  // Auto-refresh showcase every 5 minutes (Non-blocking)
   setInterval(() => {
-    console.log('[AUTO-REFRESH] Updating showcases...');
-    renderProducts();
+    const defer = window.requestIdleCallback || ((cb) => setTimeout(cb, 5000));
+    defer(() => {
+      console.log('[AUTO-REFRESH] Updating showcases idle...');
+      renderProducts();
+    });
   }, 5 * 60 * 1000);
 }
 

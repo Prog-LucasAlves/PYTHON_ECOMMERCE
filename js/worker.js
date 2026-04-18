@@ -108,26 +108,35 @@ function dedupeProducts(items) {
 }
 
 // ── CAMPAIGN ITEMS ──────────────────────────────────────────
-function getCampaignItems(items, limit) {
+function getCampaignItems(items, limit, usedSet = new Set()) {
   const bucket = getTimeBucket(5);
-  const campaignSet = items
-    .filter(p => !p.featured && !p.homeOrder && getCampaignGroupKey(p))
+  const campaignSet = [];
+  const candidatesRaw = items.filter(p => !p.featured && !p.homeOrder && !usedSet.has(productFingerprint(p)));
+
+  // Primeira passada: Produtos com campanha real
+  const activeCampaigns = candidatesRaw
+    .filter(p => getCampaignGroupKey(p))
     .sort((a, b) => {
       const hashA = hashString(productFingerprint(a) + bucket);
       const hashB = hashString(productFingerprint(b) + bucket);
       return hashA - hashB;
-    })
-    .slice(0, limit);
+    });
+
+  for (const p of activeCampaigns) {
+    if (campaignSet.length >= limit) break;
+    campaignSet.push(p);
+    usedSet.add(productFingerprint(p));
+  }
 
   if (campaignSet.length >= limit) return campaignSet;
 
-  const usedFp = new Set(campaignSet.map(p => productFingerprint(p)));
-  const candidates = items
-    .filter(p => !p.featured && !p.homeOrder && !usedFp.has(productFingerprint(p)))
+  // Segunda passada: Preencher com os melhores produtos restantes de forma variada
+  const remaining = candidatesRaw
+    .filter(p => !usedSet.has(productFingerprint(p)))
     .sort((a, b) => getProductScore(b) - getProductScore(a));
 
   const byCategory = {};
-  for (const p of candidates) {
+  for (const p of remaining) {
     const cat = p.category || 'outros';
     if (!byCategory[cat]) byCategory[cat] = [];
     byCategory[cat].push(p);
@@ -139,7 +148,11 @@ function getCampaignItems(items, limit) {
   while (fill.length < needed && catQueues.some(q => q.length)) {
     for (const q of catQueues) {
       if (fill.length >= needed) break;
-      if (q.length) fill.push(q.shift());
+      if (q.length) {
+        const item = q.shift();
+        fill.push(item);
+        usedSet.add(productFingerprint(item));
+      }
     }
   }
 
@@ -213,13 +226,12 @@ self.onmessage = function(e) {
       const usedFps = new Set();
       const featuredItems = pickUnique(sortFeaturedFirst(featuredRaw), usedFps, homeSectionLimit);
 
-      // Campaign
-      const campaignItems = pickUnique(getCampaignItems(filtered, campaignLimit), usedFps, campaignLimit);
+      // Campaign (Aware of usedFps from featured)
+      const campaignItems = getCampaignItems(filtered, campaignLimit, usedFps);
 
-      // Rotation pool (excluding featured + campaign)
-      const usedFpSet = usedFps;
-      const rotationPool = filtered.filter(p => !(p.featured || p.homeOrder || getCampaignGroupKey(p)));
-      const rotatingItems = pickUnique(rotateProducts(rotationPool, rotationMinutes, rotationLimit), usedFpSet, rotationLimit);
+      // Rotation pool (Aware of usedFps from featured + campaign)
+      const rotationPool = filtered.filter(p => !usedFps.has(productFingerprint(p)));
+      const rotatingItems = pickUnique(rotateProducts(rotationPool, rotationMinutes, rotationLimit), usedFps, rotationLimit);
 
       self.postMessage({
         id,
