@@ -1743,7 +1743,7 @@ function updateBreadcrumbs(category) {
   const el = document.getElementById('breadcrumbs');
   if (!el) return;
 
-  let html = `<a href="index.html">Início</a>`;
+  let html = `<a href="/">Início</a>`;
   if (category && category !== 'todos') {
     const name = CAT_MAP[category] || category;
     html += ` <span>/</span> <a href="#" onclick="filterByCategory('${category}'); return false;">${name}</a>`;
