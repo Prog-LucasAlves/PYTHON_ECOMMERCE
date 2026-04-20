@@ -1482,6 +1482,14 @@ function updateUrlWithProduct(p) {
     url.searchParams.delete('p');
   }
   window.history.replaceState({}, '', url);
+
+  // Trigger SEO update for canonical and robots
+  if (typeof updatePageSeo === 'function') {
+    const search = (document.getElementById('searchInput')?.value || '').trim();
+    const grid = document.getElementById('productGrid');
+    // We pass empty array if no specific filtered list is at hand, or just reuse last state
+    updatePageSeo([], search);
+  }
 }
 
 function handleDeepLink() {
@@ -1593,7 +1601,7 @@ function updateHeroStats() {
 function updatePageSeo(filtered, search) {
   const baseTitle = 'Ofertas na Shopee por Categoria e Preço | Melhores Ofertas';
   const baseDescription = 'Curadoria de ofertas na Shopee por categoria, preço e campanha. Veja produtos atualizados, compare valores e descubra promoções com rapidez.';
-  const liveCount = filtered.length;
+  const liveCount = (filtered && filtered.length) ? filtered.length : allProducts.length;
   const activeCategory = currentCategory !== 'todos' ? categoryLabel(currentCategory) : null;
   const searchTerm = search ? `busca por "${search}"` : null;
   const activeCategoryName = activeCategory ? activeCategory.replace(/^.*? /, '') : null;
@@ -1612,13 +1620,27 @@ function updatePageSeo(filtered, search) {
   if (metaDesc) metaDesc.setAttribute('content', `${description} Veja ${liveCount} oferta${liveCount === 1 ? '' : 's'} na vitrine atual.`);
 
   const robotsMeta = document.querySelector('meta[name="robots"]');
+  const params = new URLSearchParams(window.location.search);
+  const isProductPage = params.has('p');
   const hasFilteredView = !!(activeCategory || search || priceMin !== null || priceMax !== null || currentSort !== 'default');
-  if (robotsMeta) robotsMeta.setAttribute('content', hasFilteredView ? 'noindex, follow' : 'index, follow');
+
+  // Allow indexing of category pages, but keep noindex for deep filters/searches to avoid thin content
+  if (robotsMeta) {
+    if (isProductPage) {
+      robotsMeta.setAttribute('content', 'index, follow');
+    } else if (activeCategory && !search && priceMin === null && priceMax === null) {
+      robotsMeta.setAttribute('content', 'index, follow');
+    } else {
+      robotsMeta.setAttribute('content', hasFilteredView ? 'noindex, follow' : 'index, follow');
+    }
+  }
 
   const canonical = document.querySelector('link[rel="canonical"]');
   if (canonical) {
     if (isCategoryPage) {
       canonical.setAttribute('href', `${window.location.origin}${window.location.pathname}`);
+    } else if (isProductPage) {
+      canonical.setAttribute('href', `${window.location.origin}${window.location.pathname}?p=${params.get('p')}`);
     } else {
       canonical.setAttribute('href', hasFilteredView
         ? `${window.location.origin}${window.location.pathname}${currentCategory !== 'todos' ? `?cat=${encodeURIComponent(currentCategory)}` : ''}`
