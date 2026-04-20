@@ -738,7 +738,7 @@ async function saveToStorage() {
 }
 
 //  TELEGRAM SHARE
-const TG_GROUP = 'https://t.me/ofertasshopeeday';
+const TG_GROUP = 'https://t.me/melhoresdashopeeday';
 
 async function saveProductsToFirestore() {
   if (!db || !collection_fn || !doc_fn || !setDoc_fn || !deleteDoc_fn) return;
