@@ -870,7 +870,7 @@ function _renderFiltered(grid, empty, search) {
           </div>
           <p>Itens fixados manualmente, campanhas e promoções temporárias ficam acima da rotação.</p>
         </div>
-        <div class="featured-row">${featured.map(p => cardHTML(p)).join('')}</div>
+        <div class="product-grid-inner">${featured.map(p => cardHTML(p)).join('')}</div>
       </section>` : '';
     const campaignHTML = campaignItems.length ? `
       <section class="home-vitrine home-vitrine-campaign">
