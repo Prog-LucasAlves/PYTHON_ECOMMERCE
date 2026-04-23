@@ -101,8 +101,8 @@ body {
   grid-auto-rows: auto;
   gap: 16px;
   margin: 40px auto;
-  max-width: 1300px;
-  padding: 0 40px;
+  max-width: 1400px;
+  padding: 0 20px;
 }
 
 /* ZENITH CARDS: BORDERLESS ELEGANCE */
@@ -175,9 +175,9 @@ body {
 }
 
 @container card (max-width: 280px) {
-  .card-name { font-size: 1.1rem; line-height: 1.1; }
-  .card-body { padding: 20px; gap: 12px; }
-  .card-price-value { font-size: 1.6rem; }
+  .card-name { font-size: 1.15rem; line-height: 1.1; font-weight: 800; }
+  .card-body { padding: 18px; gap: 10px; }
+  .card-price-value { font-size: 1.7rem; }
 }
 .card-price-row {
   margin-top: auto;
@@ -1322,13 +1322,13 @@ main {
 }
 .product-grid-inner {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 16px;
 }
 @media (min-width: 1600px) {
-  .bento-grid { grid-auto-rows: 280px; }
-  .product-grid-inner {
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  .bento-grid, .product-grid-inner {
+    max-width: 1600px;
+    grid-template-columns: repeat(5, 1fr);
   }
 }
 @media (max-width: 1180px) {

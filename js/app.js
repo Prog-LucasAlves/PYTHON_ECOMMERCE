@@ -1261,11 +1261,7 @@ function _renderFiltered(grid, empty, search) {
 
       // Injetar blocos especiais se for Bento
       if (isBento) {
-        // Create a copy to not affect original data
         const bentoItems = [...items];
-        bentoItems.splice(2, 0, { isReview: true, text: "Nossa equipe selecionou estes achadinhos baseando-se no menor preço histórico dos últimos 30 dias. Aproveite enquanto durar o estoque!" });
-        bentoItems.splice(5, 0, { isCategoryHighlight: true, icon: "🎧", label: "Áudio & Tech", cat: "audio" });
-
         const BATCH_SIZE = 8;
         for (let i = 0; i < bentoItems.length; i += BATCH_SIZE) {
           const batch = bentoItems.slice(i, i + BATCH_SIZE);
