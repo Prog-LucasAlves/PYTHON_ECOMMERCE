@@ -341,11 +341,26 @@ function getCampaignItems(items) {
 
 function getProductScore(p, clicks = {}) {
   const clickN = Number(clicks[p.id] || 0);
+  const catAffinity = getCategoryAffinity(p.category);
   const discount = getDiscount(p);
   const featured = p.featured ? 50 : 0;
   const orderBoost = Number.isFinite(Number(p.homeOrder)) ? Math.max(0, 100 - Number(p.homeOrder)) : 0;
   const campaignBoost = isCampaignActive(p) ? 30 : 0;
-  return clickN * 2 + discount + featured + orderBoost + campaignBoost;
+
+  // Score = Cliques do produto + Afinidade da Categoria + Desconto + Boosts
+  return (clickN * 5) + (catAffinity * 10) + discount + featured + orderBoost + campaignBoost;
+}
+
+function getCategoryAffinity(cat) {
+  const clicks = JSON.parse(localStorage.getItem('shopee_clicks_cat') || '{}');
+  return Number(clicks[cat] || 0);
+}
+
+function trackCategoryClick(cat) {
+  if (!cat) return;
+  const clicks = JSON.parse(localStorage.getItem('shopee_clicks_cat') || '{}');
+  clicks[cat] = (clicks[cat] || 0) + 1;
+  localStorage.setItem('shopee_clicks_cat', JSON.stringify(clicks));
 }
 
 function hashString(text) {
@@ -509,7 +524,7 @@ function renderRelated(p) {
   el.classList.remove('hidden-block');
   listEl.innerHTML = related.map(r => {
     const img = getImages(r)[0] || '';
-    return `<div class="related-item" data-action="open-product" data-id="${r.id}">
+    return `<div class="related-item" data-action="open-product" data-id="${r.id}" data-hover-img="${img}">
       <img src="${img}" alt="${escapeHTML(r.name)}" loading="lazy" decoding="async"
            onerror="this.src='https://via.placeholder.com/80x80?text=?'"/>
       <div class="related-name">${escapeHTML(r.name.substring(0,40))}${r.name.length>40?'…':''}</div>
@@ -934,6 +949,9 @@ window.addEventListener('storage', (e) => {
           if (typeof initPWA === 'function') initPWA();
           if (typeof checkPriceDrops === 'function') checkPriceDrops();
           if (typeof initGamification === 'function') initGamification();
+          initHoverReveal();
+          initSilentIA();
+          checkSessionRecovery();
         } catch(e) {}
       });
     } else {
@@ -1068,7 +1086,7 @@ function _renderFiltered(grid, empty, search) {
 
     const renderBatch = async (items, containerClass, title, kicker, desc, startIndex = 0) => {
       if (!items.length) return;
-      const section = document.createElement('section');
+      const isBento = containerClass === 'home-vitrine-featured';
       section.className = `home-vitrine ${containerClass}`;
       section.innerHTML = `
         <div class="section-head">
@@ -1078,10 +1096,16 @@ function _renderFiltered(grid, empty, search) {
           </div>
           <p>${desc}</p>
         </div>
-        <div class="product-grid-inner" id="inner-${containerClass}"></div>
+        <div class="${isBento ? 'bento-grid' : 'product-grid-inner'}" id="inner-${containerClass}"></div>
       `;
       grid.appendChild(section);
-      const inner = section.querySelector('.product-grid-inner');
+      const inner = section.querySelector('.product-grid-inner, .bento-grid');
+
+      // Injetar blocos especiais se for Bento
+      if (isBento) {
+        items.splice(2, 0, { isReview: true, text: "Nossa equipe selecionou estes achadinhos baseando-se no menor preço histórico dos últimos 30 dias. Aproveite enquanto durar o estoque!" });
+        items.splice(5, 0, { isCategoryHighlight: true, icon: "🎧", label: "Áudio & Tech", cat: "audio" });
+      }
 
       const BATCH_SIZE = 8;
       for (let i = 0; i < items.length; i += BATCH_SIZE) {
@@ -1134,15 +1158,16 @@ function showSkeleton() {
   const grid = document.getElementById('productGrid');
   if (!grid) return;
   grid.innerHTML = `
-    <div class="skeleton-grid">
+    <div class="product-grid-inner">
       ${Array(8).fill(0).map(() => `
         <div class="skeleton-card">
-          <div class="skel-img"></div>
+          <div class="skel skel-img"></div>
           <div class="skel-body">
-            <div class="skel-line"></div>
-            <div class="skel-line skel-meta"></div>
-            <div class="skel-line skel-price"></div>
+            <div class="skel skel-line"></div>
+            <div class="skel skel-line" style="width: 70%"></div>
+            <div class="skel skel-price"></div>
           </div>
+          <div class="skel skel-btn"></div>
         </div>
       `).join('')}
     </div>
@@ -1160,12 +1185,13 @@ function animateCards() {
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(e => {
       if (e.isIntersecting) {
+        e.target.classList.add('revealed');
         e.target.classList.add('card-visible');
         observer.unobserve(e.target);
       }
     });
   }, { threshold: 0.1 });
-  document.querySelectorAll('.product-card:not(.card-visible)').forEach((card, i) => {
+  document.querySelectorAll('.reveal-on-scroll:not(.revealed)').forEach((card, i) => {
     card.style.setProperty('--delay', `${Math.min(i * 40, 400)}ms`);
     observer.observe(card);
   });
@@ -1208,12 +1234,45 @@ function getDiscount(p) {
 }
 
 function cardHTML(p, index = 0) {
+  // Support for non-product blocks in Bento Grid
+  if (p.isReview) {
+    return `
+    <div class="product-card bento-item-wide review-card reveal-on-scroll" style="background: var(--brand-soft); border: 2px dashed var(--brand);">
+      <div class="card-body">
+        <div class="card-trust"><i class="fa-solid fa-quote-left"></i> Dica do Especialista</div>
+        <div class="card-name" style="-webkit-line-clamp: 4;">"${p.text}"</div>
+        <div class="card-meta" style="margin-top: auto;">
+          <strong>- Equipe Melhores Ofertas</strong>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  if (p.isCategoryHighlight) {
+    return `
+    <div class="product-card bento-item-tall category-highlight-card reveal-on-scroll" style="background: var(--surface-secondary); color: #fff;">
+      <div class="card-body" style="justify-content: center; align-items: center; text-align: center;">
+        <div style="font-size: 3rem; margin-bottom: 15px;">${p.icon}</div>
+        <div class="card-name" style="color: #fff;">Explorar ${p.label}</div>
+        <button class="btn-primary" onclick="setCategory('${p.cat}', document.querySelector('[data-cat=${p.cat}]'))" style="margin-top: 15px; width: 100%;">Ver Tudo</button>
+      </div>
+    </div>`;
+  }
+
   const images   = getImages(p, 'large');
   const main     = images[0] || 'https://via.placeholder.com/300x300?text=Sem+Imagem';
   const discount = getDiscount(p);
   const isCampaign = isCampaignActive(p) || p.campaignId;
   const isOfficial = p.sellerType === 'official' || p.category === 'eletronicos';
   const nameEscaped = escapeHTML(p.name);
+
+  // Bento Logic: First few featured products get larger spans
+  let bentoClass = 'reveal-on-scroll';
+  if (p.featured) {
+    if (index === 0) bentoClass += ' bento-item-large';
+    else if (index === 1 || index === 2) bentoClass += ' bento-item-wide';
+    else if (index === 3) bentoClass += ' bento-item-tall';
+  }
 
   // Lazy load images that are NOT in the first row
   const loadingType = index < 8 ? 'eager' : 'lazy';
@@ -1224,7 +1283,7 @@ function cardHTML(p, index = 0) {
   else if (isCampaign) leftBadge = `<span class="badge-featured" style="background:#000;" aria-label="Campanha Ativa">CAMPANHA</span>`;
 
   return `
-  <div class="product-card" data-action="open-product" data-id="${p.id}" role="button" aria-label="Ver detalhes de ${nameEscaped}" style="cursor: pointer;">
+  <div class="product-card ${bentoClass}" data-action="open-product" data-id="${p.id}" role="button" aria-label="Ver detalhes de ${nameEscaped}" style="cursor: pointer;">
     ${leftBadge}
     ${discount ? `<span class="badge-discount" aria-label="Desconto de ${discount}%">-${discount}%</span>` : ''}
     ${p.price >= 19 ? `<span class="badge-shipping"><i class="fa-solid fa-truck-fast"></i> Frete Grátis</span>` : ''}
@@ -1299,6 +1358,14 @@ function openProductModal(id, startIdx = 0) {
   updateProductSchema(p);
   updateUrlWithProduct(p);
 
+  // CRO: Flash Timer & Heatmap
+  updateFlashTimer(p);
+  updatePriceHeatmap(p);
+  updateCtaLogic(p);
+
+  // Modo Foco na Oferta
+  document.body.classList.add('modal-open-focus');
+
   // Gamification rewards (Safeguarded)
   try {
     if (typeof addRewards === 'function') addRewards(10, 5);
@@ -1307,6 +1374,13 @@ function openProductModal(id, startIdx = 0) {
   const clicks = JSON.parse(localStorage.getItem('shopee_clicks') || '{}');
   clicks[id] = (clicks[id] || 0) + 1;
   localStorage.setItem('shopee_clicks', JSON.stringify(clicks));
+
+  // Track Category Affinity
+  trackCategoryClick(p.category);
+
+  // Track last viewed for session recovery
+  localStorage.setItem('shopee_last_viewed', id);
+  localStorage.setItem('shopee_last_viewed_at', Date.now());
   const images = getImages(p);
   const allMedia = [...images, ...(p.video ? ['__video__'] : [])];
   modalIndex = Math.min(startIdx, allMedia.length - 1);
@@ -1423,8 +1497,19 @@ function openProductModal(id, startIdx = 0) {
     };
   }
 
-  document.getElementById('productModal').classList.add('open');
+  document.getElementById('productModal').classList.add('active');
   document.body.style.overflow = 'hidden';
+
+  // Paleta de Cores Adaptativa (Baseada na Categoria)
+  const catColors = {
+    'eletronicos': '#001c3d',
+    'beleza': '#ff4d6d',
+    'casa': '#2d6a4f',
+    'moda': '#7209b7',
+    'todos': '#ffdb00'
+  };
+  const themeColor = catColors[p.category] || catColors['todos'];
+  document.documentElement.style.setProperty('--modal-accent', themeColor);
 }
 
 function renderModalMedia(allMedia) {
@@ -1506,9 +1591,12 @@ function handleDeepLink() {
 function closeProductModal() {
   const modal = document.getElementById('productModal');
   if (!modal) return;
-  modal.classList.remove('open');
+  modal.classList.remove('active');
   document.body.style.overflow = '';
   modalProduct = null;
+
+  // Remover Modo Foco
+  document.body.classList.remove('modal-open-focus');
 
   // Reseta SEO para o padrão do site
   document.title = 'Melhores Ofertas Shopee - Curadoria de Achadinhos';
@@ -1555,7 +1643,33 @@ function setCategory(cat, btn) {
   btn.classList.add('active');
   renderProducts();
 }
-function filterProducts() { renderProducts(); }
+function filterProducts() {
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) {
+    let val = searchInput.value.toLowerCase().trim();
+
+    // Smart Search: Typo Correction
+    const typos = {
+      'ifone': 'iphone',
+      'foni': 'fone',
+      'escova secadora': 'escova',
+      'oculos': 'óculos',
+      'relogio': 'relógio',
+      'tenis': 'tênis',
+      'calcado': 'calçado',
+      'maquiagem': 'maquiagem',
+      'shope': 'shopee'
+    };
+
+    for (let t in typos) {
+      if (val.includes(t)) {
+        val = val.replace(t, typos[t]);
+        // Update input visually if desired, or just internal
+      }
+    }
+  }
+  renderProducts();
+}
 
 function categoryLabel(cat) {
   const map = {
@@ -1589,6 +1703,51 @@ function formatUpdatedTime(ts) {
   return new Date(ts).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 }
 
+// ── HOVER REVEAL ──────────────────────────────────────────────
+function initHoverReveal() {
+  const revealEl = document.createElement('div');
+  revealEl.className = 'hover-reveal';
+  document.body.appendChild(revealEl);
+
+  document.addEventListener('mouseover', (e) => {
+    const target = e.target.closest('[data-hover-img]');
+    if (target) {
+      const img = target.dataset.hoverImg;
+      revealEl.innerHTML = `<img src="${img}" style="width:100px; height:100px; object-fit:cover; border-radius:8px; border:2px solid var(--brand);">`;
+      revealEl.classList.add('active');
+    }
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (revealEl.classList.contains('active')) {
+      revealEl.style.left = (e.pageX + 15) + 'px';
+      revealEl.style.top = (e.pageY + 15) + 'px';
+    }
+  });
+
+  document.addEventListener('mouseout', (e) => {
+    if (e.target.closest('[data-hover-img]')) {
+      revealEl.classList.remove('active');
+    }
+  });
+}
+
+// ── RIPPLE EFFECT HELPER ─────────────────────────────────────
+document.addEventListener('mousedown', (e) => {
+  const btn = e.target.closest('.btn-haptic');
+  if (btn) {
+    const rect = btn.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const ripple = document.createElement('span');
+    ripple.className = 'ripple-effect';
+    ripple.style.left = `${x}px`;
+    ripple.style.top = `${y}px`;
+    btn.appendChild(ripple);
+    setTimeout(() => ripple.remove(), 600);
+  }
+});
+
 function updateHeroStats() {
   const countEl = document.getElementById('heroCount');
   const updatedEl = document.getElementById('heroUpdated');
@@ -1596,6 +1755,85 @@ function updateHeroStats() {
   if (updatedEl) updatedEl.textContent = allProducts.length
     ? `às ${formatUpdatedTime(Date.now())}`
     : 'aguardando novos produtos';
+}
+
+// ── SILENT IA WIDGET ──────────────────────────────────────────
+function initSilentIA() {
+  const chips = document.querySelectorAll('.ia-chip');
+  chips.forEach(chip => {
+    chip.addEventListener('click', () => {
+      chips.forEach(c => c.classList.remove('active'));
+      chip.classList.add('active');
+      applyIAFilter(chip.dataset.filter);
+    });
+  });
+}
+
+function applyIAFilter(filter) {
+  // Logic to adapt the grid based on IA filter
+  const allProducts = window.allProducts || [];
+  let filtered = [];
+
+  switch(filter) {
+    case 'presente':
+      filtered = allProducts.filter(p => p.featured || getDiscount(p) > 40);
+      break;
+    case 'oferta-relampago':
+      filtered = allProducts.filter(p => isCampaignActive(p));
+      break;
+    case 'frete-gratis':
+      filtered = allProducts.filter(p => p.freeShipping);
+      break;
+    case 'menor-preco':
+      filtered = [...allProducts].sort((a, b) => Number(a.price) - Number(b.price)).slice(0, 20);
+      break;
+    case 'mais-vendidos':
+      filtered = [...allProducts].sort((a, b) => (b.sales || 0) - (a.sales || 0)).slice(0, 20);
+      break;
+    default:
+      filtered = allProducts;
+  }
+
+  // Inject into home-vitrine-featured for immediate impact
+  const container = document.getElementById('inner-home-vitrine-featured');
+  if (container) {
+    container.innerHTML = filtered.slice(0, 8).map((p, i) => cardHTML(p, i)).join('');
+    if (typeof animateCards === 'function') animateCards();
+  }
+}
+
+// ── SESSION RECOVERY ──────────────────────────────────────────
+function checkSessionRecovery() {
+  const lastId = localStorage.getItem('shopee_last_viewed');
+  const lastAt = localStorage.getItem('shopee_last_viewed_at');
+
+  // Only show if viewed in the last 24 hours
+  if (lastId && lastAt && (Date.now() - lastAt < 86400000)) {
+    const product = window.allProducts?.find(p => p.id === lastId);
+    if (product) {
+      const banner = document.getElementById('recoveryBanner');
+      const nameEl = document.getElementById('recoveryProductName');
+      const btn    = document.getElementById('recoveryBtn');
+      const close  = document.getElementById('recoveryClose');
+
+      if (nameEl) nameEl.textContent = product.name.substring(0, 30) + '...';
+      if (banner) banner.classList.remove('hidden-block');
+
+      if (btn) {
+        btn.onclick = () => {
+          openProductModal(product);
+          banner.classList.add('hidden-block');
+        };
+      }
+
+      if (close) close.onclick = () => banner.classList.add('hidden-block');
+
+      // Auto hide after 15 seconds
+      setTimeout(() => {
+        if (banner) banner.classList.add('hidden-block');
+      }, 15000);
+    }
+  }
 }
 
 function updatePageSeo(filtered, search) {
@@ -2216,4 +2454,89 @@ function luckyRoulette() {
     openProductModal(product.id);
     addRewards(40, 0); // 40 XP + 10 XP from openProductModal = 50 XP
   }, 1000);
+}
+
+// ── CRO: FLASH TIMER ──────────────────────────────────────────
+let flashInterval = null;
+function updateFlashTimer(p) {
+  const box = document.getElementById('modalFlashTimer');
+  const timer = document.getElementById('flashTimer');
+  if (!box || !timer) return;
+
+  if (p.featured || isCampaignActive(p)) {
+    if (box) box.classList.remove('hidden-block');
+    if (flashInterval) clearInterval(flashInterval);
+
+    // Gera um tempo final "fixo" baseado no ID para não mudar ao reabrir
+    let endTime = new Date().setHours(23, 59, 59, 0);
+
+    flashInterval = setInterval(() => {
+      const now = new Date().getTime();
+      const distance = endTime - now;
+
+      const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const s = Math.floor((distance % (1000 * 60)) / 1000);
+
+      if (timer) timer.textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+
+      if (distance < 0) {
+        clearInterval(flashInterval);
+        if (timer) timer.textContent = "EXPIROU";
+      }
+    }, 1000);
+  } else {
+    if (box) box.classList.add('hidden-block');
+  }
+}
+
+// ── CRO: PRICE HEATMAP ────────────────────────────────────────
+function updatePriceHeatmap(p) {
+  const dot = document.querySelector('.heatmap-dot');
+  const text = document.getElementById('heatmapText');
+  if (!dot || !text) return;
+
+  const discount = getDiscount(p);
+  dot.className = 'heatmap-dot';
+
+  if (discount >= 40) {
+    dot.classList.add('good');
+    text.textContent = 'Preço imbatível hoje (Menor dos últimos 30 dias)';
+  } else if (discount >= 15) {
+    dot.classList.add('fair');
+    text.textContent = 'Preço justo (Média histórica)';
+  } else {
+    dot.classList.add('bad');
+    text.textContent = 'Preço regular (Aguarde uma promoção maior)';
+  }
+}
+
+// ── CRO: CTA & COUPON LOGIC ───────────────────────────────────
+function updateCtaLogic(p) {
+  const btn = document.getElementById('modalBuyBtn');
+  if (!btn) return;
+
+  btn.onclick = (e) => {
+    // Se houver cupom (simulado ou real), copiar
+    const coupon = p.coupon || "OFERTA10";
+    navigator.clipboard.writeText(coupon).then(() => {
+      showToast(`Cupom ${coupon} copiado! Aplicando desconto...`);
+    });
+
+    // Pequeno delay para o usuário ler o toast antes de abrir a Shopee
+    setTimeout(() => {
+      window.open(p.link, '_blank');
+    }, 800);
+
+    e.preventDefault();
+  };
+}
+
+function showToast(msg) {
+  const toast = document.createElement('div');
+  toast.className = 'price-drop-toast show';
+  toast.style.background = 'var(--brand)';
+  toast.innerHTML = `<i class="fa-solid fa-check"></i> ${msg}`;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
 }

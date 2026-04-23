@@ -111,7 +111,7 @@
       <div class="search-wrap">
         <div class="search-bar">
           <input type="text" id="searchInput" placeholder="O que você está buscando hoje?" autocomplete="off" aria-label="O que você está buscando hoje?"/>
-          <button class="search-btn" id="searchBtn" title="Pesquisar" aria-label="Pesquisar">
+          <button class="search-btn btn-haptic" id="searchBtn" title="Pesquisar" aria-label="Pesquisar">
             <i class="fa-solid fa-magnifying-glass"></i>
           </button>
         </div>
@@ -119,7 +119,7 @@
       </div>
 
       <div class="header-actions">
-        <button class="btn-dark-mode" id="darkToggle" title="Modo escuro">
+        <button class="btn-dark-mode btn-haptic" id="darkToggle" title="Modo escuro">
           <i class="fa-solid fa-moon" id="darkIcon"></i>
         </button>
         <div class="user-status-pill" id="userStatus" title="Seu perfil de comprador">
@@ -165,6 +165,36 @@
         <span class="intro-kicker">Curadoria Diamante</span>
         <h1>As Melhores Ofertas da Shopee em um só lugar.</h1>
         <p>Seleção manual das melhores promoções do dia. Compare preços e economize com links 100% seguros e verificados.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SESSION RECOVERY BANNER -->
+  <div id="recoveryBanner" class="recovery-banner hidden-block">
+    <div class="recovery-inner">
+      <div class="recovery-content">
+        <span class="recovery-tag">Vimos que você gostou</span>
+        <h4 id="recoveryProductName">Produto...</h4>
+        <p>Ele ainda está em oferta! Clique para ver novamente.</p>
+      </div>
+      <button class="btn-primary btn-haptic" id="recoveryBtn">Ver agora</button>
+      <button class="recovery-close" id="recoveryClose"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+  </div>
+
+  <!-- SILENT IA WIDGET -->
+  <section class="silent-ia-section">
+    <div class="ia-container">
+      <div class="ia-header">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        <span>Assistente de Compras</span>
+      </div>
+      <div class="ia-chips" id="iaChips">
+        <button class="ia-chip" data-filter="presente">🎁 Presente</button>
+        <button class="ia-chip" data-filter="oferta-relampago">⚡ Ofertas Flash</button>
+        <button class="ia-chip" data-filter="frete-gratis">🚚 Frete Grátis</button>
+        <button class="ia-chip" data-filter="menor-preco">📉 Menor Preço</button>
+        <button class="ia-chip" data-filter="mais-vendidos">🏆 Mais Vendidos</button>
       </div>
     </div>
   </section>
@@ -330,15 +360,31 @@
 
       <!-- RIGHT: info -->
       <div class="modal-info">
-        <span class="modal-category" id="modalCategory"></span>
-        <h2 id="modalName"></h2>
-        <div id="modalStars" class="modal-stars"></div>
-        <div id="modalSoldCount" class="modal-sold"></div>
-        <div id="modalUrgency" class="modal-urgency hidden-block">
-          <div class="urgency-label"><i class="fa-solid fa-fire"></i> <span id="urgencyText">Restam poucas unidades!</span></div>
-          <div class="urgency-bar"><div id="urgencyProgress" class="urgency-progress"></div></div>
+        <div class="modal-category" id="modalCategory">CATEGORIA</div>
+
+        <!-- CRO: FLASH TIMER -->
+        <div id="modalFlashTimer" class="flash-timer-box hidden-block">
+          <div class="flash-label">
+            <i class="fa-solid fa-bolt-lightning"></i> Oferta Relâmpago
+          </div>
+          <div class="flash-timer" id="flashTimer">00:00:00</div>
         </div>
+
+        <h2 id="modalName">Nome do Produto</h2>
+
+        <!-- CRO: PRICE HEATMAP -->
+        <div id="modalPriceHeatmap" class="price-heatmap">
+          <div class="heatmap-dot good"></div>
+          <span id="heatmapText">Preço excelente hoje</span>
+        </div>
+
         <div class="modal-prices">
+          <div id="modalStars" class="modal-stars"></div>
+          <div id="modalSoldCount" class="modal-sold"></div>
+          <div id="modalUrgency" class="modal-urgency hidden-block">
+            <div class="urgency-label"><i class="fa-solid fa-fire"></i> <span id="urgencyText">Restam poucas unidades!</span></div>
+            <div class="urgency-bar"><div id="urgencyProgress" class="urgency-progress"></div></div>
+          </div>
           <div class="price-main-row">
             <span class="modal-price" id="modalPrice"></span>
             <button id="priceAlertBtn" class="price-alert-btn" title="Me avise se o preço cair">
@@ -365,9 +411,16 @@
           </div>
           <p id="modalExpertReviewContent"></p>
         </div>
-        <a id="modalBuyBtn" href="#" target="_blank" rel="noopener" class="modal-buy-btn">
-          <i class="fa-solid fa-cart-shopping"></i> Ver na Shopee
+        <a id="modalBuyBtn" href="#" target="_blank" rel="noopener" class="modal-buy-btn btn-haptic">
+          <i class="fa-solid fa-cart-shopping"></i> Garantir Meu Desconto
         </a>
+
+        <!-- CRO: TRUST BADGES -->
+        <div class="trust-badges-row">
+          <div class="trust-badge-mini"><i class="fa-solid fa-shield-check"></i> 100% Seguro</div>
+          <div class="trust-badge-mini"><i class="fa-solid fa-truck-fast"></i> Frete Grátis</div>
+          <div class="trust-badge-mini"><i class="fa-solid fa-rotate-left"></i> Devolução Grátis</div>
+        </div>
         <div class="modal-actions-row">
           <button class="modal-share-btn" id="shareWhatsAppBtn" aria-label="Compartilhar no WhatsApp">
             <i class="fa-brands fa-whatsapp"></i>
