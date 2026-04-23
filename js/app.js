@@ -1435,7 +1435,8 @@ function cardHTML(p, index = 0) {
   let bentoClass = 'reveal-on-scroll';
   if (p.featured) {
     if (index === 0) bentoClass += ' bento-item-large';
-    else if (index === 1 || index === 2) bentoClass += ' bento-item-wide';
+    else if (index === 1) bentoClass += ' bento-item-wide';
+    else if (index === 2) bentoClass += ' bento-item-wide';
     else if (index === 3) bentoClass += ' bento-item-tall';
   }
 
