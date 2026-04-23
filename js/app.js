@@ -1246,9 +1246,8 @@ function cardHTML(p, index = 0) {
     return `
     <div class="product-card bento-item-wide review-card reveal-on-scroll">
       <div class="card-body">
-        <div style="margin-bottom:12px;"><span class="badge-featured" style="background:rgba(238, 77, 45, 0.1); color:var(--brand); border:none; padding:4px 12px;">DICA PRO</span></div>
-        <div class="review-content">"${p.text}"</div>
         <div class="review-author">Curadoria Melhores Ofertas</div>
+        <div class="review-content">"${p.text}"</div>
       </div>
     </div>`;
   }
@@ -1257,9 +1256,9 @@ function cardHTML(p, index = 0) {
     return `
     <div class="product-card bento-item-tall category-highlight-card reveal-on-scroll">
       <div class="cat-highlight-icon">${p.icon}</div>
-      <div class="card-name" style="color:#fff; height:auto; text-align:center; font-size:1.4rem;">${p.label}</div>
-      <p style="color:rgba(255,255,255,0.6); font-size:0.8rem; margin-top:8px;">Descubra as melhores ofertas verificadas desta categoria.</p>
-      <button class="cat-highlight-btn btn-haptic" onclick="setCategory('${p.cat}', document.querySelector('[data-cat=${p.cat}]'))">Explorar Agora</button>
+      <div class="card-name" style="color:#fff; height:auto; text-align:center; font-size:1.8rem; margin-bottom:12px;">${p.label}</div>
+      <p style="color:rgba(255,255,255,0.4); font-size:0.85rem; text-align:center; line-height:1.4;">A curadoria definitiva para quem busca performance e preço justo.</p>
+      <button class="cat-highlight-btn btn-haptic" onclick="setCategory('${p.cat}', document.querySelector('[data-cat=${p.cat}]'))">Explorar</button>
     </div>`;
   }
 
