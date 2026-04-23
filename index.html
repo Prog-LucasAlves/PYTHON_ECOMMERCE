@@ -411,6 +411,13 @@
           </div>
           <p id="modalExpertReviewContent"></p>
         </div>
+
+        <!-- UGC GALLERY (E-E-A-T) -->
+        <div id="modalUGCBox" class="modal-ugc-gallery hidden-block">
+          <h4><i class="fa-solid fa-camera"></i> Fotos Reais de Compradores</h4>
+          <div class="ugc-photos" id="modalUGCContent"></div>
+          <p class="ugc-note">Fotos extraídas de avaliações reais na Shopee.</p>
+        </div>
         <a id="modalBuyBtn" href="#" target="_blank" rel="noopener" class="modal-buy-btn btn-haptic">
           <i class="fa-solid fa-cart-shopping"></i> Garantir Meu Desconto
         </a>
@@ -487,6 +494,53 @@
       <button class="pwa-install-btn" id="pwaBtnInstall">Instalar</button>
     </div>
     <button class="pwa-close-btn" id="pwaBtnClose" title="Fechar" aria-label="Fechar banner"><i class="fa-solid fa-xmark"></i></button>
+  </div>
+
+  <!-- AFFILIATE TRANSPARENCY BANNER (E-E-A-T) -->
+  <section class="transparency-section">
+    <div class="transparency-banner reveal-on-scroll">
+      <div class="transparency-icon">🍕</div>
+      <div class="transparency-text">
+        <h3>Transparência e Cafeína</h3>
+        <p>Sustentamos este site com links de afiliados. O preço não muda para você, mas você nos ajuda a continuar caçando os melhores descontos do dia!</p>
+      </div>
+      <button class="btn-secondary btn-haptic" onclick="openCriteriaModal()">Nossos Critérios</button>
+    </div>
+  </section>
+
+  <!-- CRITERIA MODAL (E-E-A-T) -->
+  <div id="criteriaModal" class="modal hidden-block">
+    <div class="modal-content criteria-modal-content">
+      <div class="modal-header">
+        <h2>Como escolhemos as ofertas?</h2>
+        <button class="close-modal" id="closeCriteriaBtn" onclick="closeCriteriaModal()">&times;</button>
+      </div>
+      <div class="criteria-grid">
+        <div class="criteria-item">
+          <i class="fa-solid fa-award"></i>
+          <h4>Qualidade Real</h4>
+          <p>Só listamos o que nossa equipe compraria. Filtramos 90% do "lixo" que aparece em promoções.</p>
+        </div>
+        <div class="criteria-item">
+          <i class="fa-solid fa-shield-heart"></i>
+          <h4>Vendedores Elite</h4>
+          <p>Verificamos se o vendedor tem histórico de entrega rápida e se não há reclamações de golpes.</p>
+        </div>
+        <div class="criteria-item">
+          <i class="fa-solid fa-money-bill-trend-up"></i>
+          <h4>Preço Histórico</h4>
+          <p>Não caímos na "metade do dobro". Garantimos que o desconto é genuíno.</p>
+        </div>
+        <div class="criteria-item">
+          <i class="fa-solid fa-truck-ramp-box"></i>
+          <h4>Frete & Taxas</h4>
+          <p>Priorizamos produtos com estoque no Brasil para evitar surpresas na alfândega.</p>
+        </div>
+      </div>
+      <div class="criteria-footer">
+        <p>A curadoria é 100% independente. Nenhuma marca paga para estar aqui.</p>
+      </div>
+    </div>
   </div>
 
   <!-- Rodapé -->
