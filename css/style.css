@@ -98,11 +98,10 @@ body {
 .bento-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  grid-auto-rows: auto;
-  gap: 16px;
   margin: 40px auto;
-  max-width: 1600px;
-  padding: 0 40px;
+  max-width: 1800px;
+  padding: 0 16px;
+  gap: 12px;
 }
 
 /* ZENITH CARDS: BORDERLESS ELEGANCE */
@@ -149,33 +148,30 @@ body {
   padding: 24px;
   display: flex;
   flex-direction: column;
-  flex: 1;
-  gap: 12px;
-  background: #fff;
-}
 .card-name {
-  font-size: 1.4rem;
-  font-weight: 800;
-  line-height: 1.1;
+  font-size: 1.6rem;
+  font-weight: 900;
+  line-height: 1;
   color: var(--zenith-slate);
-  letter-spacing: -0.04em;
+  letter-spacing: -0.05em;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  margin-bottom: 8px;
 }
 
 /* CONTAINER QUERIES: FLUID TYPOGRAPHY */
 @container card (min-width: 320px) {
-  .card-name { font-size: 1.7rem; -webkit-line-clamp: 3; }
-  .card-body { padding: 32px; gap: 20px; }
-  .card-price-value { font-size: 2.4rem; }
+  .card-name { font-size: 2rem; -webkit-line-clamp: 3; }
+  .card-body { padding: 32px; gap: 24px; }
+  .card-price-value { font-size: 3rem; }
 }
 
 @container card (max-width: 310px) {
-  .card-name { font-size: 1.3rem; line-height: 1.1; font-weight: 800; }
-  .card-body { padding: 22px; gap: 12px; }
-  .card-price-value { font-size: 1.9rem; }
+  .card-name { font-size: 1.6rem; line-height: 1; font-weight: 900; }
+  .card-body { padding: 24px; gap: 16px; }
+  .card-price-value { font-size: 2.5rem; }
 }
 .card-price-row {
   margin-top: auto;
@@ -197,10 +193,10 @@ body {
   letter-spacing: 0.05em;
 }
 .card-price-value {
-  font-size: 2.1rem;
+  font-size: 2.5rem;
   font-weight: 900;
   color: var(--zenith-slate);
-  letter-spacing: -0.05em;
+  letter-spacing: -0.06em;
   line-height: 0.8;
 }
 .card-original {
@@ -1320,13 +1316,14 @@ main {
 }
 .product-grid-inner {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
 }
 @media (min-width: 1600px) {
   .bento-grid, .product-grid-inner {
-    max-width: 1600px;
+    max-width: 1800px;
     grid-template-columns: repeat(5, 1fr);
+    gap: 20px;
   }
 }
 @media (max-width: 1180px) {
