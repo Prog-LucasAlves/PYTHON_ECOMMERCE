@@ -1087,6 +1087,7 @@ function _renderFiltered(grid, empty, search) {
     const renderBatch = async (items, containerClass, title, kicker, desc, startIndex = 0) => {
       if (!items.length) return;
       const isBento = containerClass === 'home-vitrine-featured';
+      const section = document.createElement('section');
       section.className = `home-vitrine ${containerClass}`;
       section.innerHTML = `
         <div class="section-head">
@@ -1103,16 +1104,24 @@ function _renderFiltered(grid, empty, search) {
 
       // Injetar blocos especiais se for Bento
       if (isBento) {
-        items.splice(2, 0, { isReview: true, text: "Nossa equipe selecionou estes achadinhos baseando-se no menor preço histórico dos últimos 30 dias. Aproveite enquanto durar o estoque!" });
-        items.splice(5, 0, { isCategoryHighlight: true, icon: "🎧", label: "Áudio & Tech", cat: "audio" });
-      }
+        // Create a copy to not affect original data
+        const bentoItems = [...items];
+        bentoItems.splice(2, 0, { isReview: true, text: "Nossa equipe selecionou estes achadinhos baseando-se no menor preço histórico dos últimos 30 dias. Aproveite enquanto durar o estoque!" });
+        bentoItems.splice(5, 0, { isCategoryHighlight: true, icon: "🎧", label: "Áudio & Tech", cat: "audio" });
 
-      const BATCH_SIZE = 8;
-      for (let i = 0; i < items.length; i += BATCH_SIZE) {
-        const batch = items.slice(i, i + BATCH_SIZE);
-        inner.insertAdjacentHTML('beforeend', batch.map((p, idx) => cardHTML(p, startIndex + i + idx)).join(''));
-        // Yield to browser between batches
-        await new Promise(resolve => setTimeout(resolve, 0));
+        const BATCH_SIZE = 8;
+        for (let i = 0; i < bentoItems.length; i += BATCH_SIZE) {
+          const batch = bentoItems.slice(i, i + BATCH_SIZE);
+          inner.insertAdjacentHTML('beforeend', batch.map((p, idx) => cardHTML(p, startIndex + i + idx)).join(''));
+          await new Promise(resolve => setTimeout(resolve, 0));
+        }
+      } else {
+        const BATCH_SIZE = 8;
+        for (let i = 0; i < items.length; i += BATCH_SIZE) {
+          const batch = items.slice(i, i + BATCH_SIZE);
+          inner.insertAdjacentHTML('beforeend', batch.map((p, idx) => cardHTML(p, startIndex + i + idx)).join(''));
+          await new Promise(resolve => setTimeout(resolve, 0));
+        }
       }
     };
 
