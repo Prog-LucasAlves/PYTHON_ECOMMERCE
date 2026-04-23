@@ -1487,7 +1487,7 @@ function cardHTML(p, index = 0) {
             ? `<div class="card-original">R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}</div>` : ''}
         </div>
         <div class="card-trend-wrap">
-          ${discount > 15 ? `<div class="card-trend" title="Preço em queda"><i class="fa-solid fa-arrow-trend-down"></i> Queda</div>` : ''}
+          ${discount > 5 ? `<div class="card-trend" title="Preço em queda"><i class="fa-solid fa-arrow-trend-down"></i> Queda de Preço</div>` : ''}
           ${sellerStatus === 'dropping' ? `<div class="seller-warning" title="Atenção: A nota deste vendedor caiu recentemente"><i class="fa-solid fa-triangle-exclamation"></i> Vendedor em queda</div>` : ''}
         </div>
       </div>
