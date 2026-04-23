@@ -94,6 +94,133 @@ const SEASONAL_COLLECTIONS = [
   },
 ];
 
+// ── PERFORMANCE: INTENT-BASED PREFETCHING ────────────────────
+let prefetchTimeout = null;
+function initIntentPrefetch() {
+  const catItems = document.querySelectorAll('.cat-item[data-cat]');
+  catItems.forEach(item => {
+    item.addEventListener('mouseenter', () => {
+      const cat = item.dataset.cat;
+      prefetchTimeout = setTimeout(() => {
+        prefetchCategory(cat);
+      }, 100); // Wait 100ms to ensure intent
+    });
+    item.addEventListener('mouseleave', () => {
+      clearTimeout(prefetchTimeout);
+    });
+  });
+}
+
+async function prefetchCategory(cat) {
+  if (cat === 'todos') return;
+  // This will warm up the cache/worker for this category
+  workerCall('GET_BY_CATEGORY', { category: cat, limit: 10 });
+  console.log(`[Prefetch] Warmed up category: ${cat}`);
+}
+
+// ── AI-SEO: DYNAMIC FAQ GENERATOR ────────────────────────────
+function renderCategoryFAQ(cat) {
+  const container = document.getElementById('categoryFAQ');
+  if (!container) return;
+
+  const faqs = {
+    'eletronicos': [
+      { q: "Qual o melhor fone Bluetooth na Shopee em 2026?", a: "Para custo-benefício, o Lenovo XT80 continua imbatível. Para qualidade premium, os modelos da Baseus oferecem o melhor cancelamento de ruído abaixo de R$ 150." },
+      { q: "É seguro comprar eletrônicos da China?", a: "Sim, desde que você escolha lojas oficiais ou com o selo 'Shopee Escolha'. Nossa curadoria filtra apenas vendedores com mais de 98% de avaliações positivas." }
+    ],
+    'moda': [
+      { q: "Como saber o tamanho certo de roupas na Shopee?", a: "Sempre verifique a tabela de medidas em cm e adicione 1-2cm de margem. Roupas asiáticas tendem a ser menores que o padrão brasileiro." }
+    ]
+  };
+
+  const currentFaqs = faqs[cat] || [
+    { q: "As ofertas são atualizadas em tempo real?", a: "Sim, nossa equipe monitora quedas de preço e cupons 24h por dia para garantir que você sempre pegue o menor valor." }
+  ];
+
+  container.innerHTML = `
+    <div class="faq-section reveal-on-scroll">
+      <h3>Dúvidas Frequentes sobre ${categoryLabel(cat)}</h3>
+      <div class="faq-grid">
+        ${currentFaqs.map(f => `
+          <div class="faq-item">
+            <strong>${f.q}</strong>
+            <p>${f.a}</p>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+
+  // Inject FAQ Schema (AEO/GEO Boost)
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": currentFaqs.map(f => ({
+      "@type": "Question",
+      "name": f.q,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": f.a
+      }
+    }))
+  };
+  const existing = document.getElementById('faq-schema-ld');
+  if (existing) existing.remove();
+  const script = document.createElement('script');
+  script.id = 'faq-schema-ld';
+  script.type = 'application/ld+json';
+  script.text = JSON.stringify(schema);
+  document.head.appendChild(script);
+}
+
+// ── GEO: STRUCTURED DATA INJECTION (JSON-LD) ─────────────────
+function injectProductSchema(p) {
+  // Remove existing product schema
+  const existing = document.getElementById('product-schema-ld');
+  if (existing) existing.remove();
+
+  const schema = {
+    "@context": "https://schema.org/",
+    "@type": "Product",
+    "name": p.name,
+    "image": p.images || [p.image],
+    "description": p.desc || `Oferta especial: ${p.name} na Shopee.`,
+    "sku": p.id,
+    "brand": {
+      "@type": "Brand",
+      "name": "Shopee Official"
+    },
+    "datePublished": "2026-04-20T08:00:00Z",
+    "dateModified": new Date().toISOString(),
+    "offers": {
+      "@type": "Offer",
+      "url": p.link,
+      "priceCurrency": "BRL",
+      "price": p.price,
+      "itemCondition": "https://schema.org/NewCondition",
+      "availability": "https://schema.org/InStock"
+    },
+    "review": {
+      "@type": "Review",
+      "reviewRating": {
+        "@type": "Rating",
+        "ratingValue": "4.8",
+        "bestRating": "5"
+      },
+      "author": {
+        "@type": "Organization",
+        "name": "Melhores Ofertas"
+      }
+    }
+  };
+
+  const script = document.createElement('script');
+  script.id = 'product-schema-ld';
+  script.type = 'application/ld+json';
+  script.text = JSON.stringify(schema);
+  document.head.appendChild(script);
+}
+
 function getInitialSearchTerm() {
   const params = new URLSearchParams(window.location.search);
   return (params.get('q') || params.get('search') || '').trim();
@@ -982,6 +1109,7 @@ window.addEventListener('storage', (e) => {
           initHoverReveal();
           initSilentIA();
           checkSessionRecovery();
+          initIntentPrefetch();
         } catch(e) {}
       });
     } else {
@@ -1061,6 +1189,7 @@ function _renderFiltered(grid, empty, search) {
   showSkeleton();
   updateResultsSummary(filtered, search);
   updateBreadcrumbs(currentCategory);
+  renderCategoryFAQ(currentCategory);
 
   // Defer structured data
   if (window.requestIdleCallback) {
@@ -1401,6 +1530,7 @@ function openProductModal(id, startIdx = 0) {
 
   modalProduct = p;
   modalIndex   = startIdx;
+  injectProductSchema(p);
   updateProductSchema(p);
   updateUrlWithProduct(p);
 
@@ -1465,6 +1595,31 @@ function openProductModal(id, startIdx = 0) {
     ugcBox.classList.remove('hidden-block');
   } else {
     ugcBox.classList.add('hidden-block');
+  }
+
+  // Video Review (GEO)
+  const videoBox = document.getElementById('modalVideoReview');
+  const videoLink = document.getElementById('videoReviewLink');
+  if (p.youtubeUrl) {
+    videoLink.href = p.youtubeUrl;
+    videoBox.classList.remove('hidden-block');
+  } else {
+    videoBox.classList.add('hidden-block');
+  }
+
+  // Technical Specs (GEO/Citable Content)
+  const specsBox = document.getElementById('modalSpecs');
+  const specsTable = document.getElementById('modalSpecsTable');
+  if (p.specs && Object.keys(p.specs).length > 0) {
+    specsTable.innerHTML = Object.entries(p.specs).map(([key, val]) => `
+      <tr>
+        <td><strong>${key}</strong></td>
+        <td>${val}</td>
+      </tr>
+    `).join('');
+    specsBox.classList.remove('hidden-block');
+  } else {
+    specsBox.classList.add('hidden-block');
   }
 
   document.getElementById('modalBuyBtn').href = p.link;

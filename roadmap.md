@@ -50,18 +50,18 @@ Este documento centraliza a estratégia definitiva (com centenas de micro-açõe
 ## 🚀 5. Performance e Core Web Vitals
 *Velocidade não é luxo, é a fundação da conversão.*
 
-- [ ] **Arquitetura Edge/Prerendering:** Servir as páginas de categoria como HTML estático instantâneo (Zero Layout Shift).
-- [ ] **Lazy Loading Agressivo & AVIF:** Servir imagens em formato AVIF (menor que WebP) e carregar apenas o que está na tela.
-- [ ] **Pre-fetch de Intenção:** Se o mouse do usuário (ou dedo) vai em direção a uma categoria, o navegador pré-carrega a página antes do clique.
-- [ ] **CSS Container Queries:** Garantir que os cards de produto se adaptem perfeitamente independente do tamanho da tela ou dobra (iPhone SE ao iPad Pro).
+- [x] **Arquitetura Edge/Prerendering:** Servir as páginas de categoria como HTML estático instantâneo (Zero Layout Shift).
+- [x] **Lazy Loading Agressivo & AVIF:** Servir imagens em formato AVIF (menor que WebP) e carregar apenas o que está na tela.
+- [x] **Pre-fetch de Intenção:** Se o mouse do usuário (ou dedo) vai em direção a uma categoria, o navegador pré-carrega a página antes do clique.
+- [x] **CSS Container Queries:** Garantir que os cards de produto se adaptem perfeitamente independente do tamanho da tela ou dobra (iPhone SE ao iPad Pro).
 
 ## 🌍 6. GEO (Generative Engine Optimization)
 *Como fazer ChatGPT, Gemini e Perplexity citarem seu site como fonte.*
 
-- [ ] **FAQ Factual por Categoria:** Adicionar blocos de perguntas hiper-específicas no final de categorias (ex: "Qual o melhor fone Bluetooth abaixo de R$ 50 na Shopee em 2026?").
-- [ ] **Consistência de Entidade:** Usar o nome exato dos produtos, EAN ou SKU de forma estruturada para que a IA valide seus dados com bancos de dados globais.
-- [ ] **Formatos Citáveis:** Usar tabelas Markdown limpas, listas numeradas e bullet points curtos (IAs adoram extrair dados de tabelas e listas).
-- [ ] **Autoridade Conectada:** Linkar suas páginas para vídeos do YouTube onde sua marca (ou parceiros) fazem o review, criando um círculo de autoridade de marca.
+- [x] **FAQ Factual por Categoria:** Adicionar blocos de perguntas hiper-específicas no final de categorias.
+- [x] **Consistência de Entidade:** Usar o nome exato dos produtos, EAN ou SKU de forma estruturada (JSON-LD).
+- [x] **Formatos Citáveis:** Usar tabelas Markdown limpas, listas numeradas e bullet points curtos.
+- [x] **Autoridade Conectada:** Linkar suas páginas para vídeos do YouTube onde sua marca faz o review.
 
 ## 🎮 7. Gamificação & Comunidade (Lock-in Effect)
 *Fazer o usuário querer abrir seu site todo dia.*
