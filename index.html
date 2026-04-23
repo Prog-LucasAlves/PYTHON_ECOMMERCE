@@ -8,8 +8,12 @@
   <meta name="description" content="Curadoria de ofertas na Shopee por categoria, preço e campanha. Encontre produtos atualizados, compare valores e descubra promoções com mais rapidez." />
   <meta name="keywords" content="ofertas na shopee, desconto shopee, produtos com cupom, frete grátis shopee, compras online" />
   <meta name="author" content="Melhores Ofertas" />
-  <meta name="robots" content="index, follow" />
-  <link rel="canonical" id="canonicalLink" href="https://melhoresdashopee.com.br/" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <link rel="canonical" id="canonicalLink" href="" />
+  <link rel="author" href="https://melhoresdashopee.com.br/sobre" />
+  <meta name="apple-mobile-web-app-title" content="Melhores Ofertas" />
+  <meta name="application-name" content="Melhores Ofertas" />
+  <meta name="msapplication-TileColor" content="#161616" />
   <link rel="preconnect" href="https://www.googletagmanager.com" />
   <link rel="preconnect" href="https://www.gstatic.com" />
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; script-src 'self' https://www.gstatic.com https://www.googletagmanager.com; connect-src 'self' https://www.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.gstatic.com https://www.googletagmanager.com https://www.google-analytics.com https://analytics.google.com; font-src 'self' https: data:; manifest-src 'self'; upgrade-insecure-requests">
@@ -51,38 +55,44 @@
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@type": "Organization",
-      "name": "Melhores Ofertas",
-      "url": "https://melhoresdashopee.com.br/",
-      "description": "Curadoria independente de ofertas online com links para produtos na Shopee."
-    }
-  </script>
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebSite",
-      "name": "Melhores Ofertas",
-      "url": "https://melhoresdashopee.com.br/",
-      "inLanguage": "pt-BR",
-      "potentialAction": {
-        "@type": "SearchAction",
-        "target": "https://melhoresdashopee.com.br/?q={search_term_string}",
-        "query-input": "required name=search_term_string"
-      }
-    }
-  </script>
-  <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebPage",
-      "name": "Ofertas na Shopee por Categoria e Preço",
-      "url": "https://melhoresdashopee.com.br/",
-      "isPartOf": {
-        "@type": "WebSite",
-        "name": "Melhores Ofertas",
-        "url": "https://melhoresdashopee.com.br/"
-      },
-      "description": "Vitrine de ofertas com rotação por categoria, campanhas e coleções sazonais."
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://melhoresdashopee.com.br/#organization",
+          "name": "Melhores Ofertas",
+          "url": "https://melhoresdashopee.com.br/",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://melhoresdashopee.com.br/img/favicon.png"
+          },
+          "description": "Curadoria independente de ofertas online com foco em economia real e segurança.",
+          "sameAs": [
+            "https://t.me/melhoresdashopeeday",
+            "https://www.instagram.com/melhoresdashopee"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://melhoresdashopee.com.br/#website",
+          "url": "https://melhoresdashopee.com.br/",
+          "name": "Melhores Ofertas",
+          "publisher": { "@id": "https://melhoresdashopee.com.br/#organization" },
+          "inLanguage": "pt-BR",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://melhoresdashopee.com.br/?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "Person",
+          "@id": "https://melhoresdashopee.com.br/#curator",
+          "name": "Equipe de Curadoria Melhores Ofertas",
+          "jobTitle": "Especialista em Ofertas e E-commerce",
+          "description": "Especialistas focados em encontrar o menor preço histórico e links seguros na Shopee.",
+          "image": "https://melhoresdashopee.com.br/img/favicon.png"
+        }
+      ]
     }
   </script>
 </head>
