@@ -5,5 +5,18 @@ Disallow: /js/admin.js
 Disallow: /sw.js
 Disallow: /manifest.json
 
+# AI Bots (Explicitly Allow for Citations)
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
 # Sitemap
 Sitemap: https://melhoresdashopee.com.br/sitemap.xml
