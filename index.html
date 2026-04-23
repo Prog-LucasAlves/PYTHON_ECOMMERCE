@@ -25,6 +25,7 @@
   <meta property="og:image" content="https://melhoresdashopee.com.br/img/logo-01-header.svg" />
   <meta property="og:image:alt" content="Melhores Ofertas - curadoria de ofertas na Shopee" />
 
+  background-color: #f8f9fa;
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Ofertas na Shopee por Categoria e Preço | Melhores Ofertas" />
@@ -294,29 +295,55 @@
 
       <!-- RIGHT: info -->
       <div class="modal-info">
-        <span class="modal-category" id="modalCategory"></span>
+        <div class="modal-top-meta">
+          <span class="modal-category" id="modalCategory"></span>
+        </div>
+
+        <div id="modalFlash" class="modal-flash hidden-block">
+          <div class="flash-label"><i class="fas fa-bolt"></i> OFERTA RELÂMPAGO</div>
+          <div id="modalFlashTimer" class="flash-timer">00:00:00</div>
+        </div>
+
         <h2 id="modalName"></h2>
-        <div id="modalStars" class="modal-stars"></div>
-        <div id="modalSoldCount" class="modal-sold"></div>
+
+        <div class="modal-historic-label">
+          <span class="dot-yellow"></span> Preço justo (Média histórica)
+        </div>
+
+        <div class="modal-stock-wrap">
+          <div class="stock-info">
+            <i class="fas fa-fire"></i> Restam apenas <span id="modalStockCount">22</span> unidades em estoque!
+          </div>
+          <div class="stock-bar"><div class="stock-fill" style="width: 70%;"></div></div>
+        </div>
+
         <div class="modal-prices">
+          <div class="price-main-row">
+            <span class="modal-price" id="modalPrice"></span>
+            <button class="btn-price-alert"><i class="far fa-bell"></i></button>
+          </div>
           <span class="modal-original" id="modalOriginal"></span>
-          <span class="modal-price" id="modalPrice"></span>
           <span class="modal-discount" id="modalDiscount"></span>
         </div>
 
-        <div class="modal-guarantee">
-          <i class="fas fa-shield-check"></i>
-          <div>
-            <strong>Garantia Shopee</strong>
-            <p>Receba seu pedido ou seu dinheiro de volta. Compra 100% segura.</p>
+        <div class="modal-trust-box">
+          <div class="trust-box-icon"><i class="fas fa-certificate"></i></div>
+          <div class="trust-box-copy">
+            <strong>Link Oficial Shopee</strong>
+            <p>Compra garantida. Pagamento e processamento totalmente gerenciados pela Shopee.</p>
           </div>
         </div>
 
-        <div id="modalCountdown" class="modal-countdown hidden-block"></div>
-        <p class="modal-desc" id="modalDesc"></p>
         <a id="modalBuyBtn" href="#" target="_blank" rel="noopener" class="modal-buy-btn">
-          <i class="fas fa-shopping-cart"></i> Ver na Shopee
+          <i class="fas fa-shopping-cart"></i> Garantir Meu Desconto
         </a>
+
+        <div class="modal-trust-chips">
+          <span class="trust-chip">100% Seguro</span>
+          <span class="trust-chip"><i class="fas fa-truck-fast"></i> Frete Grátis</span>
+          <span class="trust-chip"><i class="fas fa-rotate-left"></i> Devolução Grátis</span>
+        </div>
+
         <div class="modal-actions-row">
           <button class="modal-share-btn" id="shareWhatsAppBtn">
             <i class="fab fa-whatsapp"></i>
@@ -325,7 +352,31 @@
             <i class="fab fa-telegram-plane"></i>
           </button>
         </div>
-        <p class="modal-affiliate-note">🔗 Link de afiliado · Você nos ajuda sem pagar nada a mais · <em>Preço promocional sujeito a alteração sem aviso prévio.</em></p>
+
+        <div class="modal-specs-section">
+          <h3><i class="fas fa-microchip"></i> Ficha Técnica</h3>
+          <table class="specs-table">
+            <tr><td>Categoria</td><td id="specCat"></td></tr>
+            <tr><td>Preço Original</td><td id="specOrig"></td></tr>
+            <tr><td>Preço com Desconto</td><td id="specDiscPrice"></td></tr>
+            <tr><td>Desconto Total</td><td id="specTotalDisc"></td></tr>
+            <tr><td>Selo de Confiança</td><td>Verificado Shopee</td></tr>
+            <tr><td>Vendedor</td><td>Oficial</td></tr>
+          </table>
+        </div>
+
+        <div class="modal-faq-section">
+          <h3><i class="fas fa-circle-question"></i> Dúvidas Frequentes</h3>
+          <div class="faq-card">
+            <strong>Este produto está em oferta?</strong>
+            <p>Sim! O preço promocional atual é de <span class="faq-price">R$ 0,00</span>. Aproveite enquanto durar o estoque.</p>
+          </div>
+          <div class="faq-card">
+            <strong>É seguro comprar por este link?</strong>
+            <p>Com certeza. O Melhores Ofertas faz a curadoria e você finaliza a compra diretamente no ambiente seguro da Shopee, com garantia total.</p>
+          </div>
+        </div>
+
         <div id="modalRelated" class="modal-related-section hidden-block">
           <h4>Produtos Relacionados</h4>
           <div class="modal-related-list" id="modalRelatedList"></div>

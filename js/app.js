@@ -1060,34 +1060,34 @@ function openProductModal(id, startIdx) {
   });
 
   document.getElementById('modalName').textContent = p.name;
-  document.getElementById('modalCategory').textContent = categoryLabel(p.category);
-  document.getElementById('modalDesc').textContent = p.desc || '';
+  document.getElementById('modalCategory').innerHTML = `<i class="fas fa-magic"></i> ${categoryLabel(p.category)}`;
   document.getElementById('modalBuyBtn').href = p.link;
-  const buyBtn = document.getElementById('modalBuyBtn');
-  if (buyBtn && !buyBtn.dataset.analyticsBound) {
-    buyBtn.dataset.analyticsBound = '1';
-    buyBtn.addEventListener('click', () => {
-      if (!modalProduct) return;
-      trackEvent('click_buy_shopee', {
-        item_id: modalProduct.id,
-        item_name: modalProduct.name,
-        item_category: modalProduct.category,
-        price: Number(modalProduct.price) || 0,
-        currency: 'BRL',
-      });
-    });
+
+  // Flash Offer
+  const flashEl = document.getElementById('modalFlash');
+  const flashTimerEl = document.getElementById('modalFlashTimer');
+  const cdTarget = p.countdown ? new Date(p.countdown).getTime() : null;
+  if (flashEl && cdTarget) {
+    flashEl.classList.remove('hidden-block');
+    flashTimerEl.textContent = renderCountdownStr(cdTarget);
+  } else {
+    flashEl?.classList.add('hidden-block');
   }
 
-  // Stars & sold count
-  const starsEl = document.getElementById('modalStars');
-  const soldEl  = document.getElementById('modalSoldCount');
-  starsEl.innerHTML  = p.rating ? starsHTML(p.rating) : '';
-  soldEl.textContent = p.soldCount ? `🛒 ${p.soldCount}+ vendidos` : '';
+  // Stock
+  const stockCountEl = document.getElementById('modalStockCount');
+  const stockFillEl = document.querySelector('.stock-fill');
+  const randomStock = Math.floor(Math.random() * 30) + 5;
+  if (stockCountEl) stockCountEl.textContent = randomStock;
+  if (stockFillEl) stockFillEl.style.width = `${Math.floor(Math.random() * 40) + 60}%`;
 
+  // Prices
   const priceEl    = document.getElementById('modalPrice');
   const origEl     = document.getElementById('modalOriginal');
   const discEl     = document.getElementById('modalDiscount');
-  priceEl.textContent = `R$ ${Number(p.price).toFixed(2).replace('.',',')}`;
+  const priceStr   = `R$ ${Number(p.price).toFixed(2).replace('.',',')}`;
+  priceEl.textContent = priceStr;
+
   if (p.originalPrice && p.originalPrice > p.price) {
     origEl.textContent = `R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}`;
     discEl.textContent = discount ? `-${discount}%` : '';
@@ -1096,18 +1096,17 @@ function openProductModal(id, startIdx) {
     origEl.style.display = 'none'; discEl.style.display = 'none';
   }
 
+  // Specs Table
+  document.getElementById('specCat').textContent = categoryLabel(p.category);
+  document.getElementById('specOrig').textContent = p.originalPrice ? `R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}` : priceStr;
+  document.getElementById('specDiscPrice').textContent = priceStr;
+  document.getElementById('specTotalDisc').textContent = discount ? `${discount}%` : '0%';
+
+  // FAQ Price
+  document.querySelectorAll('.faq-price').forEach(el => el.textContent = priceStr);
+
   renderModalMedia(allMedia);
   renderModalThumbs(allMedia);
-
-  // Countdown
-  const cdEl     = document.getElementById('modalCountdown');
-  const cdTarget = p.countdown ? new Date(p.countdown).getTime() : null;
-  const cdStr    = cdTarget ? renderCountdownStr(cdTarget) : null;
-  if (cdEl) {
-    if (cdStr) { cdEl.textContent = `⏰ Oferta encerra em: ${cdStr}`; cdEl.style.display = ''; }
-    else        { cdEl.style.display = 'none'; }
-  }
-
   renderRelated(p);
 
   document.getElementById('productModal').classList.add('open');
@@ -1411,6 +1410,23 @@ function initAppBindings() {
   productModal?.addEventListener('click', e => { if (e.target === productModal) closeProductModal(); });
   compareModal?.addEventListener('click', e => { if (e.target === compareModal) closeCompareModal(); });
 
+// ── EVENT ACTIONS ─────────────────────────────────────────────
+function handleOpenProductAction(el) {
+  const id = el.dataset.id;
+  if (id) openProductModal(id, 0);
+}
+
+function trackEvent(name, params) {
+  if (typeof gtag === 'function') {
+    gtag('event', name, params);
+  } else if (typeof firebase !== 'undefined' && firebase.analytics) {
+    firebase.analytics().logEvent(name, params);
+  } else {
+    console.log('[TrackEvent]', name, params);
+  }
+}
+
+function initAppBindings() {
   const productGrid = document.getElementById('productGrid');
   const heroSlides = document.getElementById('heroSlides');
   const heroDots = document.getElementById('heroDots');
