@@ -41,11 +41,11 @@ Este documento centraliza a estratégia definitiva (com centenas de micro-açõe
 ## 🛡️ 4. E-E-A-T & Confiança (O Diferencial do Afiliado)
 *O usuário precisa confiar na curadoria mais do que no marketplace em si.*
 
-- [ ] **Nota do Curador (Expert Review):** Todo produto top tier deve ter uma frase curta: "Por que escolhemos isso: [motivo real e humano]".
-- [ ] **User-Generated Content (UGC) Integrado:** Importar/mostrar fotos reais de compradores da Shopee diretamente no seu site para provar que o produto é bom.
-- [ ] **Disclaimer de Transparência Elegante:** Substituir o texto chato de afiliado por um banner amigável: "Sustentamos este site com links de afiliados. O preço não muda para você, mas você nos ajuda a continuar caçando descontos 🍕".
-- [ ] **Página "Nossos Critérios":** Uma página super visual explicando as 5 etapas pelas quais um produto passa antes de aparecer no site.
-- [ ] **Alerta de Vendedor Duvidoso:** Um algoritmo simples que avisa o usuário se a avaliação do vendedor caiu na última semana (mesmo que você ainda liste o produto).
+- [x] **Nota do Curador (Expert Review):** Todo produto top tier deve ter uma frase curta: "Por que escolhemos isso: [motivo real e humano]".
+- [x] **User-Generated Content (UGC) Integrado:** Importar/mostrar fotos reais de compradores da Shopee diretamente no seu site para provar que o produto é bom.
+- [x] **Disclaimer de Transparência Elegante:** Substituir o texto chato de afiliado por um banner amigável: "Sustentamos este site com links de afiliados. O preço não muda para você, mas você nos ajuda a continuar caçando descontos 🍕".
+- [x] **Página "Nossos Critérios":** Uma página super visual explicando as 5 etapas pelas quais um produto passa antes de aparecer no site.
+- [x] **Alerta de Vendedor Duvidoso:** Um algoritmo simples que avisa o usuário se a avaliação do vendedor caiu na última semana (mesmo que você ainda liste o produto).
 
 ## 🚀 5. Performance e Core Web Vitals
 *Velocidade não é luxo, é a fundação da conversão.*

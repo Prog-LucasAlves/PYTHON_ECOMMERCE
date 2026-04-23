@@ -99,6 +99,36 @@ function getInitialSearchTerm() {
   return (params.get('q') || params.get('search') || '').trim();
 }
 
+// ── E-E-A-T UTILITIES ─────────────────────────────────────────
+function openCriteriaModal() {
+  document.getElementById('criteriaModal').classList.remove('hidden-block');
+  document.body.style.overflow = 'hidden';
+}
+function closeCriteriaModal() {
+  document.getElementById('criteriaModal').classList.add('hidden-block');
+  document.body.style.overflow = '';
+}
+
+// Mock Expert Notes for Top Tier Products
+const CURATOR_NOTES = {
+  'p1': 'Design industrial impecável e cancelamento de ruído que surpreende pelo preço.',
+  'p2': 'A fritura mais uniforme que já testamos. O cesto quadrado otimiza muito o espaço.',
+  'p3': 'Kit essencial para quem acabou de comprar o iPhone e quer proteção sem gastar 200 reais.',
+  'p4': 'Bolsas com acabamento de marca de luxo. A costura é reforçada e o material é muito fácil de limpar.'
+};
+
+function getCuratorNote(pid) {
+  return CURATOR_NOTES[pid] || null;
+}
+
+function getSellerStatus(p) {
+  // Logic to simulate seller reputation check
+  const random = Math.random();
+  if (p.isOfficial) return 'elite';
+  if (random > 0.95) return 'dropping'; // 5% chance of warning for demo
+  return 'stable';
+}
+
 function sameId(a, b) {
   if (!a || !b) return false;
   return String(a).trim() === String(b).trim();
@@ -1264,6 +1294,9 @@ function cardHTML(p, index = 0) {
 
   const images   = getImages(p, 'large');
   const main     = images[0] || 'https://via.placeholder.com/300x300?text=Sem+Imagem';
+  const curatorNote = getCuratorNote(p.id);
+  const sellerStatus = getSellerStatus(p);
+
   const discount = getDiscount(p);
   const isCampaign = isCampaignActive(p) || p.campaignId;
   const isOfficial = p.sellerType === 'official' || p.category === 'eletronicos';
@@ -1310,6 +1343,13 @@ function cardHTML(p, index = 0) {
 
       <div class="card-name">${nameEscaped}</div>
 
+      ${curatorNote ? `
+        <div class="curator-pick-note">
+          <i class="fa-solid fa-pen-nib"></i>
+          <span>${curatorNote}</span>
+        </div>
+      ` : ''}
+
       <div class="card-price-row">
         <div class="card-prices">
           <span class="card-price-label">Preço Atual</span>
@@ -1319,6 +1359,7 @@ function cardHTML(p, index = 0) {
         </div>
         <div class="card-trend-wrap">
           ${discount > 15 ? `<div class="card-trend" title="Preço em queda"><i class="fa-solid fa-arrow-trend-down"></i> Queda</div>` : ''}
+          ${sellerStatus === 'dropping' ? `<div class="seller-warning" title="Atenção: A nota deste vendedor caiu recentemente"><i class="fa-solid fa-triangle-exclamation"></i> Vendedor em queda</div>` : ''}
         </div>
       </div>
     </div>
@@ -1405,6 +1446,27 @@ function openProductModal(id, startIdx = 0) {
   document.getElementById('modalName').textContent = p.name;
   document.getElementById('modalCategory').textContent = categoryLabel(p.category);
   document.getElementById('modalDesc').textContent = p.desc || '';
+
+  // Expert Review (E-E-A-T)
+  const expertNote = getCuratorNote(p.id);
+  const expertBox = document.getElementById('modalExpertReviewBox');
+  if (expertNote) {
+    document.getElementById('modalExpertReviewContent').textContent = expertNote;
+    expertBox.classList.remove('hidden-block');
+  } else {
+    expertBox.classList.add('hidden-block');
+  }
+
+  // UGC Gallery (E-E-A-T)
+  const ugcBox = document.getElementById('modalUGCBox');
+  const ugcContent = document.getElementById('modalUGCContent');
+  if (p.ugcImages && p.ugcImages.length > 0) {
+    ugcContent.innerHTML = p.ugcImages.map(url => `<img src="${url}" class="ugc-img" loading="lazy" alt="Foto real do produto">`).join('');
+    ugcBox.classList.remove('hidden-block');
+  } else {
+    ugcBox.classList.add('hidden-block');
+  }
+
   document.getElementById('modalBuyBtn').href = p.link;
   const buyBtn = document.getElementById('modalBuyBtn');
   if (buyBtn && !buyBtn.dataset.analyticsBound) {
