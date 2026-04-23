@@ -1088,13 +1088,11 @@ function _renderFiltered(grid, empty, search) {
       if (!items.length) return;
       const isBento = containerClass === 'home-vitrine-featured';
       const section = document.createElement('section');
-      section.className = `home-vitrine ${containerClass}`;
+      section.className = `home-vitrine ${containerClass} ${isBento ? 'bento-mode' : ''}`;
       section.innerHTML = `
         <div class="section-head">
-          <div>
-            <span class="section-kicker">${kicker}</span>
-            <h3>${title}</h3>
-          </div>
+          <span class="section-kicker">${kicker}</span>
+          <h3>${title}</h3>
           <p>${desc}</p>
         </div>
         <div class="${isBento ? 'bento-grid' : 'product-grid-inner'}" id="inner-${containerClass}"></div>
@@ -1246,25 +1244,20 @@ function cardHTML(p, index = 0) {
   // Support for non-product blocks in Bento Grid
   if (p.isReview) {
     return `
-    <div class="product-card bento-item-wide review-card reveal-on-scroll" style="background: var(--brand-soft); border: 2px dashed var(--brand);">
+    <div class="product-card bento-item-wide review-card reveal-on-scroll">
       <div class="card-body">
-        <div class="card-trust"><i class="fa-solid fa-quote-left"></i> Dica do Especialista</div>
-        <div class="card-name" style="-webkit-line-clamp: 4;">"${p.text}"</div>
-        <div class="card-meta" style="margin-top: auto;">
-          <strong>- Equipe Melhores Ofertas</strong>
-        </div>
+        <div class="review-content">"${p.text}"</div>
+        <div class="review-author">- Equipe Melhores Ofertas</div>
       </div>
     </div>`;
   }
 
   if (p.isCategoryHighlight) {
     return `
-    <div class="product-card bento-item-tall category-highlight-card reveal-on-scroll" style="background: var(--surface-secondary); color: #fff;">
-      <div class="card-body" style="justify-content: center; align-items: center; text-align: center;">
-        <div style="font-size: 3rem; margin-bottom: 15px;">${p.icon}</div>
-        <div class="card-name" style="color: #fff;">Explorar ${p.label}</div>
-        <button class="btn-primary" onclick="setCategory('${p.cat}', document.querySelector('[data-cat=${p.cat}]'))" style="margin-top: 15px; width: 100%;">Ver Tudo</button>
-      </div>
+    <div class="product-card bento-item-tall category-highlight-card reveal-on-scroll">
+      <div class="cat-highlight-icon">${p.icon}</div>
+      <div class="card-name" style="color:#fff; height:auto; text-align:center;">Explorar ${p.label}</div>
+      <button class="cat-highlight-btn btn-haptic" onclick="setCategory('${p.cat}', document.querySelector('[data-cat=${p.cat}]'))">Ver Tudo</button>
     </div>`;
   }
 
