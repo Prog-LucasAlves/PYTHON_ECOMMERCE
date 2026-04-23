@@ -1403,7 +1403,7 @@ function cardHTML(p, index = 0) {
   // Support for non-product blocks in Bento Grid
   if (p.isReview) {
     return `
-    <div class="product-card bento-item-wide review-card reveal-on-scroll">
+    <div class="product-card review-card reveal-on-scroll">
       <div class="card-body">
         <div class="review-author">Curadoria Melhores Ofertas</div>
         <div class="review-content">"${p.text}"</div>
@@ -1413,7 +1413,7 @@ function cardHTML(p, index = 0) {
 
   if (p.isCategoryHighlight) {
     return `
-    <div class="product-card bento-item-tall category-highlight-card reveal-on-scroll">
+    <div class="product-card category-highlight-card reveal-on-scroll">
       <div class="cat-highlight-icon">${p.icon}</div>
       <div class="card-name" style="color:#fff; height:auto; text-align:center; font-size:1.8rem; margin-bottom:12px;">${p.label}</div>
       <p style="color:rgba(255,255,255,0.4); font-size:0.85rem; text-align:center; line-height:1.4;">A curadoria definitiva para quem busca performance e preço justo.</p>
@@ -1431,14 +1431,8 @@ function cardHTML(p, index = 0) {
   const isOfficial = p.sellerType === 'official' || p.category === 'eletronicos';
   const nameEscaped = escapeHTML(p.name);
 
-  // Bento Logic: First few featured products get larger spans
+  // Bento Logic: Simplified to uniform grid as requested
   let bentoClass = 'reveal-on-scroll';
-  if (p.featured) {
-    if (index === 0) bentoClass += ' bento-item-large';
-    else if (index === 1) bentoClass += ' bento-item-wide';
-    else if (index === 2) bentoClass += ' bento-item-wide';
-    else if (index === 3) bentoClass += ' bento-item-tall';
-  }
 
   // Lazy load images that are NOT in the first row
   const loadingType = index < 8 ? 'eager' : 'lazy';

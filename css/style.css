@@ -98,16 +98,12 @@ body {
 .bento-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  grid-auto-rows: 240px;
-  gap: 20px;
-  margin: 60px auto;
+  grid-auto-rows: auto;
+  gap: 16px;
+  margin: 40px auto;
   max-width: 1300px;
   padding: 0 40px;
 }
-
-.bento-item-large { grid-column: span 3; grid-row: span 2; }
-.bento-item-wide  { grid-column: span 2; grid-row: span 1; }
-.bento-item-tall  { grid-column: span 1; grid-row: span 2; }
 
 /* ZENITH CARDS: BORDERLESS ELEGANCE */
 .product-card {
