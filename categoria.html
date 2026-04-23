@@ -84,7 +84,7 @@
           <input type="text" id="searchInput" placeholder="🔍 Buscar produto..." autocomplete="off"/>
           <div id="searchDropdown" class="search-dropdown hidden-block"></div>
         </div>
-        <a href="/" class="btn-secondary"><i class="fas fa-home"></i> Home</a>
+        <a href="/" class="btn-secondary"><i class="fa-solid fa-house"></i> Home</a>
       </div>
     </div>
   </header>
@@ -191,7 +191,7 @@
     <section class="controls-bar">
       <div class="controls-inner">
         <div class="sort-control">
-          <label><i class="fas fa-sort"></i></label>
+          <label><i class="fa-solid fa-sort"></i></label>
           <select id="sortSelect" onchange="setSortMode(this.value)">
             <option value="default">Destaques primeiro</option>
             <option value="price-asc">Menor preço</option>
@@ -201,18 +201,18 @@
           </select>
         </div>
         <div class="price-control">
-          <label><i class="fas fa-tag"></i> Preço:</label>
+          <label><i class="fa-solid fa-tag"></i> Preço:</label>
           <input type="number" id="priceMin" placeholder="Min" min="0"/>
           <span>—</span>
           <input type="number" id="priceMax" placeholder="Max" min="0"/>
-          <button class="btn-clear-price" id="clearPriceBtn" title="Limpar"><i class="fas fa-times"></i></button>
+          <button class="btn-clear-price" id="clearPriceBtn" title="Limpar"><i class="fa-solid fa-xmark"></i></button>
         </div>
       </div>
     </section>
 
     <div id="productGrid" class="product-grid"></div>
     <div id="emptyState" class="empty-state hidden-block" aria-live="polite">
-      <i class="fas fa-box-open"></i>
+      <i class="fa-solid fa-box-open"></i>
       <p>Nenhum produto encontrado com os filtros atuais.</p>
       <span>Tente outra busca, ajuste o preço ou troque a categoria na URL.</span>
     </div>

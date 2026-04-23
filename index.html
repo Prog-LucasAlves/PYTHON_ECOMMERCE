@@ -33,10 +33,8 @@
   <meta name="twitter:image" content="https://melhoresdashopee.com.br/img/logo-01-header.svg" />
 
   <link rel="stylesheet" href="css/style.css"/>
-  <!-- Font Awesome: carregada de forma não-bloqueante -->
-  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"></noscript>
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" integrity="sha512-Avb2QiuDEEvB4bZJYd816dnEtVKOkv8pcReHiKOdR0Vv0hOG3gaKSTGjMhAfReUBlnD7qhReQ7krRmSBFM4qtg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
 
   <!-- Google Fonts: carregada de forma não-bloqueante -->
   <link rel="preload" href="https://fonts.gstatic.com/s/outfit/v11/Q_3_9mv92BPiz809IDRzY6z.woff2" as="font" type="font/woff2" crossorigin>
@@ -104,7 +102,7 @@
         <div class="search-bar">
           <input type="text" id="searchInput" placeholder="O que você está buscando hoje?" autocomplete="off" aria-label="O que você está buscando hoje?"/>
           <button class="search-btn" id="searchBtn" title="Pesquisar" aria-label="Pesquisar">
-            <i class="fas fa-search"></i>
+            <i class="fa-solid fa-magnifying-glass"></i>
           </button>
         </div>
         <div id="searchDropdown" class="search-dropdown hidden-block"></div>
@@ -112,13 +110,13 @@
 
       <div class="header-actions">
         <button class="btn-dark-mode" id="darkToggle" title="Modo escuro">
-          <i class="fas fa-moon" id="darkIcon"></i>
+          <i class="fa-solid fa-moon" id="darkIcon"></i>
         </button>
         <div class="user-status-pill" id="userStatus" title="Seu perfil de comprador">
           <div class="user-level-badge">LV <span id="userLevel">1</span></div>
-          <div class="user-coins"><i class="fas fa-coins"></i> <span id="userCoins">0</span></div>
+          <div class="user-coins"><i class="fa-solid fa-coins"></i> <span id="userCoins">0</span></div>
         </div>
-        <a href="painel-shopee-vendas" class="btn-admin"><i class="fas fa-cog"></i></a>
+        <a href="painel-shopee-vendas" class="btn-admin"><i class="fa-solid fa-gear"></i></a>
       </div>
     </div>
   </header>
@@ -133,15 +131,15 @@
   <section class="trust-strip">
     <div class="trust-inner">
       <div class="trust-item">
-        <i class="fas fa-check-double"></i>
+        <i class="fa-solid fa-circle-check"></i>
         <span>Links Verificados Shopee</span>
       </div>
       <div class="trust-item">
-        <i class="fas fa-bolt"></i>
+        <i class="fa-solid fa-bolt"></i>
         <span>Ofertas em Tempo Real</span>
       </div>
       <div class="trust-item">
-        <i class="fas fa-shield-halved"></i>
+        <i class="fa-solid fa-shield-halved"></i>
         <span>Curadoria Independente</span>
       </div>
       <div class="trust-item status-badge">
@@ -289,7 +287,7 @@
           <input type="number" id="priceMax" placeholder="Max" min="0" aria-label="Preço máximo"/>
         </div>
         <button class="btn-secondary" type="button" id="clearFiltersBtn" aria-label="Limpar todos os filtros">
-          <i class="fas fa-rotate-left"></i>
+          <i class="fa-solid fa-rotate-left"></i>
         </button>
       </div>
     </div>
@@ -301,7 +299,7 @@
     <div id="breadcrumbs" class="breadcrumbs-nav"></div>
     <div id="productGrid" class="product-grid"></div>
     <div id="emptyState" class="empty-state hidden-block" aria-live="polite">
-      <i class="fas fa-box-open"></i>
+      <i class="fa-solid fa-box-open"></i>
       <p>Nenhum produto encontrado com os filtros atuais.</p>
       <span>Tente outra busca, amplie a faixa de preço ou volte para todas as categorias.</span>
       <button class="btn-primary" type="button" id="clearAllBtn">Ver todas as ofertas</button>
@@ -327,14 +325,14 @@
         <div id="modalStars" class="modal-stars"></div>
         <div id="modalSoldCount" class="modal-sold"></div>
         <div id="modalUrgency" class="modal-urgency hidden-block">
-          <div class="urgency-label"><i class="fas fa-fire"></i> <span id="urgencyText">Restam poucas unidades!</span></div>
+          <div class="urgency-label"><i class="fa-solid fa-fire"></i> <span id="urgencyText">Restam poucas unidades!</span></div>
           <div class="urgency-bar"><div id="urgencyProgress" class="urgency-progress"></div></div>
         </div>
         <div class="modal-prices">
           <div class="price-main-row">
             <span class="modal-price" id="modalPrice"></span>
             <button id="priceAlertBtn" class="price-alert-btn" title="Me avise se o preço cair">
-              <i class="far fa-bell"></i>
+              <i class="fa-regular fa-bell"></i>
             </button>
           </div>
           <span class="modal-original" id="modalOriginal"></span>
@@ -342,7 +340,7 @@
         </div>
 
         <div class="modal-guarantee">
-          <i class="fas fa-certificate"></i>
+          <i class="fa-solid fa-certificate"></i>
           <div>
             <strong>Link Oficial Shopee</strong>
             <p>Compra garantida. Pagamento e processamento totalmente gerenciados pela Shopee.</p>
@@ -353,27 +351,27 @@
         <p class="modal-desc" id="modalDesc"></p>
         <div id="modalExpertReviewBox" class="modal-expert-review hidden-block">
           <div class="expert-review-head">
-             <i class="fas fa-edit"></i> <strong>Nota do Curador:</strong>
+             <i class="fa-solid fa-pen-to-square"></i> <strong>Nota do Curador:</strong>
           </div>
           <p id="modalExpertReviewContent"></p>
         </div>
         <a id="modalBuyBtn" href="#" target="_blank" rel="noopener" class="modal-buy-btn">
-          <i class="fas fa-shopping-cart"></i> Ver na Shopee
+          <i class="fa-solid fa-cart-shopping"></i> Ver na Shopee
         </a>
         <div class="modal-actions-row">
           <button class="modal-share-btn" id="shareWhatsAppBtn" aria-label="Compartilhar no WhatsApp">
-            <i class="fab fa-whatsapp"></i>
+            <i class="fa-brands fa-whatsapp"></i>
           </button>
           <button class="modal-share-btn telegram" id="shareTelegramBtn" aria-label="Compartilhar no Telegram">
-            <i class="fab fa-telegram-plane"></i>
+            <i class="fa-brands fa-telegram"></i>
           </button>
         </div>
         <div id="modalSpecs" class="modal-specs hidden-block">
-          <h4><i class="fas fa-microchip"></i> Ficha Técnica</h4>
+          <h4><i class="fa-solid fa-microchip"></i> Ficha Técnica</h4>
           <table id="modalSpecsTable"></table>
         </div>
         <div id="modalFAQ" class="modal-faq hidden-block">
-          <h4><i class="fas fa-question-circle"></i> Dúvidas Frequentes</h4>
+          <h4><i class="fa-solid fa-circle-question"></i> Dúvidas Frequentes</h4>
           <div id="modalFAQContent"></div>
         </div>
         <p class="modal-affiliate-note">🔗 Link de afiliado · Você nos ajuda sem pagar nada a mais · <em>Preço promocional sujeito a alteração sem aviso prévio.</em></p>
@@ -391,10 +389,10 @@
   <!-- BARRA DE COMPARAÇÃO -->
   <div id="compareBar" class="compare-bar">
     <div class="compare-bar-inner">
-      <span class="compare-title"><i class="fas fa-columns"></i> Comparar</span>
+      <span class="compare-title"><i class="fa-solid fa-columns-3"></i> Comparar</span>
       <div class="compare-slots" id="compareSlots"></div>
       <button class="btn-compare-now" id="btnCompareNow" disabled>Comparar agora</button>
-      <button class="compare-clear" id="compareClearBtn" title="Limpar"><i class="fas fa-times"></i></button>
+      <button class="compare-clear" id="compareClearBtn" title="Limpar"><i class="fa-solid fa-xmark"></i></button>
     </div>
   </div>
 
@@ -402,8 +400,8 @@
   <div id="compareModal" class="compare-modal">
     <div class="compare-box">
       <div class="compare-header">
-        <h2><i class="fas fa-columns"></i> Comparar Produtos</h2>
-        <button id="compareCloseBtn"><i class="fas fa-times"></i></button>
+        <h2><i class="fa-solid fa-columns-3"></i> Comparar Produtos</h2>
+        <button id="compareCloseBtn"><i class="fa-solid fa-xmark"></i></button>
       </div>
       <div id="compareTable" class="compare-table"></div>
     </div>
@@ -411,14 +409,14 @@
 
   <!-- Botão Telegram flutuante -->
   <a href="https://t.me/melhoresdashopeeday" target="_blank" class="telegram-fab" title="Entrar no canal de ofertas">
-    <i class="fab fa-telegram-plane"></i>
+    <i class="fa-brands fa-telegram"></i>
     <span>Canal de Ofertas</span>
   </a>
 
   <!-- PWA Install Banner -->
   <div id="pwaBanner" class="pwa-banner hidden-block">
     <div class="pwa-banner-inner">
-      <i class="fas fa-mobile-alt pwa-icon"></i>
+      <i class="fa-solid fa-mobile-screen-button pwa-icon"></i>
       <div>
         <strong>Instale o app!</strong>
         <p>Acesse as ofertas ainda mais rápido direto do seu celular.</p>
@@ -432,9 +430,9 @@
   <footer class="site-footer">
     <div class="footer-inner">
       <div class="footer-badges">
-        <span class="badge-ssl"><i class="fas fa-lock"></i> Site Seguro · SSL</span>
-        <span class="badge-ssl"><i class="fas fa-shield-alt"></i> Compra Protegida Shopee</span>
-        <span class="badge-ssl"><i class="fas fa-tag"></i> Links Oficiais</span>
+        <span class="badge-ssl"><i class="fa-solid fa-lock"></i> Site Seguro · SSL</span>
+        <span class="badge-ssl"><i class="fa-solid fa-shield-halved"></i> Compra Protegida Shopee</span>
+        <span class="badge-ssl"><i class="fa-solid fa-tag"></i> Links Oficiais</span>
       </div>
 
       <div class="footer-bottom">

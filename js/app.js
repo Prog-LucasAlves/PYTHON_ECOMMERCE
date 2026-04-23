@@ -568,7 +568,7 @@ function renderCompareBar() {
     return `<div class="compare-slot">
       ${img ? `<img src="${img}" alt="${escapeHTML(p.name)}" loading="lazy" decoding="async"/>` : '<div class="compare-slot-placeholder"></div>'}
       <span>${escapeHTML(p.name.substring(0,22))}${p.name.length>22?'…':''}</span>
-      <button data-action="toggle-compare-remove" data-pid="${p.id}" title="Remover"><i class="fas fa-times"></i></button>
+      <button data-action="toggle-compare-remove" data-pid="${p.id}" title="Remover"><i class="fa-solid fa-xmark"></i></button>
     </div>`;
   }).join('');
 }
@@ -596,7 +596,7 @@ function openCompareModal() {
     { label: 'Desconto',   fn: p => { const d=getDiscount(p); return d ? `<span class="badge-discount">-${d}%</span>` : '–'; } },
     { label: 'Avaliação',  fn: p => p.rating    ? starsHTML(p.rating) : '–' },
     { label: 'Vendidos',   fn: p => p.soldCount ? `${p.soldCount}+`   : '–' },
-    { label: '',           fn: p => `<a href="${p.link}" target="_blank" rel="noopener" class="modal-buy-btn" style="font-size:.78rem;padding:7px 12px"><i class="fas fa-shopping-cart"></i> Comprar</a>` },
+    { label: '',           fn: p => `<a href="${p.link}" target="_blank" rel="noopener" class="modal-buy-btn" style="font-size:.78rem;padding:7px 12px"><i class="fa-solid fa-cart-shopping"></i> Comprar</a>` },
   ];
 
   table.innerHTML = `<table class="compare-tbl">
@@ -700,7 +700,7 @@ function updateSearchSuggestions() {
   dd.innerHTML = matches.map(m => {
     const hi = m.replace(new RegExp(`(${input})`, 'gi'), '<mark>$1</mark>');
     return `<div class="dd-item" onmousedown="selectSuggestion('${escapeHTML(m).replace(/'/g,"\\'")}')">
-      <i class="fas fa-search"></i> ${hi}
+      <i class="fa-solid fa-magnifying-glass"></i> ${hi}
     </div>`;
   }).join('');
   dd.style.display = 'block';
@@ -715,9 +715,9 @@ function showSearchHistory() {
   dd.innerHTML = `<div class="dd-header">🕐 Buscas recentes</div>` +
     history.map(h => `
       <div class="dd-item" onmousedown="selectSuggestion('${escapeHTML(h).replace(/'/g,"\\'")}')">
-        <i class="fas fa-history"></i> ${escapeHTML(h)}
+        <i class="fa-solid fa-clock-rotate-left"></i> ${escapeHTML(h)}
         <button class="dd-remove" onmousedown="event.stopPropagation();removeHistory('${escapeHTML(h).replace(/'/g,"\\'")}')">
-          <i class="fas fa-times"></i>
+          <i class="fa-solid fa-xmark"></i>
         </button>
       </div>`).join('') +
     `<div class="dd-clear" onmousedown="clearHistory()">Limpar histórico</div>`;
@@ -769,7 +769,7 @@ function initDarkMode() {
   if (saved === '1' || (saved === null && prefersDark)) {
     document.documentElement.setAttribute('data-theme', 'dark');
     const icon = document.getElementById('darkIcon');
-    if (icon) icon.className = 'fas fa-sun';
+    if (icon) icon.className = 'fa-solid fa-sun';
   }
 }
 function toggleDarkMode() {
@@ -777,7 +777,7 @@ function toggleDarkMode() {
   const isDark = html.getAttribute('data-theme') === 'dark';
   html.setAttribute('data-theme', isDark ? 'light' : 'dark');
   const icon = document.getElementById('darkIcon');
-  if (icon) icon.className = isDark ? 'fas fa-moon' : 'fas fa-sun';
+  if (icon) icon.className = isDark ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
   localStorage.setItem('darkMode', isDark ? '0' : '1');
 }
 
@@ -1227,7 +1227,7 @@ function cardHTML(p, index = 0) {
   <div class="product-card" data-action="open-product" data-id="${p.id}" role="button" aria-label="Ver detalhes de ${nameEscaped}" style="cursor: pointer;">
     ${leftBadge}
     ${discount ? `<span class="badge-discount" aria-label="Desconto de ${discount}%">-${discount}%</span>` : ''}
-    ${p.price >= 19 ? `<span class="badge-shipping"><i class="fas fa-truck-fast"></i> Frete Grátis</span>` : ''}
+    ${p.price >= 19 ? `<span class="badge-shipping"><i class="fa-solid fa-truck-fast"></i> Frete Grátis</span>` : ''}
 
     <div class="card-img-wrap">
       <img src="${main}"
@@ -1241,9 +1241,9 @@ function cardHTML(p, index = 0) {
     <div class="card-body">
       <div class="card-meta">
         <div class="card-trust">
-          <i class="fas fa-check-circle"></i> Verificado
+          <i class="fa-solid fa-circle-check"></i> Verificado
         </div>
-        ${isOfficial ? `<div class="card-seller"><i class="fas fa-store"></i> Oficial</div>` : ''}
+        ${isOfficial ? `<div class="card-seller"><i class="fa-solid fa-store"></i> Oficial</div>` : ''}
       </div>
 
       <div class="card-name">${nameEscaped}</div>
@@ -1255,7 +1255,7 @@ function cardHTML(p, index = 0) {
           ${p.originalPrice && p.originalPrice > p.price
             ? `<div class="card-original">R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}</div>` : ''}
         </div>
-        ${discount > 15 ? `<div class="card-trend" title="Preço em queda"><i class="fas fa-chart-line"></i> Queda</div>` : ''}
+        ${discount > 15 ? `<div class="card-trend" title="Preço em queda"><i class="fa-solid fa-chart-line"></i> Queda</div>` : ''}
       </div>
     </div>
 
@@ -1266,7 +1266,7 @@ function cardHTML(p, index = 0) {
       data-action="toggle-compare"
       aria-label="Adicionar ${nameEscaped} à lista de comparação"
       title="Comparar">
-      <i class="fas fa-columns"></i>
+      <i class="fa-solid fa-columns-3"></i>
     </button>
   </div>`;
 }
@@ -1275,9 +1275,9 @@ function cardHTML(p, index = 0) {
 function starsHTML(rating) {
   const r = parseFloat(rating) || 0;
   return Array.from({length: 5}, (_, i) => {
-    if (i + 1 <= r)      return '<i class="fas fa-star"></i>';
-    if (i + 0.5 <= r)    return '<i class="fas fa-star-half-alt"></i>';
-    return '<i class="far fa-star"></i>';
+    if (i + 1 <= r)      return '<i class="fa-solid fa-star"></i>';
+    if (i + 0.5 <= r)    return '<i class="fa-solid fa-star-half-stroke"></i>';
+    return '<i class="fa-regular fa-star"></i>';
   }).join('') + ` <span class="star-val">${r.toFixed(1)}</span>`;
 }
 
@@ -1378,7 +1378,7 @@ function openProductModal(id, startIdx = 0) {
     const alerts = JSON.parse(localStorage.getItem('price_alerts') || '{}');
     const isAlertSet = !!alerts[p.id];
     alertBtn.classList.toggle('active', isAlertSet);
-    alertBtn.innerHTML = isAlertSet ? '<i class="fas fa-bell"></i>' : '<i class="far fa-bell"></i>';
+    alertBtn.innerHTML = isAlertSet ? '<i class="fa-solid fa-bell"></i>' : '<i class="fa-regular fa-bell"></i>';
 
     alertBtn.onclick = (e) => {
       e.preventDefault();
