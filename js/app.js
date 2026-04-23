@@ -1411,6 +1411,23 @@ function initAppBindings() {
   productModal?.addEventListener('click', e => { if (e.target === productModal) closeProductModal(); });
   compareModal?.addEventListener('click', e => { if (e.target === compareModal) closeCompareModal(); });
 
+// ── EVENT ACTIONS ─────────────────────────────────────────────
+function handleOpenProductAction(el) {
+  const id = el.dataset.id;
+  if (id) openProductModal(id, 0);
+}
+
+function trackEvent(name, params) {
+  if (typeof gtag === 'function') {
+    gtag('event', name, params);
+  } else if (typeof firebase !== 'undefined' && firebase.analytics) {
+    firebase.analytics().logEvent(name, params);
+  } else {
+    console.log('[TrackEvent]', name, params);
+  }
+}
+
+function initAppBindings() {
   const productGrid = document.getElementById('productGrid');
   const heroSlides = document.getElementById('heroSlides');
   const heroDots = document.getElementById('heroDots');
