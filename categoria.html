@@ -4,11 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Ofertas por Categoria na Shopee | Melhores Ofertas</title>
+  <link rel="icon" type="image/png" href="img/favicon.png" />
   <meta name="description" content="Encontre ofertas por categoria na Shopee com preços atualizados, comparação rápida e vitrine organizada para descobrir produtos com facilidade." />
   <meta name="keywords" content="ofertas por categoria, ofertas shopee, produtos shopee, categorias shopee, comparação de preços" />
   <meta name="author" content="Melhores Ofertas" />
   <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://melhoresdashopee.com.br/categoria.html" />
+  <link rel="canonical" id="canonicalLink" href="" />
   <link rel="preconnect" href="https://www.googletagmanager.com" />
   <link rel="preconnect" href="https://www.gstatic.com" />
   <meta name="theme-color" content="#161616" />
@@ -75,7 +76,7 @@
     <div class="header-inner">
       <div class="logo">
         <a href="/" aria-label="Ir para a home">
-          <img src="img/logo-01-icon.svg" alt="Melhores Ofertas" class="site-logo site-logo-icon"/>
+          <img src="img/favicon.png" alt="Melhores Ofertas" class="site-logo site-logo-icon" style="border-radius: 8px;"/>
         </a>
       </div>
       <div class="header-actions">
@@ -83,7 +84,7 @@
           <input type="text" id="searchInput" placeholder="🔍 Buscar produto..." autocomplete="off"/>
           <div id="searchDropdown" class="search-dropdown hidden-block"></div>
         </div>
-        <a href="/" class="btn-secondary"><i class="fas fa-home"></i> Home</a>
+        <a href="/" class="btn-secondary"><i class="fa-solid fa-house"></i> Home</a>
       </div>
     </div>
   </header>
@@ -190,7 +191,7 @@
     <section class="controls-bar">
       <div class="controls-inner">
         <div class="sort-control">
-          <label><i class="fas fa-sort"></i></label>
+          <label><i class="fa-solid fa-sort"></i></label>
           <select id="sortSelect" onchange="setSortMode(this.value)">
             <option value="default">Destaques primeiro</option>
             <option value="price-asc">Menor preço</option>
@@ -200,18 +201,18 @@
           </select>
         </div>
         <div class="price-control">
-          <label><i class="fas fa-tag"></i> Preço:</label>
+          <label><i class="fa-solid fa-tag"></i> Preço:</label>
           <input type="number" id="priceMin" placeholder="Min" min="0"/>
           <span>—</span>
           <input type="number" id="priceMax" placeholder="Max" min="0"/>
-          <button class="btn-clear-price" id="clearPriceBtn" title="Limpar"><i class="fas fa-times"></i></button>
+          <button class="btn-clear-price" id="clearPriceBtn" title="Limpar"><i class="fa-solid fa-xmark"></i></button>
         </div>
       </div>
     </section>
 
     <div id="productGrid" class="product-grid"></div>
     <div id="emptyState" class="empty-state hidden-block" aria-live="polite">
-      <i class="fas fa-box-open"></i>
+      <i class="fa-solid fa-box-open"></i>
       <p>Nenhum produto encontrado com os filtros atuais.</p>
       <span>Tente outra busca, ajuste o preço ou troque a categoria na URL.</span>
     </div>
