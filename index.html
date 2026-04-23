@@ -87,16 +87,16 @@
       <div class="logo">
         <img src="img/logo-01-icon.svg" alt="Melhores Ofertas" class="site-logo site-logo-icon"/>
       </div>
+      <div class="search-wrap">
+        <input type="text" id="searchInput" placeholder="O que você está buscando hoje?"
+          autocomplete="off"/>
+        <div id="searchDropdown" class="search-dropdown hidden-block"></div>
+      </div>
       <div class="header-actions">
-        <div class="search-wrap">
-          <input type="text" id="searchInput" placeholder="🔍 Buscar produto..."
-            autocomplete="off"/>
-          <div id="searchDropdown" class="search-dropdown hidden-block"></div>
-        </div>
-        <button class="btn-dark-mode" id="darkToggle" title="Modo escuro">
+        <button class="btn-header" id="darkToggle" title="Modo escuro">
           <i class="fas fa-moon" id="darkIcon"></i>
         </button>
-        <a href="painel-shopee-vendas.html" class="btn-admin"><i class="fas fa-cog"></i></a>
+        <a href="painel-shopee-vendas.html" class="btn-header"><i class="fas fa-cog"></i></a>
       </div>
     </div>
   </header>

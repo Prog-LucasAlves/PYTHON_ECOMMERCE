@@ -983,43 +983,36 @@ function cardHTML(p) {
   const main     = images[0] || 'https://via.placeholder.com/300x300?text=Sem+Imagem';
   const discount = getDiscount(p);
   const isCampaign = isCampaignActive(p) || p.campaignId;
-  const isOfficial = p.sellerType === 'official' || p.category === 'eletronicos';
 
   let leftBadge = '';
-  if (p.featured)    leftBadge = '<span class="badge-featured">DIAMANTE</span>';
-  else if (isCampaign) leftBadge = '<span class="badge-featured" style="background:#000;">CAMPANHA</span>';
+  if (p.featured)    leftBadge = '<span class="badge-featured">DESTAQUE</span>';
+  else if (isCampaign) leftBadge = '<span class="badge-featured">OFERTA</span>';
 
   return `
   <div class="product-card" data-action="open-product" data-id="${p.id}">
     ${leftBadge}
     ${discount ? `<span class="badge-discount">-${discount}%</span>` : ''}
-    ${p.price >= 19 ? `<span class="badge-shipping"><i class="fas fa-truck-fast"></i> Frete Grátis</span>` : ''}
 
     <div class="card-img-wrap">
       <img src="${main}" alt="${p.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x300?text=Sem+Imagem'"/>
     </div>
 
     <div class="card-body">
-      <div class="card-meta">
-        <div class="card-trust">
-          <i class="fas fa-check-circle"></i> Verificado
-        </div>
-        ${isOfficial ? `<div class="card-seller"><i class="fas fa-store"></i> Oficial</div>` : ''}
+      <div class="card-trust">
+        <i class="fas fa-check-circle"></i> Produto Verificado
       </div>
-
       <div class="card-name">${p.name}</div>
-
       <div class="card-price-row">
-        <div class="card-prices">
-          <div class="card-price">R$ ${Number(p.price).toFixed(2).replace('.',',')}</div>
+        <span class="card-price-label">A partir de</span>
+        <span class="card-price-value">
+          R$ ${Number(p.price).toFixed(2).replace('.',',')}
           ${p.originalPrice && p.originalPrice > p.price
-            ? `<div class="card-original">R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}</div>` : ''}
-        </div>
-        ${discount > 15 ? `<div class="card-trend" title="Menor preço dos últimos 30 dias"><i class="fas fa-chart-line"></i> Queda</div>` : ''}
+            ? `<span class="card-original">R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}</span>` : ''}
+        </span>
       </div>
     </div>
 
-    <div class="card-btn">Ver na Shopee</div>
+    <div class="card-btn">Ver Oferta</div>
 
     <button class="card-compare-btn ${compareList.some(id => sameId(id, p.id))?'active':''}" data-pid="${p.id}"
       data-action="toggle-compare" title="Comparar">
