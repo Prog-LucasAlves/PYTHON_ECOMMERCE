@@ -148,11 +148,11 @@ body {
 .product-card:hover .card-img-wrap img { transform: scale(1.15); }
 
 .card-body {
-  padding: 32px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   flex: 1;
-  gap: 16px;
+  gap: 12px;
   background: #fff;
 }
 .card-name {
@@ -170,14 +170,53 @@ body {
   margin-top: auto;
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-end;
+  gap: 8px;
+}
+.card-prices {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.card-price-label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 .card-price-value {
-  font-size: 1.6rem;
+  font-size: 1.5rem;
   font-weight: 900;
   color: var(--zenith-slate);
   letter-spacing: -0.04em;
+  line-height: 1;
 }
+.card-original {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+.card-trend-wrap {
+  flex-shrink: 0;
+  display: flex;
+  align-items: flex-end;
+}
+.card-trend {
+  background: #f0fdf4;
+  color: #16a34a;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.08);
+}
+.card-trend i { font-size: 0.75rem; }
 
 /* CURATOR'S PICK BLOCK */
 .review-card {
@@ -2641,41 +2680,43 @@ footer div {
 .ia-header i { color: var(--brand); }
 /* EDITORIAL SECTION HEADERS */
 .home-vitrine {
-  padding: 80px 0 40px;
+  padding: 60px 0 20px;
   max-width: 1240px;
   margin: 0 auto;
 }
 .section-head {
-  margin-bottom: 40px;
+  margin-bottom: 30px;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 12px;
+  gap: 8px;
 }
 .section-kicker {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   font-weight: 900;
-  color: var(--brand);
+  color: var(--zenith-gold);
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  background: rgba(238, 77, 45, 0.05);
-  padding: 6px 16px;
+  background: rgba(234, 179, 8, 0.08);
+  padding: 4px 12px;
   border-radius: 100px;
 }
 .section-head h3 {
-  font-size: 2.2rem;
-  font-weight: 800;
-  color: #1a1a1a;
+  font-size: 2.8rem;
+  font-weight: 900;
+  color: var(--zenith-slate);
   margin: 0;
-  letter-spacing: -0.03em;
+  letter-spacing: -0.04em;
+  line-height: 1.1;
 }
 .section-head p {
-  font-size: 1rem;
+  font-size: 0.95rem;
   color: #666;
   max-width: 500px;
   margin: 0;
   line-height: 1.5;
+  opacity: 0.8;
 }
 .ia-chips {
   display: flex;

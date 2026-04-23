@@ -1312,12 +1312,14 @@ function cardHTML(p, index = 0) {
 
       <div class="card-price-row">
         <div class="card-prices">
-          <span class="card-price-label">Menor preço</span>
+          <span class="card-price-label">Preço Atual</span>
           <div class="card-price-value">R$ ${Number(p.price).toFixed(2).replace('.',',')}</div>
           ${p.originalPrice && p.originalPrice > p.price
             ? `<div class="card-original">R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}</div>` : ''}
         </div>
-        ${discount > 15 ? `<div class="card-trend" title="Preço em queda"><i class="fa-solid fa-chart-line"></i> Queda</div>` : ''}
+        <div class="card-trend-wrap">
+          ${discount > 15 ? `<div class="card-trend" title="Preço em queda"><i class="fa-solid fa-arrow-trend-down"></i> Queda</div>` : ''}
+        </div>
       </div>
     </div>
 
