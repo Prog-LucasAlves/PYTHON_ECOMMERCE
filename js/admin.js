@@ -255,7 +255,7 @@ function addImageField(value) {
     <input type="url" class="img-url-input" id="imgUrl_${idx}"
       placeholder="https://..." value="${value || ''}" />
     <button type="button" class="btn-remove-img" data-action="remove-image" data-row-id="imgRow_${idx}">
-      <i class="fas fa-trash"></i>
+      <i class="fa-solid fa-trash-can"></i>
     </button>`;
   list.appendChild(div);
   updateImagesPreview();
@@ -464,8 +464,8 @@ function editProduct(id) {
   if (!p) return;
 
   editingId = p.id;
-  document.getElementById('formTitle').innerHTML  = '<i class="fas fa-edit"></i> Editar Produto';
-  document.getElementById('submitBtn').innerHTML  = '<i class="fas fa-save"></i> Atualizar Produto';
+  document.getElementById('formTitle').innerHTML  = '<i class="fa-solid fa-pen-to-square"></i> Editar Produto';
+  document.getElementById('submitBtn').innerHTML  = '<i class="fa-solid fa-floppy-disk"></i> Atualizar Produto';
 
   document.getElementById('prodName').value          = p.name;
   document.getElementById('prodCategory').value      = p.category;
@@ -532,8 +532,8 @@ function deleteProduct(id) {
 function resetForm() {
   editingId = null;
   document.getElementById('productForm').reset();
-  document.getElementById('formTitle').innerHTML = '<i class="fas fa-plus-circle"></i> Adicionar Produto';
-  document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save"></i> Salvar Produto';
+  document.getElementById('formTitle').innerHTML = '<i class="fa-solid fa-circle-plus"></i> Adicionar Produto';
+  document.getElementById('submitBtn').innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Salvar Produto';
   const desc = document.getElementById('prodDesc');
   if (desc) desc.value = DEFAULT_DESC;
   if (document.getElementById('prodItemId')) document.getElementById('prodItemId').value = '';
@@ -621,14 +621,14 @@ function renderAdminItem(p) {
           ${isCampaign ? ` <span style="color:#d97706">Campanha${p.campaignId ? ` #${p.campaignId}` : ''}</span>` : ''}
           ${mediaCount > 1 ? ` <span style="color:#888"> ${mediaCount} mdias</span>` : ''}
           ${p.video ? ' <span style="color:#888"> vdeo</span>' : ''}
-          ${clickN ? ` <span style="color:#1976d2"><i class="fas fa-mouse-pointer"></i> ${clickN}</span>` : ''}
+          ${clickN ? ` <span style="color:#1976d2"><i class="fa-solid fa-arrow-pointer"></i> ${clickN}</span>` : ''}
           ${isScheduled ? ` <span style="color:#ff9800">Pub: ${new Date(p.publishDate).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span>` : ''}
         </div>
       </div>
       <div class="admin-item-actions">
-        <button class="btn-tg-share" type="button" data-action="share-telegram" data-product-id="${p.id}" title="Compartilhar no Telegram"><i class="fab fa-telegram-plane"></i></button>
-        <button class="btn-edit" type="button" data-action="edit-product" data-product-id="${p.id}"><i class="fas fa-pen"></i></button>
-        <button class="btn-delete" type="button" data-action="delete-product" data-product-id="${p.id}"><i class="fas fa-trash"></i></button>
+        <button class="btn-tg-share" type="button" data-action="share-telegram" data-product-id="${p.id}" title="Compartilhar no Telegram"><i class="fa-brands fa-telegram"></i></button>
+        <button class="btn-edit" type="button" data-action="edit-product" data-product-id="${p.id}"><i class="fa-solid fa-pen"></i></button>
+        <button class="btn-delete" type="button" data-action="delete-product" data-product-id="${p.id}"><i class="fa-solid fa-trash-can"></i></button>
       </div>
     </div>`;
 }
@@ -815,26 +815,26 @@ function renderDashboard() {
   el.innerHTML = `
     <div class="dash-stats">
       <div class="dash-card">
-        <div class="dash-icon"><i class="fas fa-box"></i></div>
+        <div class="dash-icon"><i class="fa-solid fa-box"></i></div>
         <div class="dash-info"><div class="dash-value">${products.length}</div><div class="dash-label">Produtos</div></div>
       </div>
       <div class="dash-card">
-        <div class="dash-icon clicks"><i class="fas fa-mouse-pointer"></i></div>
+        <div class="dash-icon clicks"><i class="fa-solid fa-arrow-pointer"></i></div>
         <div class="dash-info"><div class="dash-value">${totalClicks}</div><div class="dash-label">Cliques totais</div></div>
       </div>
       <div class="dash-card">
-        <div class="dash-icon sched"><i class="fas fa-calendar-alt"></i></div>
+        <div class="dash-icon sched"><i class="fa-solid fa-calendar-days"></i></div>
         <div class="dash-info"><div class="dash-value">${scheduled}</div><div class="dash-label">Agendados</div></div>
       </div>
       <div class="dash-card">
-        <div class="dash-icon cat"><i class="fas fa-tag"></i></div>
+        <div class="dash-icon cat"><i class="fa-solid fa-tag"></i></div>
         <div class="dash-info"><div class="dash-value">${topCat ? categoryLabel(topCat[0]) : ''}</div><div class="dash-label">Cat. principal</div></div>
       </div>
     </div>
 
     <div class="dash-row">
       <div class="dash-panel">
-        <h3><i class="fas fa-fire"></i> Top Cliques</h3>
+        <h3><i class="fa-solid fa-fire"></i> Top Cliques</h3>
         ${topClicked.length ? topClicked.map(({p, n}) => `
           <div class="dash-top-item">
             <img src="${(p.images&&p.images[0])||''}" alt="" onerror="this.src='https://via.placeholder.com/36?text=?'"/>
@@ -844,13 +844,13 @@ function renderDashboard() {
       </div>
 
       <div class="dash-panel">
-        <h3><i class="fas fa-history"></i> Histrico</h3>
+        <h3><i class="fa-solid fa-clock-rotate-left"></i> Histrico</h3>
         ${history.length ? history.slice(0,10).map(h => {
-          const icons = { create:'fas fa-plus-circle', edit:'fas fa-pen', delete:'fas fa-trash' };
+          const icons = { create:'fa-solid fa-circle-plus', edit:'fa-solid fa-pen', delete:'fa-solid fa-trash-can' };
           const labels = { create:'Adicionado', edit:'Editado', delete:'Removido' };
           const dt = new Date(h.ts).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
           return `<div class="dash-hist-item">
-            <i class="hist-icon ${h.action} ${icons[h.action]||'fas fa-circle'}"></i>
+            <i class="hist-icon ${h.action} ${icons[h.action]||'fa-solid fa-circle'}"></i>
             <div class="dash-top-name">${h.name.substring(0,38)}${h.name.length>38?'':''}</div>
             <span class="dash-hist-dt">${dt}</span>
             <span class="dash-hist-lbl ${h.action}">${labels[h.action]||h.action}</span>
