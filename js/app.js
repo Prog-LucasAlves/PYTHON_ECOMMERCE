@@ -4,52 +4,13 @@ let heroTimer    = null;
 const HERO_INTERVAL = 5000;
 const HOME_ROTATION_MINUTES = 20;
 const HOME_ROTATION_MINUTES_LONG = 30;
-const HOME_SECTION_LIMIT = 60;
-const CAMPAIGN_SECTION_LIMIT = 120;
-const HOME_ROTATION_LIMIT = 200;
-const SEASONAL_COLLECTION_LIMIT = 24;
-const FIRESTORE_CACHE_KEY = 'shopee_products_cache_v2';
+const HOME_SECTION_LIMIT = 16;
+const CAMPAIGN_SECTION_LIMIT = 250;
+const HOME_ROTATION_LIMIT = 100;
+const SEASONAL_COLLECTION_LIMIT = 14;
+const FIRESTORE_CACHE_KEY = 'shopee_products_cache';
 const FIRESTORE_CACHE_TTL_MS = 10 * 60 * 1000;
-const GAMIFICATION_KEY = 'shopee_gamification';
 let lastRenderAt = Date.now();
-
-// ── WEB WORKER SETUP ─────────────────────────────────────────
-let dataWorker = null;
-const workerCallbacks = new Map();
-let workerCallId = 0;
-
-function getWorker() {
-  if (!dataWorker && typeof Worker !== 'undefined') {
-    try {
-      dataWorker = new Worker('js/worker.js');
-      dataWorker.onmessage = (e) => {
-        const { id, type, result, error } = e.data;
-        if (workerCallbacks.has(id)) {
-          const { resolve, reject } = workerCallbacks.get(id);
-          workerCallbacks.delete(id);
-          if (type === 'ERROR') reject(new Error(error));
-          else resolve(result);
-        }
-      };
-      dataWorker.onerror = (err) => console.warn('[Worker] Error:', err.message);
-    } catch (e) {
-      console.warn('[Worker] Not supported, falling back to main thread:', e.message);
-    }
-  }
-  return dataWorker;
-}
-
-function workerCall(type, payload) {
-  const worker = getWorker();
-  if (!worker) return Promise.reject(new Error('No worker'));
-  return new Promise((resolve, reject) => {
-    const id = ++workerCallId;
-    workerCallbacks.set(id, { resolve, reject });
-    worker.postMessage({ id, type, payload });
-  });
-}
-
-// State variables are declared later in the DATA section to avoid duplicates.
 
 const SEASONAL_COLLECTIONS = [
   {
@@ -94,171 +55,13 @@ const SEASONAL_COLLECTIONS = [
   },
 ];
 
-// ── PERFORMANCE: INTENT-BASED PREFETCHING ────────────────────
-let prefetchTimeout = null;
-function initIntentPrefetch() {
-  const catItems = document.querySelectorAll('.cat-item[data-cat]');
-  catItems.forEach(item => {
-    item.addEventListener('mouseenter', () => {
-      const cat = item.dataset.cat;
-      prefetchTimeout = setTimeout(() => {
-        prefetchCategory(cat);
-      }, 100); // Wait 100ms to ensure intent
-    });
-    item.addEventListener('mouseleave', () => {
-      clearTimeout(prefetchTimeout);
-    });
-  });
-}
-
-async function prefetchCategory(cat) {
-  if (cat === 'todos') return;
-  // This will warm up the cache/worker for this category
-  workerCall('GET_BY_CATEGORY', { category: cat, limit: 10 });
-  console.log(`[Prefetch] Warmed up category: ${cat}`);
-}
-
-// ── AI-SEO: DYNAMIC FAQ GENERATOR ────────────────────────────
-function renderCategoryFAQ(cat) {
-  const container = document.getElementById('categoryFAQ');
-  if (!container) return;
-
-  const faqs = {
-    'eletronicos': [
-      { q: "Qual o melhor fone Bluetooth na Shopee em 2026?", a: "Para custo-benefício, o Lenovo XT80 continua imbatível. Para qualidade premium, os modelos da Baseus oferecem o melhor cancelamento de ruído abaixo de R$ 150." },
-      { q: "É seguro comprar eletrônicos da China?", a: "Sim, desde que você escolha lojas oficiais ou com o selo 'Shopee Escolha'. Nossa curadoria filtra apenas vendedores com mais de 98% de avaliações positivas." }
-    ],
-    'moda': [
-      { q: "Como saber o tamanho certo de roupas na Shopee?", a: "Sempre verifique a tabela de medidas em cm e adicione 1-2cm de margem. Roupas asiáticas tendem a ser menores que o padrão brasileiro." }
-    ]
-  };
-
-  const currentFaqs = faqs[cat] || [
-    { q: "As ofertas são atualizadas em tempo real?", a: "Sim, nossa equipe monitora quedas de preço e cupons 24h por dia para garantir que você sempre pegue o menor valor." }
-  ];
-
-  container.innerHTML = `
-    <div class="faq-section reveal-on-scroll">
-      <h3>Dúvidas Frequentes sobre ${categoryLabel(cat)}</h3>
-      <div class="faq-grid">
-        ${currentFaqs.map(f => `
-          <div class="faq-item">
-            <strong>${f.q}</strong>
-            <p>${f.a}</p>
-          </div>
-        `).join('')}
-      </div>
-    </div>
-  `;
-
-  // Inject FAQ Schema (AEO/GEO Boost)
-  const schema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    "mainEntity": currentFaqs.map(f => ({
-      "@type": "Question",
-      "name": f.q,
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": f.a
-      }
-    }))
-  };
-  const existing = document.getElementById('faq-schema-ld');
-  if (existing) existing.remove();
-  const script = document.createElement('script');
-  script.id = 'faq-schema-ld';
-  script.type = 'application/ld+json';
-  script.text = JSON.stringify(schema);
-  document.head.appendChild(script);
-}
-
-// ── GEO: STRUCTURED DATA INJECTION (JSON-LD) ─────────────────
-function injectProductSchema(p) {
-  // Remove existing product schema
-  const existing = document.getElementById('product-schema-ld');
-  if (existing) existing.remove();
-
-  const schema = {
-    "@context": "https://schema.org/",
-    "@type": "Product",
-    "name": p.name,
-    "image": p.images || [p.image],
-    "description": p.desc || `Oferta especial: ${p.name} na Shopee.`,
-    "sku": p.id,
-    "brand": {
-      "@type": "Brand",
-      "name": "Shopee Official"
-    },
-    "datePublished": "2026-04-20T08:00:00Z",
-    "dateModified": new Date().toISOString(),
-    "offers": {
-      "@type": "Offer",
-      "url": p.link,
-      "priceCurrency": "BRL",
-      "price": p.price,
-      "itemCondition": "https://schema.org/NewCondition",
-      "availability": "https://schema.org/InStock"
-    },
-    "review": {
-      "@type": "Review",
-      "reviewRating": {
-        "@type": "Rating",
-        "ratingValue": "4.8",
-        "bestRating": "5"
-      },
-      "author": {
-        "@type": "Organization",
-        "name": "Melhores Ofertas"
-      }
-    }
-  };
-
-  const script = document.createElement('script');
-  script.id = 'product-schema-ld';
-  script.type = 'application/ld+json';
-  script.text = JSON.stringify(schema);
-  document.head.appendChild(script);
-}
-
 function getInitialSearchTerm() {
   const params = new URLSearchParams(window.location.search);
   return (params.get('q') || params.get('search') || '').trim();
 }
 
-// ── E-E-A-T UTILITIES ─────────────────────────────────────────
-function openCriteriaModal() {
-  document.getElementById('criteriaModal').classList.remove('hidden-block');
-  document.body.style.overflow = 'hidden';
-}
-function closeCriteriaModal() {
-  document.getElementById('criteriaModal').classList.add('hidden-block');
-  document.body.style.overflow = '';
-}
-
-// Mock Expert Notes for Top Tier Products
-const CURATOR_NOTES = {
-  'p1': 'Design industrial impecável e cancelamento de ruído que surpreende pelo preço.',
-  'p2': 'A fritura mais uniforme que já testamos. O cesto quadrado otimiza muito o espaço.',
-  'p3': 'Kit essencial para quem acabou de comprar o iPhone e quer proteção sem gastar 200 reais.',
-  'p4': 'Bolsas com acabamento de marca de luxo. A costura é reforçada e o material é muito fácil de limpar.'
-};
-
-function getCuratorNote(pid) {
-  return CURATOR_NOTES[pid] || null;
-}
-
-function getSellerStatus(p) {
-  // Logic to simulate seller reputation check
-  const random = Math.random();
-  if (p.isOfficial) return 'elite';
-  if (random > 0.95) return 'dropping'; // 5% chance of warning for demo
-  return 'stable';
-}
-
 function sameId(a, b) {
-  if (!a || !b) return false;
-  return String(a).trim() === String(b).trim();
+  return String(a) === String(b);
 }
 
 function normalizeText(value) {
@@ -271,46 +74,18 @@ function normalizeText(value) {
     .replace(/\s+/g, ' ');
 }
 
-function escapeHTML(str) {
-  if (!str) return '';
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-function normalizeImageUrl(url, size = 'large') {
-  let value = String(url || '').trim();
+function normalizeImageUrl(url) {
+  const value = String(url || '').trim();
   if (!value) return '';
-  value = value.replace(/[?#].*$/, '');
-
-  // Otimização para CDN da Shopee
-  if (value.includes('shopee') && value.includes('/file/')) {
-    // _tn é o único sufixo universalmente seguro para miniaturas no CDN Shopee
-    if (size === 'thumb' && !value.endsWith('_tn')) value += '_tn';
-  }
-  return value;
-}
-
-function stringHash(str) {
-  let hash = 0;
-  for (let i = 0; i < str.length; i++) {
-    hash = ((hash << 5) - hash) + str.charCodeAt(i);
-    hash |= 0;
-  }
-  return hash;
+  return value.replace(/[?#].*$/, '');
 }
 
 function productFingerprint(item) {
-  if (item._fp) return item._fp; // Cache hit
   const name = normalizeText(item?.name || '');
   const price = Number.isFinite(Number(item?.price)) ? Number(Number(item.price)).toFixed(2) : '';
   const image = normalizeImageUrl(getImages(item)[0] || '');
-  const fp = (name || image || price) ? [name, price, image].join('|') : String(item?.id || '').trim();
-  item._fp = fp; // Save to cache
-  return fp;
+  if (name || image || price) return [name, price, image].join('|');
+  return String(item?.id || '').trim();
 }
 
 // Extracts the canonical Shopee product path (strips tracking params)
@@ -325,37 +100,20 @@ function productLinkKey(item) {
 
 // Soft key: name+price only, ignores image/URL differences
 function productSoftKey(item) {
-  if (item._soft) return item._soft;
   const name = normalizeText(item?.name || '');
   const price = Number.isFinite(Number(item?.price)) ? Number(Number(item.price)).toFixed(2) : '';
-  const soft = name ? `${name}|${price}` : productFingerprint(item);
-  item._soft = soft;
-  return soft;
+  return name ? `${name}|${price}` : productFingerprint(item);
 }
 
 function dedupeProducts(items) {
   const seenFp   = new Set();
   const seenSoft = new Set();
   const seenLink = new Set();
-  const now = Date.now();
-
   return items.filter(item => {
-    // Pré-processamento rápido (Cache/Normalização)
-    if (!item._processed) {
-      item._priceNum = Number(item.price) || 0;
-      item._publishTs = item.publishDate ? new Date(item.publishDate).getTime() : 0;
-      item._startTs = (item.campaignStart || item.publishDate) ? new Date(item.campaignStart || item.publishDate).getTime() : 0;
-      item._endTs = item.campaignEnd ? new Date(item.campaignEnd).getTime() : 9999999999999;
-      item._processed = true;
-    }
-
     const fp   = productFingerprint(item);
     const soft = productSoftKey(item);
     const link = productLinkKey(item);
-
-    if (item.featured || item.homeOrder) return true;
     if (seenFp.has(fp) || seenSoft.has(soft) || (link && seenLink.has(link))) return false;
-
     seenFp.add(fp);
     seenSoft.add(soft);
     if (link) seenLink.add(link);
@@ -426,10 +184,7 @@ function sameDayRange(start, end) {
 }
 
 function isCampaignActive(p) {
-  const now = Date.now();
-  const start = p._startTs || 0;
-  const end = p._endTs || 9999999999999;
-  return now >= start && now <= end;
+  return sameDayRange(p.campaignStart || p.publishDate, p.campaignEnd || null);
 }
 
 function getCampaignGroupKey(p) {
@@ -459,12 +214,12 @@ function getCampaignItems(items) {
   const campaignSet = items
     .filter(p => !p.featured && !p.homeOrder && getCampaignGroupKey(p))
     .sort((a, b) => {
-      // Use time bucket for rotation
-      const bucket = getTimeBucket(5);
-      const hashA = stringHash(productFingerprint(a) + bucket);
-      const hashB = stringHash(productFingerprint(b) + bucket);
-      return hashA - hashB;
+      const aOrder = Number.isFinite(Number(a.homeOrder)) ? Number(a.homeOrder) : Number.MAX_SAFE_INTEGER;
+      const bOrder = Number.isFinite(Number(b.homeOrder)) ? Number(b.homeOrder) : Number.MAX_SAFE_INTEGER;
+      if (aOrder !== bOrder) return aOrder - bOrder;
+      return getProductScore(b) - getProductScore(a);
     })
+    .filter((p, i, arr) => arr.findIndex(x => productFingerprint(x) === productFingerprint(p)) === i)
     .slice(0, CAMPAIGN_SECTION_LIMIT);
 
   if (campaignSet.length >= CAMPAIGN_SECTION_LIMIT) return campaignSet;
@@ -473,6 +228,7 @@ function getCampaignItems(items) {
   const usedFp = new Set(campaignSet.map(p => productFingerprint(p)));
   const candidates = items
     .filter(p => !p.featured && !p.homeOrder && !usedFp.has(productFingerprint(p)))
+    .filter((p, i, arr) => arr.findIndex(x => productFingerprint(x) === productFingerprint(p)) === i)
     .sort((a, b) => getProductScore(b) - getProductScore(a));
 
   // Interleave by category for diversity
@@ -495,29 +251,14 @@ function getCampaignItems(items) {
   return [...campaignSet, ...fill];
 }
 
-
-function getProductScore(p, clicks = {}) {
+function getProductScore(p) {
+  const clicks = JSON.parse(localStorage.getItem('shopee_clicks') || '{}');
   const clickN = Number(clicks[p.id] || 0);
-  const catAffinity = getCategoryAffinity(p.category);
   const discount = getDiscount(p);
   const featured = p.featured ? 50 : 0;
   const orderBoost = Number.isFinite(Number(p.homeOrder)) ? Math.max(0, 100 - Number(p.homeOrder)) : 0;
   const campaignBoost = isCampaignActive(p) ? 30 : 0;
-
-  // Score = Cliques do produto + Afinidade da Categoria + Desconto + Boosts
-  return (clickN * 5) + (catAffinity * 10) + discount + featured + orderBoost + campaignBoost;
-}
-
-function getCategoryAffinity(cat) {
-  const clicks = JSON.parse(localStorage.getItem('shopee_clicks_cat') || '{}');
-  return Number(clicks[cat] || 0);
-}
-
-function trackCategoryClick(cat) {
-  if (!cat) return;
-  const clicks = JSON.parse(localStorage.getItem('shopee_clicks_cat') || '{}');
-  clicks[cat] = (clicks[cat] || 0) + 1;
-  localStorage.setItem('shopee_clicks_cat', JSON.stringify(clicks));
+  return clickN * 2 + discount + featured + orderBoost + campaignBoost;
 }
 
 function hashString(text) {
@@ -550,10 +291,8 @@ function isDisplayableProduct(p) {
 function rotateHomeProducts(items) {
   const bucket = getTimeBucket(HOME_ROTATION_MINUTES_LONG);
   return [...items].sort((a, b) => {
-    // Usa cache de hash se possível
-    const aKey = a._rotKey || hashString(`${bucket}:${a.category}:${a.id}`);
-    const bKey = b._rotKey || hashString(`${bucket}:${b.category}:${b.id}`);
-    a._rotKey = aKey; b._rotKey = bKey;
+    const aKey = hashString(`${bucket}:${a.category}:${a.id}:${a.name}`);
+    const bKey = hashString(`${bucket}:${b.category}:${b.id}:${b.name}`);
     if (aKey !== bKey) return aKey - bKey;
     return String(a.id).localeCompare(String(b.id));
   });
@@ -588,14 +327,14 @@ function initHeroBanner() {
   }
 
   slidesEl.innerHTML = slides.map((p, i) => {
-    const img      = getImages(p, 'large')[0] || '';
+    const img      = getImages(p)[0] || '';
     const discount = getDiscount(p);
     return `<div class="hero-slide ${i === 0 ? 'active' : ''}" data-action="open-product" data-id="${p.id}">
-      ${img ? `<img src="${img}" class="hero-slide-img" alt="${escapeHTML(p.name)}" fetchpriority="${i === 0 ? 'high' : 'low'}" loading="${i === 0 ? 'eager' : 'lazy'}" decoding="async" />` : ''}
+      ${img ? `<div class="hero-slide-bg" style="background-image:url('${img}')"></div>` : ''}
       <div class="hero-slide-overlay"></div>
       <div class="hero-slide-content">
         ${discount ? `<span class="hero-badge">-${discount}%</span>` : ''}
-        <h2>${escapeHTML(p.name)}</h2>
+        <h2>${p.name}</h2>
         <p class="hero-slide-price">R$ ${Number(p.price).toFixed(2).replace('.',',')}</p>
         <span class="hero-cta">Ver oferta →</span>
       </div>
@@ -603,7 +342,7 @@ function initHeroBanner() {
   }).join('');
 
   dotsEl.innerHTML = slides.map((_, i) =>
-    `<button class="hero-dot ${i===0?'active':''}" data-action="hero-dot" data-index="${i}" aria-label="Ver slide ${i + 1}"></button>`
+    `<button class="hero-dot ${i===0?'active':''}" data-action="hero-dot" data-index="${i}"></button>`
   ).join('');
 
   if (heroTimer) clearInterval(heroTimer);
@@ -663,28 +402,18 @@ function renderRelated(p) {
   const el     = document.getElementById('modalRelated');
   const listEl = document.getElementById('modalRelatedList');
   if (!el || !listEl) return;
-  let related = allProducts
+  const related = allProducts
     .filter(isDisplayableProduct)
-    .filter(x => x.category === p.category && !sameId(x.id, p.id));
-
-  // Se houver poucos na mesma categoria, preenche com DESTAQUES gerais
-  if (related.length < 4) {
-    const featured = allProducts
-      .filter(isDisplayableProduct)
-      .filter(x => x.category !== p.category && !sameId(x.id, p.id) && x.featured)
-      .slice(0, 4 - related.length);
-    related = [...related, ...featured];
-  }
-
-  related = related.slice(0, 4);
-  if (!related.length) { el.classList.add('hidden-block'); return; }
-  el.classList.remove('hidden-block');
+    .filter(x => x.category === p.category && !sameId(x.id, p.id))
+    .slice(0, 4);
+  if (!related.length) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
   listEl.innerHTML = related.map(r => {
     const img = getImages(r)[0] || '';
-    return `<div class="related-item" data-action="open-product" data-id="${r.id}" data-hover-img="${img}">
-      <img src="${img}" alt="${escapeHTML(r.name)}" loading="lazy" decoding="async"
+    return `<div class="related-item" data-action="open-product" data-id="${r.id}">
+      <img src="${img}" alt="${r.name}" loading="lazy" decoding="async"
            onerror="this.src='https://via.placeholder.com/80x80?text=?'"/>
-      <div class="related-name">${escapeHTML(r.name.substring(0,40))}${r.name.length>40?'…':''}</div>
+      <div class="related-name">${r.name.substring(0,40)}${r.name.length>40?'…':''}</div>
       <div class="related-price">R$ ${Number(r.price).toFixed(2).replace('.',',')}</div>
     </div>`;
   }).join('');
@@ -738,9 +467,9 @@ function renderCompareBar() {
     if (!p) return '';
     const img = getImages(p)[0] || '';
     return `<div class="compare-slot">
-      ${img ? `<img src="${img}" alt="${escapeHTML(p.name)}" loading="lazy" decoding="async"/>` : '<div class="compare-slot-placeholder"></div>'}
-      <span>${escapeHTML(p.name.substring(0,22))}${p.name.length>22?'…':''}</span>
-      <button data-action="toggle-compare-remove" data-pid="${p.id}" title="Remover"><i class="fa-solid fa-xmark"></i></button>
+      ${img ? `<img src="${img}" alt="${p.name}" loading="lazy" decoding="async"/>` : '<div class="compare-slot-placeholder"></div>'}
+      <span>${p.name.substring(0,22)}${p.name.length>22?'…':''}</span>
+      <button data-action="toggle-compare-remove" data-pid="${p.id}" title="Remover"><i class="fas fa-times"></i></button>
     </div>`;
   }).join('');
 }
@@ -760,15 +489,15 @@ function openCompareModal() {
     .filter(p => p && isDisplayableProduct(p));
 
   const rows = [
-    { label: 'Imagem',     fn: p => `<img src="${getImages(p)[0]||''}" alt="${escapeHTML(p.name)}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/90x90?text=?'"/>` },
-    { label: 'Nome',       fn: p => escapeHTML(p.name) },
-    { label: 'Categoria',  fn: p => escapeHTML(categoryLabel(p.category)) },
+    { label: 'Imagem',     fn: p => `<img src="${getImages(p)[0]||''}" alt="${p.name}" loading="lazy" decoding="async" onerror="this.src='https://via.placeholder.com/90x90?text=?'"/>` },
+    { label: 'Nome',       fn: p => p.name },
+    { label: 'Categoria',  fn: p => categoryLabel(p.category) },
     { label: 'Preço',      fn: p => `<strong style="color:#ee4d2d">R$ ${Number(p.price).toFixed(2).replace('.',',')}</strong>` },
     { label: 'Original',   fn: p => p.originalPrice ? `<s>R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}</s>` : '–' },
     { label: 'Desconto',   fn: p => { const d=getDiscount(p); return d ? `<span class="badge-discount">-${d}%</span>` : '–'; } },
     { label: 'Avaliação',  fn: p => p.rating    ? starsHTML(p.rating) : '–' },
     { label: 'Vendidos',   fn: p => p.soldCount ? `${p.soldCount}+`   : '–' },
-    { label: '',           fn: p => `<a href="${p.link}" target="_blank" rel="noopener" class="modal-buy-btn" style="font-size:.78rem;padding:7px 12px"><i class="fa-solid fa-cart-shopping"></i> Comprar</a>` },
+    { label: '',           fn: p => `<a href="${p.link}" target="_blank" rel="noopener" class="modal-buy-btn" style="font-size:.78rem;padding:7px 12px"><i class="fas fa-shopping-cart"></i> Comprar</a>` },
   ];
 
   table.innerHTML = `<table class="compare-tbl">
@@ -803,9 +532,6 @@ window.openCompareModal   = openCompareModal;
 window.closeCompareModal  = closeCompareModal;
 window.closeCompareOutside = closeCompareOutside;
 
-
-
-
 // ── SHARE ─────────────────────────────────────────────────────
 function shareWhatsApp() {
   if (!modalProduct) return;
@@ -829,8 +555,6 @@ function shareTelegram() {
   const priceLine = modalProduct.originalPrice && modalProduct.originalPrice > modalProduct.price
     ? `~~R$ ${Number(modalProduct.originalPrice).toFixed(2).replace('.',',')}~~  →  *R$ ${Number(modalProduct.price).toFixed(2).replace('.',',')}*`
     : `*R$ ${Number(modalProduct.price).toFixed(2).replace('.',',')}*`;
-  const imgs = getImages(modalProduct);
-  const mainImg = imgs[0] || '';
   const text = [
     `🔥 *${modalProduct.name}*`,
     `📂 ${categoryLabel(modalProduct.category)}`,
@@ -839,7 +563,6 @@ function shareTelegram() {
     `⚠️ Preço promocional sujeito a alteração sem aviso prévio.`,
     modalProduct.desc ? `📝 ${formatDescription(modalProduct.desc)}` : null,
     `🛒 Confira na Shopee: ${modalProduct.link}`,
-    `🖼️ Ver foto: ${mainImg}`
   ].filter(Boolean).join('\n');
   window.open(`https://t.me/share/url?url=${encodeURIComponent(modalProduct.link)}&text=${encodeURIComponent(text)}`, '_blank');
 }
@@ -871,8 +594,8 @@ function updateSearchSuggestions() {
   if (!matches.length) { dd.style.display = 'none'; return; }
   dd.innerHTML = matches.map(m => {
     const hi = m.replace(new RegExp(`(${input})`, 'gi'), '<mark>$1</mark>');
-    return `<div class="dd-item" onmousedown="selectSuggestion('${escapeHTML(m).replace(/'/g,"\\'")}')">
-      <i class="fa-solid fa-magnifying-glass"></i> ${hi}
+    return `<div class="dd-item" onmousedown="selectSuggestion('${m.replace(/'/g,"\\'")}')">
+      <i class="fas fa-search"></i> ${hi}
     </div>`;
   }).join('');
   dd.style.display = 'block';
@@ -886,10 +609,10 @@ function showSearchHistory() {
   if (!history.length) { dd.style.display = 'none'; return; }
   dd.innerHTML = `<div class="dd-header">🕐 Buscas recentes</div>` +
     history.map(h => `
-      <div class="dd-item" onmousedown="selectSuggestion('${escapeHTML(h).replace(/'/g,"\\'")}')">
-        <i class="fa-solid fa-clock-rotate-left"></i> ${escapeHTML(h)}
-        <button class="dd-remove" onmousedown="event.stopPropagation();removeHistory('${escapeHTML(h).replace(/'/g,"\\'")}')">
-          <i class="fa-solid fa-xmark"></i>
+      <div class="dd-item" onmousedown="selectSuggestion('${h.replace(/'/g,"\\'")}')">
+        <i class="fas fa-history"></i> ${h}
+        <button class="dd-remove" onmousedown="event.stopPropagation();removeHistory('${h.replace(/'/g,"\\'")}')">
+          <i class="fas fa-times"></i>
         </button>
       </div>`).join('') +
     `<div class="dd-clear" onmousedown="clearHistory()">Limpar histórico</div>`;
@@ -941,7 +664,7 @@ function initDarkMode() {
   if (saved === '1' || (saved === null && prefersDark)) {
     document.documentElement.setAttribute('data-theme', 'dark');
     const icon = document.getElementById('darkIcon');
-    if (icon) icon.className = 'fa-solid fa-sun';
+    if (icon) icon.className = 'fas fa-sun';
   }
 }
 function toggleDarkMode() {
@@ -949,15 +672,15 @@ function toggleDarkMode() {
   const isDark = html.getAttribute('data-theme') === 'dark';
   html.setAttribute('data-theme', isDark ? 'light' : 'dark');
   const icon = document.getElementById('darkIcon');
-  if (icon) icon.className = isDark ? 'fa-solid fa-moon' : 'fa-solid fa-sun';
+  if (icon) icon.className = isDark ? 'fas fa-moon' : 'fas fa-sun';
   localStorage.setItem('darkMode', isDark ? '0' : '1');
 }
 
 // ── HELPERS ──────────────────────────────────────────────────
-function getImages(p, size = 'large') {
-  if (!p) return [];
-  const imgs = p.images && p.images.length ? p.images : (p.image ? [p.image] : []);
-  return imgs.map(url => normalizeImageUrl(url, size));
+function getImages(p) {
+  if (p.images && p.images.length > 0) return p.images.filter(Boolean);
+  if (p.image) return [p.image];
+  return [];
 }
 function getYouTubeId(url) {
   if (!url) return null;
@@ -994,31 +717,8 @@ let currentCategory = 'todos';
 let currentSort     = 'default';
 let priceMin        = null;
 let priceMax        = null;
-
-const CAT_MAP = {
-  'todos': 'Todas as Ofertas',
-  'roupas-fem': 'Feminino',
-  'roupas-masc': 'Masculino',
-  'sapatos': 'Calçados',
-  'moda': 'Moda e Acessórios',
-  'celulares': 'Celulares',
-  'eletronicos': 'Eletrônicos',
-  'computadores': 'Informática',
-  'audio': 'Áudio',
-  'casa': 'Casa e Vida',
-  'beleza': 'Beleza',
-  'saude': 'Saúde',
-  'esporte': 'Esportes',
-  'bebes': 'Mães e Bebês',
-  'brinquedos': 'Brinquedos',
-  'animais': 'Pets',
-  'automoveis': 'Automotivo',
-  'alimentos': 'Alimentos e Bebidas',
-  'livros': 'Livros e Revistas',
-  'outros': 'Outros'
-};
 let firstLoad       = true;
-let allProducts = []; // Começa vazio para não travar o carregamento inicial
+let allProducts = dedupeProducts(JSON.parse(localStorage.getItem('shopee_products') || '[]'));
 let firestoreDb = null;
 let firestoreReady = false;
 
@@ -1031,97 +731,40 @@ window.addEventListener('storage', (e) => {
 
 (async () => {
   try {
-    // 1. Carregamento Ultra-rápido do Cache Local (LCP Crítico)
-    const localRaw = localStorage.getItem('shopee_products');
-    if (localRaw) {
-      const parsed = JSON.parse(localRaw);
-      allProducts = dedupeProducts(parsed);
-
-      // Renderização síncrona imediata para evitar CLS/LCP atrasado
-      renderProducts();
-      initHeroBanner();
-
-      // Otimização de LCP: Preload imediato da primeira imagem do Hero
-      const heroItem = allProducts.filter(isDisplayableProduct).find(p => p.featured) || allProducts[0];
-      if (heroItem) {
-        const heroImg = getImages(heroItem, 'large')[0];
-        if (heroImg) {
-          const lcpPreload = document.createElement('link');
-          lcpPreload.rel = 'preload';
-          lcpPreload.as = 'image';
-          lcpPreload.href = heroImg;
-          lcpPreload.imageSrcset = ""; // Prevents browser from waiting if using srcset
-          lcpPreload.fetchPriority = "high";
-          document.head.appendChild(lcpPreload);
-        }
-      }
-    }
-
-    // 2. Importação Diferida das Dependências Pesadas (Firebase)
-    // Pequeno respiro para não travar a interatividade do usuário
-    await new Promise(r => window.requestIdleCallback ? requestIdleCallback(() => r()) : setTimeout(r, 100));
-
     const { firebaseConfig } = await import("./config.js");
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
     const fs = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-
     const app = initializeApp(firebaseConfig);
     firestoreDb = fs.getFirestore(app);
-
-    // 3. Sync com Firestore (Background)
-    const snap = await fs.getDocs(fs.query(fs.collection(firestoreDb, 'products'), fs.orderBy('updatedAt', 'desc')));
-    const remote = snap.docs.map(d => ({ ...d.data(), id: d.data().id || d.id })).filter(Boolean);
-
-    if (remote.length) {
-      const prevCount = allProducts.length;
-      allProducts = dedupeProducts(remote);
-
-      // Só re-renderiza e salva se houver novos itens
-      if (allProducts.length !== prevCount) {
-        localStorage.setItem('shopee_products', JSON.stringify(allProducts));
-        renderProducts();
-        initHeroBanner();
+    const cacheRaw = localStorage.getItem(FIRESTORE_CACHE_KEY);
+    const cache = cacheRaw ? JSON.parse(cacheRaw) : null;
+    if (cache?.ts && Array.isArray(cache.items) && Date.now() - cache.ts < FIRESTORE_CACHE_TTL_MS) {
+      allProducts = dedupeProducts(cache.items);
+      console.log('[FIRESTORE] Using cached product snapshot');
+    } else {
+      const snap = await fs.getDocs(fs.query(fs.collection(firestoreDb, 'products'), fs.orderBy('updatedAt', 'desc')));
+      const remote = snap.docs.map(d => d.data()).filter(Boolean);
+      if (remote.length) {
+        const normalized = dedupeProducts(remote);
+        allProducts = normalized;
+        localStorage.setItem('shopee_products', JSON.stringify(normalized));
+        localStorage.setItem(FIRESTORE_CACHE_KEY, JSON.stringify({ ts: Date.now(), items: normalized }));
+      } else if (allProducts.length) {
+        // If Firestore is empty, keep showing the last local snapshot.
+        console.log('[FIRESTORE] No remote products yet; using localStorage snapshot');
       }
     }
-
     firestoreReady = true;
     firstLoad = false;
-
-    // 4. Aplifica filtros da URL
     const initialSearch = getInitialSearchTerm();
     const searchInput = document.getElementById('searchInput');
-    if (initialSearch && searchInput && !searchInput.value) {
-      searchInput.value = initialSearch;
-      filterProducts();
-    }
-
-    handleDeepLink();
-
-    // 5. Inicializações Não-Critícas (Defer para melhorar TBT)
-    if (window.requestIdleCallback) {
-      requestIdleCallback(() => {
-        try {
-          if (typeof initSearchHistory === 'function') initSearchHistory();
-          if (typeof initStats === 'function') initStats();
-          if (typeof initPWA === 'function') initPWA();
-          if (typeof checkPriceDrops === 'function') checkPriceDrops();
-          if (typeof initGamification === 'function') initGamification();
-          initHoverReveal();
-          initSilentIA();
-          checkSessionRecovery();
-          initIntentPrefetch();
-        } catch(e) {}
-      });
-    } else {
-      setTimeout(() => {
-        try {
-          if (typeof checkPriceDrops === 'function') checkPriceDrops();
-        } catch(e) {}
-      }, 5000);
-    }
-
+    if (initialSearch && searchInput && !searchInput.value) searchInput.value = initialSearch;
+    currentCategory = getInitialCategory();
+    renderProducts();
+    initHeroBanner();
+    updateResultsSummary(allProducts.filter(p => !p.publishDate || new Date(p.publishDate) <= new Date()), (document.getElementById('searchInput')?.value || '').toLowerCase().trim());
   } catch (e) {
-    console.warn('[BOOT] Fallback or error:', e.message);
+    console.warn('[FIRESTORE] Falling back to localStorage:', e.message);
   }
 })();
 
@@ -1160,159 +803,105 @@ function renderProducts() {
 
 function _renderFiltered(grid, empty, search) {
   if (!grid || !empty) return;
-  const now = Date.now();
-
-  // Apply filters synchronously (fast)
-  let filtered = allProducts.filter(p => p._priceNum > 0 && (!p._publishTs || p._publishTs <= now));
-
-  if (currentCategory !== 'todos') {
-    filtered = filtered.filter(p => p.category === currentCategory);
-  }
-
+  let filtered = dedupeProducts(allProducts).filter(isDisplayableProduct);
+  // Hide products scheduled for the future
+  filtered = filtered.filter(p => !p.publishDate || new Date(p.publishDate) <= new Date());
+  if (currentCategory !== 'todos') filtered = filtered.filter(p => p.category === currentCategory);
   if (search) {
     const searchTerms = search.split(/\s+/);
     filtered = filtered.filter(p => {
-      const name = p._nameNorm || (p._nameNorm = p.name.toLowerCase());
-      const desc = p._descNorm || (p._descNorm = (p.desc || '').toLowerCase());
-      const cat  = p._catNorm  || (p._catNorm  = (p.category || '').toLowerCase());
-      return searchTerms.every(t => name.includes(t) || desc.includes(t) || cat.includes(t));
+      const name = p.name.toLowerCase();
+      const desc = (p.desc || '').toLowerCase();
+      const cat = (p.category || '').toLowerCase();
+      // Match all terms (AND logic) for better precision
+      return searchTerms.every(term =>
+        name.includes(term) || desc.includes(term) || cat.includes(term)
+      );
     });
   }
-
   if (priceMin !== null) filtered = filtered.filter(p => p.price >= priceMin);
   if (priceMax !== null) filtered = filtered.filter(p => p.price <= priceMax);
+  const uniqueFiltered = dedupeByContent(filtered);
+  const rotationPool = uniqueFiltered.filter(p => !(p.featured || p.homeOrder || getCampaignGroupKey(p)));
 
-  if (!filtered.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
-  grid.innerHTML = '';
-
-  // Show skeleton immediately while worker processes
-  showSkeleton();
-  updateResultsSummary(filtered, search);
-  updateBreadcrumbs(currentCategory);
-  renderCategoryFAQ(currentCategory);
-
-  // Defer structured data
-  if (window.requestIdleCallback) {
-    requestIdleCallback(() => { try { updateStructuredData(filtered); } catch (err) {} });
-  } else {
-    setTimeout(() => { try { updateStructuredData(filtered); } catch (err) {} }, 2000);
+  switch (currentSort) {
+    case 'price-asc':  filtered.sort((a, b) => a.price - b.price); break;
+    case 'price-desc': filtered.sort((a, b) => b.price - a.price); break;
+    case 'discount':   filtered.sort((a, b) => getDiscount(b) - getDiscount(a)); break;
+    case 'newest':     filtered.sort((a, b) => b.id - a.id); break;
+    default: {
+      const featured = sortFeaturedFirst(uniqueFiltered.filter(p => p.featured || p.homeOrder));
+      const campaignPreview = getCampaignItems(uniqueFiltered);
+      const rotating = rotateHomeProducts(rotationPool).slice(0, HOME_ROTATION_LIMIT);
+      filtered = [...featured, ...campaignPreview, ...rotating];
+      break;
+    }
   }
 
   lastRenderAt = Date.now();
+  updateResultsSummary(filtered, search);
+  try {
+    updateStructuredData(filtered);
+  } catch (err) {
+    console.warn('[SEO] Structured data skipped:', err);
+  }
 
-  // Offload heavy processing to worker
-  (async () => {
-    let featuredItems, campaignItems, rotatingItems;
-
-    try {
-      if (currentSort !== 'default') {
-        // Simple sorts don't need worker
-        switch (currentSort) {
-          case 'price-asc':  filtered.sort((a, b) => a.price - b.price); break;
-          case 'price-desc': filtered.sort((a, b) => b.price - a.price); break;
-          case 'discount':   filtered.sort((a, b) => getDiscount(b) - getDiscount(a)); break;
-          case 'newest':     filtered.sort((a, b) => String(b.id).localeCompare(String(a.id))); break;
-        }
-        featuredItems = filtered.slice(0, HOME_SECTION_LIMIT);
-        campaignItems = [];
-        rotatingItems = [];
-      } else {
-        // Use worker for the heavy default-sort processing
-        const result = await workerCall('PROCESS_RENDER', {
-          items: filtered,
-          homeSectionLimit: HOME_SECTION_LIMIT,
-          campaignLimit: CAMPAIGN_SECTION_LIMIT,
-          rotationLimit: HOME_ROTATION_LIMIT,
-          rotationMinutes: HOME_ROTATION_MINUTES_LONG,
-          now,
-        });
-        featuredItems  = result.featuredItems;
-        campaignItems  = result.campaignItems;
-        rotatingItems  = result.rotatingItems;
-      }
-    } catch (workerErr) {
-      // Fallback: process on main thread if worker fails
-      console.warn('[Render] Worker failed, falling back:', workerErr.message);
-      const rotationPool = filtered.filter(p => !(p.featured || p.homeOrder || getCampaignGroupKey(p)));
-      const usedFingerprints = new Set();
-      featuredItems = pickUnique(sortFeaturedFirst(filtered.filter(p => p.featured || p.homeOrder)), usedFingerprints, HOME_SECTION_LIMIT);
-      campaignItems = pickUnique(getCampaignItems(filtered), usedFingerprints, CAMPAIGN_SECTION_LIMIT);
-      rotatingItems = pickUnique(rotateHomeProducts(rotationPool), usedFingerprints, HOME_ROTATION_LIMIT);
-    }
-
-    // Clear skeleton and render
-    grid.innerHTML = '';
-
-    const renderBatch = async (items, containerClass, title, kicker, desc, startIndex = 0) => {
-      if (!items.length) return;
-      const isBento = containerClass === 'home-vitrine-featured';
-      const section = document.createElement('section');
-      section.className = `home-vitrine ${containerClass} ${isBento ? 'bento-mode' : ''}`;
-      section.innerHTML = `
+  if (!filtered.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  try {
+    const usedFingerprints = new Set();
+    const featured = pickUnique(
+      sortFeaturedFirst(uniqueFiltered.filter(p => p.featured || p.homeOrder)),
+      usedFingerprints,
+      HOME_SECTION_LIMIT,
+    );
+    const campaignItems = pickUnique(getCampaignItems(uniqueFiltered), usedFingerprints, CAMPAIGN_SECTION_LIMIT);
+    const rotatingItems = pickUnique(
+      rotateHomeProducts(rotationPool).sort((a, b) => getProductScore(b) - getProductScore(a)),
+      usedFingerprints,
+      HOME_ROTATION_LIMIT,
+    );
+    const featuredHTML = featured.length ? `
+      <section class="home-vitrine home-vitrine-featured">
         <div class="section-head">
-          <span class="section-kicker">${kicker}</span>
-          <h3>${title}</h3>
-          <p>${desc}</p>
+          <div>
+            <span class="section-kicker">Primeira linha</span>
+            <h3>Produtos fixos e campanhas ativas</h3>
+          </div>
+          <p>Itens fixados manualmente, campanhas e promoções temporárias ficam acima da rotação.</p>
         </div>
-        <div class="${isBento ? 'bento-grid' : 'product-grid-inner'}" id="inner-${containerClass}"></div>
-      `;
-      grid.appendChild(section);
-      const inner = section.querySelector('.product-grid-inner, .bento-grid');
-
-      // Injetar blocos especiais se for Bento
-      if (isBento) {
-        const bentoItems = [...items];
-        const BATCH_SIZE = 8;
-        for (let i = 0; i < bentoItems.length; i += BATCH_SIZE) {
-          const batch = bentoItems.slice(i, i + BATCH_SIZE);
-          inner.insertAdjacentHTML('beforeend', batch.map((p, idx) => cardHTML(p, startIndex + i + idx)).join(''));
-          await new Promise(resolve => setTimeout(resolve, 0));
-        }
-      } else {
-        const BATCH_SIZE = 8;
-        for (let i = 0; i < items.length; i += BATCH_SIZE) {
-          const batch = items.slice(i, i + BATCH_SIZE);
-          inner.insertAdjacentHTML('beforeend', batch.map((p, idx) => cardHTML(p, startIndex + i + idx)).join(''));
-          await new Promise(resolve => setTimeout(resolve, 0));
-        }
-      }
-    };
-
-    try {
-      if (featuredItems.length) {
-        await renderBatch(featuredItems, 'home-vitrine-featured', 'Produtos fixos e campanhas ativas', 'Primeira linha', 'Itens fixados manualmente, campanhas e promoções temporárias ficam acima da rotação.', 0);
-      }
-      if (campaignItems.length) {
-        await renderBatch(campaignItems, 'home-vitrine-campaign', 'Ofertas temporárias e campanhas semanais', 'Vitrine de campanha', 'Itens com campanha, janela de data ou promoção destacada entram aqui sem misturar com a rotação principal.', featuredItems.length);
-      }
-      animateCards();
-      startCountdownTimers();
-
-      // Rotating vitrine lazy-loaded on scroll
-      if (rotatingItems.length) {
-        const trigger = document.createElement('div');
-        trigger.id = 'lazy-rotating-trigger';
-        trigger.innerHTML = '<div class="loading-placeholder">Carregando mais ofertas...</div>';
-        grid.appendChild(trigger);
-        const observer = new IntersectionObserver(async (entries) => {
-          if (entries[0].isIntersecting) {
-            observer.unobserve(trigger);
-            trigger.remove();
-            const clicksData = JSON.parse(localStorage.getItem('shopee_clicks') || '{}');
-            const sortedRotating = [...rotatingItems].sort((a, b) => getProductScore(b, clicksData) - getProductScore(a, clicksData));
-            await renderBatch(sortedRotating, 'home-vitrine-rotating', 'Ofertas rotativas', 'Vitrine rotativa', 'Seleção que muda a cada 30 minutos.', featuredItems.length + campaignItems.length);
-            animateCards();
-            startCountdownTimers();
-          }
-        }, { rootMargin: '400px' });
-        observer.observe(trigger);
-      }
-    } catch (err) {
-      console.error('[RENDER] Card generation failed:', err);
-      grid.innerHTML = '<p class="empty-state">Não foi possível renderizar os produtos agora.</p>';
-      empty.style.display = 'none';
-    }
-  })();
+        <div class="featured-row">${featured.map(p => cardHTML(p)).join('')}</div>
+      </section>` : '';
+    const campaignHTML = campaignItems.length ? `
+      <section class="home-vitrine home-vitrine-campaign">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Vitrine de campanha</span>
+            <h3>Ofertas temporárias e campanhas semanais</h3>
+          </div>
+          <p>Itens com campanha, janela de data ou promoção destacada entram aqui sem misturar com a rotação principal.</p>
+        </div>
+        <div class="product-grid-inner">${campaignItems.map(p => cardHTML(p)).join('')}</div>
+      </section>` : '';
+    const rotatingHTML = rotatingItems.length ? `
+      <section class="home-vitrine home-vitrine-rotating">
+        <div class="section-head">
+          <div>
+            <span class="section-kicker">Vitrine rotativa</span>
+            <h3>100 produtos que mudam a cada 30 minutos</h3>
+          </div>
+          <p>Seleção única, sem repetir a primeira linha nem a campanha.</p>
+        </div>
+        <div class="product-grid-inner">${rotatingItems.map(p => cardHTML(p)).join('')}</div>
+      </section>` : '';
+    grid.innerHTML = `${featuredHTML}${campaignHTML}${rotatingHTML}`;
+    animateCards();
+    startCountdownTimers();
+  } catch (err) {
+    console.error('[RENDER] Card generation failed:', err);
+    grid.innerHTML = '<p class="empty-state">Não foi possível renderizar os produtos agora.</p>';
+    empty.style.display = 'none';
+  }
 }
 
 // ── SKELETON ─────────────────────────────────────────────────
@@ -1320,16 +909,15 @@ function showSkeleton() {
   const grid = document.getElementById('productGrid');
   if (!grid) return;
   grid.innerHTML = `
-    <div class="product-grid-inner">
+    <div class="skeleton-grid">
       ${Array(8).fill(0).map(() => `
         <div class="skeleton-card">
-          <div class="skel skel-img"></div>
+          <div class="skel-img"></div>
           <div class="skel-body">
-            <div class="skel skel-line"></div>
-            <div class="skel skel-line" style="width: 70%"></div>
-            <div class="skel skel-price"></div>
+            <div class="skel-line"></div>
+            <div class="skel-line skel-meta"></div>
+            <div class="skel-line skel-price"></div>
           </div>
-          <div class="skel skel-btn"></div>
         </div>
       `).join('')}
     </div>
@@ -1339,22 +927,17 @@ function showSkeleton() {
 // ── CARD ANIMATION ────────────────────────────────────────────
 function animateCards() {
   if (typeof IntersectionObserver === 'undefined') return;
-  // Desativa em mobile para economizar bateria/CPU se não for estético
-  if (window.matchMedia('(max-width: 768px)').matches) {
-    document.querySelectorAll('.product-card').forEach(c => c.classList.add('card-visible'));
-    return;
-  }
+  if (window.matchMedia('(max-width: 768px)').matches) return;
   const observer = new IntersectionObserver((entries) => {
     entries.forEach(e => {
       if (e.isIntersecting) {
-        e.target.classList.add('revealed');
         e.target.classList.add('card-visible');
         observer.unobserve(e.target);
       }
     });
-  }, { threshold: 0.1 });
-  document.querySelectorAll('.reveal-on-scroll:not(.revealed)').forEach((card, i) => {
-    card.style.setProperty('--delay', `${Math.min(i * 40, 400)}ms`);
+  }, { threshold: 0.05 });
+  document.querySelectorAll('.product-card').forEach((card, i) => {
+    card.style.animationDelay = `${Math.min(i * 60, 500)}ms`;
     observer.observe(card);
   });
 }
@@ -1395,103 +978,45 @@ function getDiscount(p) {
   return Math.round((1 - p.price / p.originalPrice) * 100);
 }
 
-function cardHTML(p, index = 0) {
-  // Support for non-product blocks in Bento Grid
-  if (p.isReview) {
-    return `
-    <div class="product-card review-card reveal-on-scroll">
-      <div class="card-body">
-        <div class="review-author">Curadoria Melhores Ofertas</div>
-        <div class="review-content">"${p.text}"</div>
-      </div>
-    </div>`;
-  }
-
-  if (p.isCategoryHighlight) {
-    return `
-    <div class="product-card category-highlight-card reveal-on-scroll">
-      <div class="cat-highlight-icon">${p.icon}</div>
-      <div class="card-name" style="color:#fff; height:auto; text-align:center; font-size:1.8rem; margin-bottom:12px;">${p.label}</div>
-      <p style="color:rgba(255,255,255,0.4); font-size:0.85rem; text-align:center; line-height:1.4;">A curadoria definitiva para quem busca performance e preço justo.</p>
-      <button class="cat-highlight-btn btn-haptic" onclick="setCategory('${p.cat}', document.querySelector('[data-cat=${p.cat}]'))">Explorar</button>
-    </div>`;
-  }
-
-  const images   = getImages(p, 'large');
+function cardHTML(p) {
+  const images   = getImages(p);
   const main     = images[0] || 'https://via.placeholder.com/300x300?text=Sem+Imagem';
-  const curatorNote = getCuratorNote(p.id);
-  const sellerStatus = getSellerStatus(p);
-
   const discount = getDiscount(p);
   const isCampaign = isCampaignActive(p) || p.campaignId;
-  const isOfficial = p.sellerType === 'official' || p.category === 'eletronicos';
-  const nameEscaped = escapeHTML(p.name);
-
-  // Bento Logic: Simplified to uniform grid as requested
-  let bentoClass = 'reveal-on-scroll';
-
-  // Lazy load images that are NOT in the first row
-  const loadingType = index < 8 ? 'eager' : 'lazy';
-  const fetchPriority = index < 4 ? 'high' : 'low';
 
   let leftBadge = '';
-  if (p.featured)    leftBadge = `<span class="badge-featured" aria-label="Produto Diamante">DIAMANTE</span>`;
-  else if (isCampaign) leftBadge = `<span class="badge-featured" style="background:#000;" aria-label="Campanha Ativa">CAMPANHA</span>`;
+  if (p.featured)    leftBadge = '<span class="badge-featured">DESTAQUE</span>';
+  else if (isCampaign) leftBadge = '<span class="badge-featured">OFERTA</span>';
 
   return `
-  <div class="product-card ${bentoClass}" data-action="open-product" data-id="${p.id}" role="button" aria-label="Ver detalhes de ${nameEscaped}" style="cursor: pointer;">
+  <div class="product-card" data-action="open-product" data-id="${p.id}">
     ${leftBadge}
-    ${discount ? `<span class="badge-discount" aria-label="Desconto de ${discount}%">-${discount}%</span>` : ''}
-    ${p.price >= 19 ? `<span class="badge-shipping"><i class="fa-solid fa-truck-fast"></i> Frete Grátis</span>` : ''}
+    ${discount ? `<span class="badge-discount">-${discount}%</span>` : ''}
 
     <div class="card-img-wrap">
-      <img src="${main}"
-           alt="${nameEscaped} - Oferta Verificada na Shopee"
-           loading="${loadingType}"
-           fetchpriority="${fetchPriority}"
-           decoding="async"
-           onerror="this.src='https://via.placeholder.com/300x300?text=Sem+Imagem'"/>
+      <img src="${main}" alt="${p.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x300?text=Sem+Imagem'"/>
     </div>
 
     <div class="card-body">
-      <div class="card-meta">
-        <div class="card-trust">
-          <i class="fa-solid fa-circle-check"></i> Verificado
-        </div>
-        ${isOfficial ? `<div class="card-seller"><i class="fa-solid fa-store"></i> Oficial</div>` : ''}
+      <div class="card-trust">
+        <i class="fas fa-check-circle"></i> Produto Verificado
       </div>
-
-      <div class="card-name">${nameEscaped}</div>
-
-      ${curatorNote ? `
-        <div class="curator-pick-note">
-          <i class="fa-solid fa-pen-nib"></i>
-          <span>${curatorNote}</span>
-        </div>
-      ` : ''}
-
+      <div class="card-name">${p.name}</div>
       <div class="card-price-row">
-        <div class="card-prices">
-          <span class="card-price-label">Preço Atual</span>
-          <div class="card-price-value">R$ ${Number(p.price).toFixed(2).replace('.',',')}</div>
+        <span class="card-price-label">A partir de</span>
+        <span class="card-price-value">
+          R$ ${Number(p.price).toFixed(2).replace('.',',')}
           ${p.originalPrice && p.originalPrice > p.price
-            ? `<div class="card-original">R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}</div>` : ''}
-        </div>
-        <div class="card-trend-wrap">
-          ${discount > 5 ? `<div class="card-trend" title="Preço em queda"><i class="fa-solid fa-arrow-trend-down"></i> Queda de Preço</div>` : ''}
-          ${sellerStatus === 'dropping' ? `<div class="seller-warning" title="Atenção: A nota deste vendedor caiu recentemente"><i class="fa-solid fa-triangle-exclamation"></i> Vendedor em queda</div>` : ''}
-        </div>
+            ? `<span class="card-original">R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}</span>` : ''}
+        </span>
       </div>
     </div>
 
-    <div class="card-btn" aria-hidden="true">Ver na Shopee</div>
+    <div class="card-btn">Ver Oferta</div>
 
-    <button class="card-compare-btn ${compareList.some(id => sameId(id, p.id))?'active':''}"
-      data-pid="${p.id}"
-      data-action="toggle-compare"
-      aria-label="Adicionar ${nameEscaped} à lista de comparação"
-      title="Comparar">
-      <i class="fa-solid fa-columns-3"></i>
+    <button class="card-compare-btn ${compareList.some(id => sameId(id, p.id))?'active':''}" data-pid="${p.id}"
+      data-action="toggle-compare" title="Comparar">
+      <i class="fas fa-columns"></i>
     </button>
   </div>`;
 }
@@ -1500,9 +1025,9 @@ function cardHTML(p, index = 0) {
 function starsHTML(rating) {
   const r = parseFloat(rating) || 0;
   return Array.from({length: 5}, (_, i) => {
-    if (i + 1 <= r)      return '<i class="fa-solid fa-star"></i>';
-    if (i + 0.5 <= r)    return '<i class="fa-solid fa-star-half-stroke"></i>';
-    return '<i class="fa-regular fa-star"></i>';
+    if (i + 1 <= r)      return '<i class="fas fa-star"></i>';
+    if (i + 0.5 <= r)    return '<i class="fas fa-star-half-alt"></i>';
+    return '<i class="far fa-star"></i>';
   }).join('') + ` <span class="star-val">${r.toFixed(1)}</span>`;
 }
 
@@ -1510,44 +1035,14 @@ function starsHTML(rating) {
 let modalProduct = null;
 let modalIndex   = 0;
 
-function openProductModal(id, startIdx = 0) {
-  if (!id) return;
+function openProductModal(id, startIdx) {
   const p = allProducts.find(x => sameId(x.id, id));
-  if (!p) {
-    console.warn('[MODAL] Product not found:', id);
-    if (typeof showToast === 'function') showToast('Produto não encontrado. Tente atualizar a página.');
-    return;
-  }
-
-  modalProduct = p;
-  modalIndex   = startIdx;
-  injectProductSchema(p);
-  updateProductSchema(p);
-  updateUrlWithProduct(p);
-
-  // CRO: Flash Timer & Heatmap
-  updateFlashTimer(p);
-  updatePriceHeatmap(p);
-  updateCtaLogic(p);
-
-  // Modo Foco na Oferta
-  document.body.classList.add('modal-open-focus');
-
-  // Gamification rewards (Safeguarded)
-  try {
-    if (typeof addRewards === 'function') addRewards(10, 5);
-  } catch(e) { console.warn('Gamification reward error:', e); }
+  if (!p) return;
   // Track click
   const clicks = JSON.parse(localStorage.getItem('shopee_clicks') || '{}');
   clicks[id] = (clicks[id] || 0) + 1;
   localStorage.setItem('shopee_clicks', JSON.stringify(clicks));
-
-  // Track Category Affinity
-  trackCategoryClick(p.category);
-
-  // Track last viewed for session recovery
-  localStorage.setItem('shopee_last_viewed', id);
-  localStorage.setItem('shopee_last_viewed_at', Date.now());
+  modalProduct = p;
   const images = getImages(p);
   const allMedia = [...images, ...(p.video ? ['__video__'] : [])];
   modalIndex = Math.min(startIdx, allMedia.length - 1);
@@ -1567,52 +1062,6 @@ function openProductModal(id, startIdx = 0) {
   document.getElementById('modalName').textContent = p.name;
   document.getElementById('modalCategory').textContent = categoryLabel(p.category);
   document.getElementById('modalDesc').textContent = p.desc || '';
-
-  // Expert Review (E-E-A-T)
-  const expertNote = getCuratorNote(p.id);
-  const expertBox = document.getElementById('modalExpertReviewBox');
-  if (expertNote) {
-    document.getElementById('modalExpertReviewContent').textContent = expertNote;
-    expertBox.classList.remove('hidden-block');
-  } else {
-    expertBox.classList.add('hidden-block');
-  }
-
-  // UGC Gallery (E-E-A-T)
-  const ugcBox = document.getElementById('modalUGCBox');
-  const ugcContent = document.getElementById('modalUGCContent');
-  if (p.ugcImages && p.ugcImages.length > 0) {
-    ugcContent.innerHTML = p.ugcImages.map(url => `<img src="${url}" class="ugc-img" loading="lazy" alt="Foto real do produto">`).join('');
-    ugcBox.classList.remove('hidden-block');
-  } else {
-    ugcBox.classList.add('hidden-block');
-  }
-
-  // Video Review (GEO)
-  const videoBox = document.getElementById('modalVideoReview');
-  const videoLink = document.getElementById('videoReviewLink');
-  if (p.youtubeUrl) {
-    videoLink.href = p.youtubeUrl;
-    videoBox.classList.remove('hidden-block');
-  } else {
-    videoBox.classList.add('hidden-block');
-  }
-
-  // Technical Specs (GEO/Citable Content)
-  const specsBox = document.getElementById('modalSpecs');
-  const specsTable = document.getElementById('modalSpecsTable');
-  if (p.specs && Object.keys(p.specs).length > 0) {
-    specsTable.innerHTML = Object.entries(p.specs).map(([key, val]) => `
-      <tr>
-        <td><strong>${key}</strong></td>
-        <td>${val}</td>
-      </tr>
-    `).join('');
-    specsBox.classList.remove('hidden-block');
-  } else {
-    specsBox.classList.add('hidden-block');
-  }
-
   document.getElementById('modalBuyBtn').href = p.link;
   const buyBtn = document.getElementById('modalBuyBtn');
   if (buyBtn && !buyBtn.dataset.analyticsBound) {
@@ -1635,18 +1084,6 @@ function openProductModal(id, startIdx = 0) {
   starsEl.innerHTML  = p.rating ? starsHTML(p.rating) : '';
   soldEl.textContent = p.soldCount ? `🛒 ${p.soldCount}+ vendidos` : '';
 
-  // Expert Review (SEO/GEO)
-  const reviewBox = document.getElementById('modalExpertReviewBox');
-  const reviewContent = document.getElementById('modalExpertReviewContent');
-  if (reviewBox && reviewContent) {
-    if (p.expertReview) {
-      reviewContent.textContent = p.expertReview;
-      reviewBox.classList.remove('hidden-block');
-    } else {
-      reviewBox.classList.add('hidden-block');
-    }
-  }
-
   const priceEl    = document.getElementById('modalPrice');
   const origEl     = document.getElementById('modalOriginal');
   const discEl     = document.getElementById('modalDiscount');
@@ -1657,20 +1094,6 @@ function openProductModal(id, startIdx = 0) {
     origEl.style.display = ''; discEl.style.display = '';
   } else {
     origEl.style.display = 'none'; discEl.style.display = 'none';
-  }
-
-  // Price Alert Button Logic
-  const alertBtn = document.getElementById('priceAlertBtn');
-  if (alertBtn) {
-    const alerts = JSON.parse(localStorage.getItem('price_alerts') || '{}');
-    const isAlertSet = !!alerts[p.id];
-    alertBtn.classList.toggle('active', isAlertSet);
-    alertBtn.innerHTML = isAlertSet ? '<i class="fa-solid fa-bell"></i>' : '<i class="fa-regular fa-bell"></i>';
-
-    alertBtn.onclick = (e) => {
-      e.preventDefault();
-      togglePriceAlert(p);
-    };
   }
 
   renderModalMedia(allMedia);
@@ -1686,43 +1109,9 @@ function openProductModal(id, startIdx = 0) {
   }
 
   renderRelated(p);
-  renderFAQ(p);
-  renderSpecs(p);
-  updateUrgency(p);
-  updateSocialMeta(p);
 
-  // Compartilhamento Social
-  const shareWpp = document.getElementById('shareWhatsAppBtn');
-  const shareTlg = document.getElementById('shareTelegramBtn');
-  const shareUrl = `${window.location.origin}${window.location.pathname}?p=${slugify(p.name)}`;
-  const shareText = `🔥 Olha que oferta incrível que encontrei no Melhores Ofertas!\n\n🛍️ *${p.name}*\n💰 Por apenas *R$ ${p.price.toFixed(2).replace('.', ',')}*\n\n🔗 Confira aqui: ${shareUrl}`;
-
-  if (shareWpp) {
-    shareWpp.onclick = (e) => {
-      e.preventDefault();
-      window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`, '_blank');
-    };
-  }
-  if (shareTlg) {
-    shareTlg.onclick = (e) => {
-      e.preventDefault();
-      window.open(`https://t.me/share/url?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`, '_blank');
-    };
-  }
-
-  document.getElementById('productModal').classList.add('active');
+  document.getElementById('productModal').classList.add('open');
   document.body.style.overflow = 'hidden';
-
-  // Paleta de Cores Adaptativa (Baseada na Categoria)
-  const catColors = {
-    'eletronicos': '#001c3d',
-    'beleza': '#ff4d6d',
-    'casa': '#2d6a4f',
-    'moda': '#7209b7',
-    'todos': '#ffdb00'
-  };
-  const themeColor = catColors[p.category] || catColors['todos'];
-  document.documentElement.style.setProperty('--modal-accent', themeColor);
 }
 
 function renderModalMedia(allMedia) {
@@ -1739,7 +1128,7 @@ function renderModalMedia(allMedia) {
         style="width:100%;height:100%;border-radius:8px;object-fit:contain;background:#000"></video>`;
     }
   } else {
-    display.innerHTML = `<img src="${m}" alt="${escapeHTML(modalProduct?.name || 'Produto')} - imagem ampliada" style="width:100%;height:100%;object-fit:contain;border-radius:8px"
+    display.innerHTML = `<img src="${m}" alt="${modalProduct?.name || 'Produto'} - imagem ampliada" style="width:100%;height:100%;object-fit:contain;border-radius:8px"
       onerror="this.src='https://via.placeholder.com/500x500?text=Imagem+indisponivel'"/>`;
   }
 }
@@ -1752,7 +1141,7 @@ function renderModalThumbs(allMedia) {
     const src = isVideo ? (getVideoThumb(modalProduct.video) || '') : m;
     return `<div class="modal-thumb ${i===modalIndex?'active':''} ${isVideo?'video-thumb':''}"
       data-action="set-modal-index" data-index="${i}">
-      ${src ? `<img src="${src}" alt="${escapeHTML(modalProduct?.name || 'Produto')} ${isVideo ? 'vídeo' : 'imagem'} ${i + 1}"/>` : '<div class="vt-placeholder"></div>'}
+      ${src ? `<img src="${src}" alt="${modalProduct?.name || 'Produto'} ${isVideo ? 'vídeo' : 'imagem'} ${i + 1}"/>` : '<div class="vt-placeholder"></div>'}
       ${isVideo ? '<span class="play-icon">▶</span>' : ''}
     </div>`;
   }).join('');
@@ -1766,55 +1155,12 @@ function setModalIndex(i) {
   renderModalThumbs(allMedia);
 }
 
-// ── SEO & SLUGS ──────────────────────────────────────────────
-function slugify(text) {
-  return normalizeText(text).replace(/\s+/g, '-').replace(/[^\w-]+/g, '');
-}
-
-function updateUrlWithProduct(p) {
-  const url = new URL(window.location);
-  if (p) {
-    url.searchParams.set('p', slugify(p.name));
-    url.searchParams.delete('cat'); // Limpa categoria ao focar no produto
-  } else {
-    url.searchParams.delete('p');
-  }
-  window.history.replaceState({}, '', url);
-
-  // Trigger SEO update for canonical and robots
-  if (typeof updatePageSeo === 'function') {
-    const search = (document.getElementById('searchInput')?.value || '').trim();
-    const grid = document.getElementById('productGrid');
-    // We pass empty array if no specific filtered list is at hand, or just reuse last state
-    updatePageSeo([], search);
-  }
-}
-
-function handleDeepLink() {
-  const params = new URLSearchParams(window.location.search);
-  const pSlug = params.get('p');
-  if (pSlug) {
-    const found = allProducts.find(x => slugify(x.name) === pSlug);
-    if (found) {
-      setTimeout(() => openProductModal(found.id), 500);
-    }
-  }
-}
-
 function closeProductModal() {
-  const modal = document.getElementById('productModal');
-  if (!modal) return;
-  modal.classList.remove('active');
+  document.getElementById('productModal').classList.remove('open');
   document.body.style.overflow = '';
-  modalProduct = null;
-
-  // Remover Modo Foco
-  document.body.classList.remove('modal-open-focus');
-
-  // Reseta SEO para o padrão do site
-  document.title = 'Melhores Ofertas Shopee - Curadoria de Achadinhos';
-  updateUrlWithProduct(null);
+  // Stop video
   document.getElementById('modalMainDisplay').innerHTML = '';
+  modalProduct = null;
 }
 
 function closeModalOutside(e) {
@@ -1822,14 +1168,9 @@ function closeModalOutside(e) {
 }
 
 function handleOpenProductAction(el) {
-  if (!el) return;
-  const id = el.dataset.id || el.getAttribute('data-id');
-  const startIdx = parseInt(el.dataset.startIndex || el.getAttribute('data-startIndex') || '0', 10);
-  if (id) {
-    if (typeof openProductModal === 'function') {
-      openProductModal(id, Number.isFinite(startIdx) ? startIdx : 0);
-    }
-  }
+  const id = el.dataset.id;
+  const startIdx = parseInt(el.dataset.startIndex || '0', 10);
+  if (id) openProductModal(id, Number.isFinite(startIdx) ? startIdx : 0);
 }
 
 // Keyboard navigation
@@ -1856,33 +1197,7 @@ function setCategory(cat, btn) {
   btn.classList.add('active');
   renderProducts();
 }
-function filterProducts() {
-  const searchInput = document.getElementById('searchInput');
-  if (searchInput) {
-    let val = searchInput.value.toLowerCase().trim();
-
-    // Smart Search: Typo Correction
-    const typos = {
-      'ifone': 'iphone',
-      'foni': 'fone',
-      'escova secadora': 'escova',
-      'oculos': 'óculos',
-      'relogio': 'relógio',
-      'tenis': 'tênis',
-      'calcado': 'calçado',
-      'maquiagem': 'maquiagem',
-      'shope': 'shopee'
-    };
-
-    for (let t in typos) {
-      if (val.includes(t)) {
-        val = val.replace(t, typos[t]);
-        // Update input visually if desired, or just internal
-      }
-    }
-  }
-  renderProducts();
-}
+function filterProducts() { renderProducts(); }
 
 function categoryLabel(cat) {
   const map = {
@@ -1916,51 +1231,6 @@ function formatUpdatedTime(ts) {
   return new Date(ts).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 }
 
-// ── HOVER REVEAL ──────────────────────────────────────────────
-function initHoverReveal() {
-  const revealEl = document.createElement('div');
-  revealEl.className = 'hover-reveal';
-  document.body.appendChild(revealEl);
-
-  document.addEventListener('mouseover', (e) => {
-    const target = e.target.closest('[data-hover-img]');
-    if (target) {
-      const img = target.dataset.hoverImg;
-      revealEl.innerHTML = `<img src="${img}" style="width:100px; height:100px; object-fit:cover; border-radius:8px; border:2px solid var(--brand);">`;
-      revealEl.classList.add('active');
-    }
-  });
-
-  document.addEventListener('mousemove', (e) => {
-    if (revealEl.classList.contains('active')) {
-      revealEl.style.left = (e.pageX + 15) + 'px';
-      revealEl.style.top = (e.pageY + 15) + 'px';
-    }
-  });
-
-  document.addEventListener('mouseout', (e) => {
-    if (e.target.closest('[data-hover-img]')) {
-      revealEl.classList.remove('active');
-    }
-  });
-}
-
-// ── RIPPLE EFFECT HELPER ─────────────────────────────────────
-document.addEventListener('mousedown', (e) => {
-  const btn = e.target.closest('.btn-haptic');
-  if (btn) {
-    const rect = btn.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const ripple = document.createElement('span');
-    ripple.className = 'ripple-effect';
-    ripple.style.left = `${x}px`;
-    ripple.style.top = `${y}px`;
-    btn.appendChild(ripple);
-    setTimeout(() => ripple.remove(), 600);
-  }
-});
-
 function updateHeroStats() {
   const countEl = document.getElementById('heroCount');
   const updatedEl = document.getElementById('heroUpdated');
@@ -1970,89 +1240,10 @@ function updateHeroStats() {
     : 'aguardando novos produtos';
 }
 
-// ── SILENT IA WIDGET ──────────────────────────────────────────
-function initSilentIA() {
-  const chips = document.querySelectorAll('.ia-chip');
-  chips.forEach(chip => {
-    chip.addEventListener('click', () => {
-      chips.forEach(c => c.classList.remove('active'));
-      chip.classList.add('active');
-      applyIAFilter(chip.dataset.filter);
-    });
-  });
-}
-
-function applyIAFilter(filter) {
-  // Logic to adapt the grid based on IA filter
-  const allProducts = window.allProducts || [];
-  let filtered = [];
-
-  switch(filter) {
-    case 'presente':
-      filtered = allProducts.filter(p => p.featured || getDiscount(p) > 40);
-      break;
-    case 'oferta-relampago':
-      filtered = allProducts.filter(p => isCampaignActive(p));
-      break;
-    case 'frete-gratis':
-      filtered = allProducts.filter(p => p.freeShipping);
-      break;
-    case 'menor-preco':
-      filtered = [...allProducts].sort((a, b) => Number(a.price) - Number(b.price)).slice(0, 20);
-      break;
-    case 'mais-vendidos':
-      filtered = [...allProducts].sort((a, b) => (b.sales || 0) - (a.sales || 0)).slice(0, 20);
-      break;
-    default:
-      filtered = allProducts;
-  }
-
-  // Inject into home-vitrine-featured for immediate impact
-  const container = document.getElementById('inner-home-vitrine-featured');
-  if (container) {
-    container.innerHTML = filtered.slice(0, 8).map((p, i) => cardHTML(p, i)).join('');
-    if (typeof animateCards === 'function') animateCards();
-  }
-}
-
-// ── SESSION RECOVERY ──────────────────────────────────────────
-function checkSessionRecovery() {
-  const lastId = localStorage.getItem('shopee_last_viewed');
-  const lastAt = localStorage.getItem('shopee_last_viewed_at');
-
-  // Only show if viewed in the last 24 hours
-  if (lastId && lastAt && (Date.now() - lastAt < 86400000)) {
-    const product = window.allProducts?.find(p => p.id === lastId);
-    if (product) {
-      const banner = document.getElementById('recoveryBanner');
-      const nameEl = document.getElementById('recoveryProductName');
-      const btn    = document.getElementById('recoveryBtn');
-      const close  = document.getElementById('recoveryClose');
-
-      if (nameEl) nameEl.textContent = product.name.substring(0, 30) + '...';
-      if (banner) banner.classList.remove('hidden-block');
-
-      if (btn) {
-        btn.onclick = () => {
-          openProductModal(product);
-          banner.classList.add('hidden-block');
-        };
-      }
-
-      if (close) close.onclick = () => banner.classList.add('hidden-block');
-
-      // Auto hide after 15 seconds
-      setTimeout(() => {
-        if (banner) banner.classList.add('hidden-block');
-      }, 15000);
-    }
-  }
-}
-
 function updatePageSeo(filtered, search) {
   const baseTitle = 'Ofertas na Shopee por Categoria e Preço | Melhores Ofertas';
   const baseDescription = 'Curadoria de ofertas na Shopee por categoria, preço e campanha. Veja produtos atualizados, compare valores e descubra promoções com rapidez.';
-  const liveCount = (filtered && filtered.length) ? filtered.length : allProducts.length;
+  const liveCount = filtered.length;
   const activeCategory = currentCategory !== 'todos' ? categoryLabel(currentCategory) : null;
   const searchTerm = search ? `busca por "${search}"` : null;
   const activeCategoryName = activeCategory ? activeCategory.replace(/^.*? /, '') : null;
@@ -2071,34 +1262,17 @@ function updatePageSeo(filtered, search) {
   if (metaDesc) metaDesc.setAttribute('content', `${description} Veja ${liveCount} oferta${liveCount === 1 ? '' : 's'} na vitrine atual.`);
 
   const robotsMeta = document.querySelector('meta[name="robots"]');
-  const params = new URLSearchParams(window.location.search);
-  const isProductPage = params.has('p');
   const hasFilteredView = !!(activeCategory || search || priceMin !== null || priceMax !== null || currentSort !== 'default');
+  if (robotsMeta) robotsMeta.setAttribute('content', hasFilteredView ? 'noindex, follow' : 'index, follow');
 
-  // Allow indexing of category pages, but keep noindex for deep filters/searches to avoid thin content
-  if (robotsMeta) {
-    if (isProductPage) {
-      robotsMeta.setAttribute('content', 'index, follow');
-    } else if (activeCategory && !search && priceMin === null && priceMax === null) {
-      robotsMeta.setAttribute('content', 'index, follow');
-    } else {
-      robotsMeta.setAttribute('content', hasFilteredView ? 'noindex, follow' : 'index, follow');
-    }
-  }
-
-  const canonical = document.getElementById('canonicalLink') || document.querySelector('link[rel="canonical"]');
+  const canonical = document.querySelector('link[rel="canonical"]');
   if (canonical) {
-    const origin = window.location.origin.replace(/\/$/, '');
-    const path = window.location.pathname;
-
-    if (isProductPage) {
-      canonical.setAttribute('href', `${origin}${path}?p=${params.get('p')}`);
-    } else if (isCategoryPage) {
-      canonical.setAttribute('href', `${origin}${path}${params.has('cat') ? `?cat=${params.get('cat')}` : ''}`);
+    if (isCategoryPage) {
+      canonical.setAttribute('href', `${window.location.origin}${window.location.pathname}`);
     } else {
       canonical.setAttribute('href', hasFilteredView
-        ? `${origin}${path}${currentCategory !== 'todos' ? `?cat=${encodeURIComponent(currentCategory)}` : ''}`
-        : `${origin}/`);
+        ? `${window.location.origin}${window.location.pathname}${currentCategory !== 'todos' ? `?cat=${encodeURIComponent(currentCategory)}` : ''}`
+        : `${window.location.origin}/`);
     }
   }
 
@@ -2193,256 +1367,6 @@ function updateStructuredData(filtered) {
   if (!existing) document.head.appendChild(script);
 }
 
-function updateBreadcrumbs(category) {
-  const el = document.getElementById('breadcrumbs');
-  if (!el) return;
-
-  let html = `<a href="/">Início</a>`;
-  if (category && category !== 'todos') {
-    const name = CAT_MAP[category] || category;
-    html += ` <span>/</span> <a href="#" onclick="filterByCategory('${category}'); return false;">${name}</a>`;
-  }
-  el.innerHTML = html;
-}
-
-function renderFAQ(p) {
-  const box = document.getElementById('modalFAQ');
-  const content = document.getElementById('modalFAQContent');
-  if (!box || !content) return;
-
-  const faqs = [
-    {
-      q: `Este ${p.name} está em oferta?`,
-      a: `Sim! O preço promocional atual é de R$ ${p.price.toFixed(2).replace('.', ',')}. Aproveite enquanto durar o estoque.`
-    },
-    {
-      q: 'É seguro comprar por este link?',
-      a: 'Com certeza. O Melhores Ofertas faz a curadoria e você finaliza a compra diretamente no ambiente seguro da Shopee, com garantia total.'
-    },
-    {
-      q: 'Como consigo frete grátis?',
-      a: 'Ao clicar em "Ver na Shopee", você pode resgatar seus cupons de frete grátis no app ou site oficial antes de fechar o pedido.'
-    }
-  ];
-
-  content.innerHTML = faqs.map(f => `
-    <div class="faq-item">
-      <span class="faq-q">${f.q}</span>
-      <p class="faq-a">${f.a}</p>
-    </div>
-  `).join('');
-  box.classList.remove('hidden-block');
-}
-
-function renderSpecs(p) {
-  const box = document.getElementById('modalSpecs');
-  const table = document.getElementById('modalSpecsTable');
-  if (!box || !table) return;
-
-  const specs = [
-    { k: 'Categoria', v: CAT_MAP[p.category] || p.category },
-    { k: 'Preço Original', v: p.originalPrice ? `R$ ${p.originalPrice.toFixed(2).replace('.', ',')}` : 'Não informado' },
-    { k: 'Preço com Desconto', v: `R$ ${p.price.toFixed(2).replace('.', ',')}` },
-    { k: 'Desconto Total', v: getDiscount(p) ? `${getDiscount(p)}%` : 'Oferta regular' },
-    { k: 'Selo de Confiança', v: 'Verificado Shopee' },
-    { k: 'Vendedor', v: 'Oficial' }
-  ];
-
-  table.innerHTML = specs.map(s => `
-    <tr>
-      <td>${s.k}</td>
-      <td>${s.v}</td>
-    </tr>
-  `).join('');
-  box.classList.remove('hidden-block');
-}
-
-function updateUrgency(p) {
-  const box = document.getElementById('modalUrgency');
-  const bar = document.getElementById('urgencyProgress');
-  const text = document.getElementById('urgencyText');
-  if (!box || !bar || !text) return;
-
-  // Usa o ID do produto como semente para manter consistência
-  // Obtém um número a partir do ID (mesmo que seja string)
-  const idStr = String(p.id);
-  let idHash = 0;
-  for (let i = 0; i < idStr.length; i++) {
-    idHash = ((idHash << 5) - idHash) + idStr.charCodeAt(i);
-    idHash |= 0; // Convert to 32bit integer
-  }
-  const seed = (Math.abs(idHash) % 20) + 5;
-  const percent = (seed / 25) * 100;
-
-  text.textContent = `Restam apenas ${seed} unidades em estoque!`;
-  bar.style.width = '0%';
-  box.classList.remove('hidden-block');
-
-  setTimeout(() => {
-    bar.style.width = `${percent}%`;
-  }, 100);
-}
-
-function updateSocialMeta(p) {
-  if (!p) return;
-  const url = `${window.location.origin}${window.location.pathname}?p=${p.name.toLowerCase().replace(/\s+/g, '-')}`;
-  const img = getImages(p)[0] || '';
-
-  const meta = {
-    'og:title': p.name,
-    'og:description': p.desc || `Confira esta oferta na Shopee: ${p.name}`,
-    'og:image': img,
-    'og:url': url,
-    'twitter:card': 'summary_large_image',
-    'twitter:title': p.name,
-    'twitter:description': p.desc || p.name,
-    'twitter:image': img
-  };
-
-  for (const [property, content] of Object.entries(meta)) {
-    let el = document.querySelector(`meta[property="${property}"]`) ||
-             document.querySelector(`meta[name="${property}"]`);
-    if (!el) {
-      el = document.createElement('meta');
-      if (property.startsWith('og:')) el.setAttribute('property', property);
-      else el.setAttribute('name', property);
-      document.head.appendChild(el);
-    }
-    el.setAttribute('content', content);
-  }
-}
-
-function togglePriceAlert(p) {
-  const alerts = JSON.parse(localStorage.getItem('price_alerts') || '{}');
-  const btn = document.getElementById('priceAlertBtn');
-
-  if (alerts[p.id]) {
-    delete alerts[p.id];
-    if (btn) {
-      btn.classList.remove('active');
-      btn.innerHTML = '<i class="far fa-bell"></i>';
-    }
-  } else {
-    alerts[p.id] = p.price;
-    if (btn) {
-      btn.classList.add('active');
-      btn.innerHTML = '<i class="fas fa-bell"></i>';
-    }
-  }
-
-  localStorage.setItem('price_alerts', JSON.stringify(alerts));
-}
-
-function checkPriceDrops() {
-  const alerts = JSON.parse(localStorage.getItem('price_alerts') || '{}');
-  if (Object.keys(alerts).length === 0) return;
-
-  const drops = [];
-  allProducts.forEach(p => {
-    if (alerts[p.id] && p.price < alerts[p.id]) {
-      drops.push(p);
-      // Atualiza o preço base para não avisar de novo da mesma queda
-      alerts[p.id] = p.price;
-    }
-  });
-
-  if (drops.length > 0) {
-    localStorage.setItem('price_alerts', JSON.stringify(alerts));
-    showPriceDropNotification(drops);
-  }
-}
-
-function showPriceDropNotification(drops) {
-  // Cria um aviso visual elegante no topo do site
-  const toast = document.createElement('div');
-  toast.className = 'price-drop-toast';
-  toast.innerHTML = `
-    <div class="toast-content">
-      <i class="fas fa-tag"></i>
-      <span>🔥 Oferta! ${drops.length} item(s) da sua lista baixaram de preço!</span>
-    </div>
-    <button onclick="this.parentElement.remove()">Ver</button>
-  `;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.classList.add('show'), 100);
-}
-
-function updateProductSchema(p) {
-  if (!p) return;
-  const existing = document.getElementById('productStructuredData');
-  const discount = getDiscount(p);
-  const json = {
-    "@context": "https://schema.org/",
-    "@type": "Product",
-    "name": p.name,
-    "image": getImages(p),
-    "description": p.desc || p.name,
-    "sku": p.id,
-    "mpn": p.itemId || p.id,
-    "brand": {
-      "@type": "Brand",
-      "name": p.brand || "Shopee"
-    },
-    "review": {
-      "@type": "Review",
-      "reviewRating": {
-        "@type": "Rating",
-        "ratingValue": p.rating || 4.5,
-        "bestRating": "5"
-      },
-      "author": { "@id": "https://melhoresdashopee.com.br/#curator" },
-      "reviewBody": p.expertReview || `Nossa curadoria avaliou o ${p.name} como uma das melhores oportunidades de custo-benefício na Shopee atualmente.`
-    },
-    "offers": {
-      "@type": "Offer",
-      "url": `${window.location.origin}${window.location.pathname}?p=${slugify(p.name)}`,
-      "priceCurrency": "BRL",
-      "price": p.price,
-      "itemCondition": "https://schema.org/NewCondition",
-      "availability": "https://schema.org/InStock",
-      "seller": {
-        "@type": "Organization",
-        "name": "Shopee"
-      },
-      "priceValidUntil": new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
-    }
-  };
-
-  if (p.rating) {
-    json.aggregateRating = {
-      "@type": "AggregateRating",
-      "ratingValue": p.rating,
-      "reviewCount": p.soldCount || (Math.floor(Math.random() * 50) + 10)
-    };
-  }
-
-  const script = existing || document.createElement('script');
-  script.type = 'application/ld+json';
-  script.id = 'productStructuredData';
-  script.textContent = JSON.stringify(json);
-  if (!existing) document.head.appendChild(script);
-
-  // Update Page Title and Meta for GEO (Generative Engine Optimization)
-  document.title = `Oferta: ${p.name} | Menor Preço Shopee`;
-  let metaDesc = document.querySelector('meta[name="description"]');
-  if (metaDesc) metaDesc.content = `Economize agora: ${p.name} por apenas R$ ${p.price.toFixed(2).replace('.',',')}. Produto verificado pela nossa curadoria especializada. Veja fotos e detalhes.`;
-}
-
-function initDarkMode() {
-  const isDark = localStorage.getItem('shopee_dark_mode') === 'true';
-  document.body.classList.toggle('dark-mode', isDark);
-  const icon = document.getElementById('darkIcon');
-  if (icon) icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-}
-
-function toggleDarkMode() {
-  const isDark = !document.body.classList.contains('dark-mode');
-  document.body.classList.toggle('dark-mode', isDark);
-  localStorage.setItem('shopee_dark_mode', isDark);
-  const icon = document.getElementById('darkIcon');
-  if (icon) icon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
-}
-
 function initAppBindings() {
   const searchInput = document.getElementById('searchInput');
   const darkToggle = document.getElementById('darkToggle');
@@ -2468,12 +1392,6 @@ function initAppBindings() {
   searchInput?.addEventListener('focus', showSearchHistory);
   searchInput?.addEventListener('blur', hideSearchDropdown);
   searchInput?.addEventListener('keydown', handleSearchKey);
-  document.getElementById('searchBtn')?.addEventListener('click', () => {
-    filterProducts();
-    const val = searchInput?.value.trim();
-    if (val) saveSearchTerm(val);
-    document.getElementById('searchDropdown').style.display = 'none';
-  });
   darkToggle?.addEventListener('click', toggleDarkMode);
   heroPrevBtn?.addEventListener('click', heroPrev);
   heroNextBtn?.addEventListener('click', heroNext);
@@ -2530,44 +1448,14 @@ function initAppBindings() {
   document.querySelectorAll('.cat-item[data-cat]').forEach(btn => {
     btn.addEventListener('click', () => setCategory(btn.dataset.cat, btn));
   });
-
-  document.getElementById('btnRoleta')?.addEventListener('click', luckyRoulette);
-
-  // Auto-refresh showcase every 5 minutes (Non-blocking)
-  setInterval(() => {
-    const defer = window.requestIdleCallback || ((cb) => setTimeout(cb, 5000));
-    defer(() => {
-      console.log('[AUTO-REFRESH] Updating showcases idle...');
-      renderProducts();
-    });
-  }, 5 * 60 * 1000);
 }
 
-// initDarkMode() and other initializations are handled inside the async BOOT block or via bindings
-// Removed duplicate render calls to reduce CPU usage on start
-
-// DEFER NON-CRITICAL UI: Libera a thread principal (reduz TBT)
-const deferTask = window.requestIdleCallback || ((cb) => setTimeout(cb, 1500));
-deferTask(() => {
-  try { initLGPD(); } catch(e) { console.error("Error in initLGPD:", e); }
-  try { initGamification(); } catch(e) { console.error("Error in initGamification:", e); }
-  console.log('[PERF] Non-critical tasks deferred.');
-});
+initDarkMode();
+renderProducts();
+initHeroBanner();
+initLGPD();
 window.clearAllFilters = clearAllFilters;
-
-function attachEventsSafe() {
-  try {
-    initAppBindings();
-  } catch(e) {
-    console.error("Error in initAppBindings:", e);
-  }
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', attachEventsSafe);
-} else {
-  attachEventsSafe();
-}
+document.addEventListener('DOMContentLoaded', initAppBindings);
 
 // ── LGPD CONSENT ──────────────────────────────────────────────
 function initLGPD() {
@@ -2585,171 +1473,6 @@ function initLGPD() {
     // Clear tracking data on decline
     localStorage.removeItem('shopee_search_history');
     localStorage.removeItem('shopee_clicks');
-    localStorage.removeItem('shopee_gamification');
     if (banner) banner.style.display = 'none';
   });
-}
-
-// ── GAMIFICATION ENGINE ───────────────────────────────────────
-
-function getUserData() {
-  const defaultData = { coins: 0, xp: 0, level: 1, badges: [], clicks: 0 };
-  try {
-    const raw = localStorage.getItem(GAMIFICATION_KEY);
-    return raw ? JSON.parse(raw) : defaultData;
-  } catch(e) {
-    console.error("getUserData JSON error:", e);
-    return defaultData;
-  }
-}
-
-function saveUserData(data) {
-  localStorage.setItem(GAMIFICATION_KEY, JSON.stringify(data));
-  updateGamificationUI();
-}
-
-function initGamification() {
-  updateGamificationUI();
-}
-
-function updateGamificationUI() {
-  const data = getUserData();
-  const coinsEl = document.getElementById('userCoins');
-  const levelEl = document.getElementById('userLevel');
-  if (coinsEl) coinsEl.textContent = data.coins;
-  if (levelEl) levelEl.textContent = data.level;
-}
-
-function addRewards(xpGain, coinsGain) {
-  const data = getUserData();
-  data.xp += xpGain;
-  data.coins += coinsGain;
-  data.clicks += 1;
-
-  // Level up logic (Level = floor(sqrt(XP/100)) + 1)
-  const newLevel = Math.floor(Math.sqrt(data.xp / 100)) + 1;
-  if (newLevel > data.level) {
-    data.level = newLevel;
-    showLevelUpToast(newLevel);
-  }
-
-  saveUserData(data);
-}
-
-function showLevelUpToast(level) {
-  const toast = document.createElement('div');
-  toast.className = 'level-up-toast';
-  toast.innerHTML = `<i class="fas fa-arrow-up"></i> Nível ${level}!`;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 4000);
-}
-
-function luckyRoulette() {
-  if (!allProducts.length) return;
-  const data = getUserData();
-  if (data.coins < 5) {
-    alert('Você precisa de 5 moedas para girar a roleta! Clique em algumas ofertas para ganhar.');
-    return;
-  }
-
-  data.coins -= 5;
-  saveUserData(data);
-
-  const randomIdx = Math.floor(Math.random() * allProducts.length);
-  const product = allProducts[randomIdx];
-
-  // Highlight effect
-  const btn = document.getElementById('btnRoleta');
-  if (btn) btn.classList.add('spinning');
-
-  setTimeout(() => {
-    if (btn) btn.classList.remove('spinning');
-    openProductModal(product.id);
-    addRewards(40, 0); // 40 XP + 10 XP from openProductModal = 50 XP
-  }, 1000);
-}
-
-// ── CRO: FLASH TIMER ──────────────────────────────────────────
-let flashInterval = null;
-function updateFlashTimer(p) {
-  const box = document.getElementById('modalFlashTimer');
-  const timer = document.getElementById('flashTimer');
-  if (!box || !timer) return;
-
-  if (p.featured || isCampaignActive(p)) {
-    if (box) box.classList.remove('hidden-block');
-    if (flashInterval) clearInterval(flashInterval);
-
-    // Gera um tempo final "fixo" baseado no ID para não mudar ao reabrir
-    let endTime = new Date().setHours(23, 59, 59, 0);
-
-    flashInterval = setInterval(() => {
-      const now = new Date().getTime();
-      const distance = endTime - now;
-
-      const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const s = Math.floor((distance % (1000 * 60)) / 1000);
-
-      if (timer) timer.textContent = `${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
-
-      if (distance < 0) {
-        clearInterval(flashInterval);
-        if (timer) timer.textContent = "EXPIROU";
-      }
-    }, 1000);
-  } else {
-    if (box) box.classList.add('hidden-block');
-  }
-}
-
-// ── CRO: PRICE HEATMAP ────────────────────────────────────────
-function updatePriceHeatmap(p) {
-  const dot = document.querySelector('.heatmap-dot');
-  const text = document.getElementById('heatmapText');
-  if (!dot || !text) return;
-
-  const discount = getDiscount(p);
-  dot.className = 'heatmap-dot';
-
-  if (discount >= 40) {
-    dot.classList.add('good');
-    text.textContent = 'Preço imbatível hoje (Menor dos últimos 30 dias)';
-  } else if (discount >= 15) {
-    dot.classList.add('fair');
-    text.textContent = 'Preço justo (Média histórica)';
-  } else {
-    dot.classList.add('bad');
-    text.textContent = 'Preço regular (Aguarde uma promoção maior)';
-  }
-}
-
-// ── CRO: CTA & COUPON LOGIC ───────────────────────────────────
-function updateCtaLogic(p) {
-  const btn = document.getElementById('modalBuyBtn');
-  if (!btn) return;
-
-  btn.onclick = (e) => {
-    // Se houver cupom (simulado ou real), copiar
-    const coupon = p.coupon || "OFERTA10";
-    navigator.clipboard.writeText(coupon).then(() => {
-      showToast(`Cupom ${coupon} copiado! Aplicando desconto...`);
-    });
-
-    // Pequeno delay para o usuário ler o toast antes de abrir a Shopee
-    setTimeout(() => {
-      window.open(p.link, '_blank');
-    }, 800);
-
-    e.preventDefault();
-  };
-}
-
-function showToast(msg) {
-  const toast = document.createElement('div');
-  toast.className = 'price-drop-toast show';
-  toast.style.background = 'var(--brand)';
-  toast.innerHTML = `<i class="fa-solid fa-check"></i> ${msg}`;
-  document.body.appendChild(toast);
-  setTimeout(() => toast.remove(), 3000);
 }

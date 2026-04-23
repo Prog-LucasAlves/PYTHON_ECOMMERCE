@@ -4,22 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Ofertas na Shopee por Categoria e Preço | Melhores Ofertas</title>
-  <link rel="icon" type="image/png" href="img/favicon.png" />
   <meta name="description" content="Curadoria de ofertas na Shopee por categoria, preço e campanha. Encontre produtos atualizados, compare valores e descubra promoções com mais rapidez." />
   <meta name="keywords" content="ofertas na shopee, desconto shopee, produtos com cupom, frete grátis shopee, compras online" />
   <meta name="author" content="Melhores Ofertas" />
-  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-  <link rel="canonical" id="canonicalLink" href="" />
-  <link rel="author" href="https://melhoresdashopee.com.br/sobre" />
-  <meta name="apple-mobile-web-app-title" content="Melhores Ofertas" />
-  <meta name="application-name" content="Melhores Ofertas" />
-  <meta name="msapplication-TileColor" content="#161616" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://melhoresdashopee.com.br/" />
   <link rel="preconnect" href="https://www.googletagmanager.com" />
   <link rel="preconnect" href="https://www.gstatic.com" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; script-src 'self' https://www.gstatic.com https://www.googletagmanager.com; connect-src 'self' https://www.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.gstatic.com https://www.googletagmanager.com https://www.google-analytics.com https://analytics.google.com; font-src 'self' https: data:; manifest-src 'self'; upgrade-insecure-requests">
-  <meta name="referrer" content="strict-origin-when-cross-origin">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; script-src 'self' https://www.gstatic.com https://www.googletagmanager.com; connect-src 'self' https://www.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.gstatic.com https://www.googletagmanager.com https://www.google-analytics.com https://analytics.google.com; font-src 'self' https://cdnjs.cloudflare.com data:; manifest-src 'self'; upgrade-insecure-requests">
   <!-- Google tag (gtag.js) -->
-  <!-- Scripts de terceiros adiados via JS para performance -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-CJZX1ZJ2GM"></script>
+  <script src="js/analytics.js" defer></script>
 
   <!-- Open Graph (Facebook, WhatsApp) -->
   <meta property="og:title" content="Ofertas na Shopee por Categoria e Preço | Melhores Ofertas" />
@@ -36,15 +31,8 @@
   <meta name="twitter:description" content="Curadoria de ofertas na Shopee por categoria, preço e campanha. Encontre produtos atualizados e compare promoções com rapidez." />
   <meta name="twitter:image" content="https://melhoresdashopee.com.br/img/logo-01-header.svg" />
 
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.5.1/css/all.min.css" />
   <link rel="stylesheet" href="css/style.css"/>
-
-  <!-- Google Fonts: carregada de forma não-bloqueante -->
-  <link rel="preload" href="https://fonts.gstatic.com/s/outfit/v11/Q_3_9mv92BPiz809IDRzY6z.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700&display=swap"></noscript>
-
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <!-- PWA -->
   <link rel="manifest" href="manifest.json"/>
   <meta name="theme-color" content="#161616"/>
@@ -55,44 +43,38 @@
   <script type="application/ld+json">
     {
       "@context": "https://schema.org",
-      "@graph": [
-        {
-          "@type": "Organization",
-          "@id": "https://melhoresdashopee.com.br/#organization",
-          "name": "Melhores Ofertas",
-          "url": "https://melhoresdashopee.com.br/",
-          "logo": {
-            "@type": "ImageObject",
-            "url": "https://melhoresdashopee.com.br/img/favicon.png"
-          },
-          "description": "Curadoria independente de ofertas online com foco em economia real e segurança.",
-          "sameAs": [
-            "https://t.me/melhoresdashopeeday",
-            "https://www.instagram.com/melhoresdashopee"
-          ]
-        },
-        {
-          "@type": "WebSite",
-          "@id": "https://melhoresdashopee.com.br/#website",
-          "url": "https://melhoresdashopee.com.br/",
-          "name": "Melhores Ofertas",
-          "publisher": { "@id": "https://melhoresdashopee.com.br/#organization" },
-          "inLanguage": "pt-BR",
-          "potentialAction": {
-            "@type": "SearchAction",
-            "target": "https://melhoresdashopee.com.br/?q={search_term_string}",
-            "query-input": "required name=search_term_string"
-          }
-        },
-        {
-          "@type": "Person",
-          "@id": "https://melhoresdashopee.com.br/#curator",
-          "name": "Equipe de Curadoria Melhores Ofertas",
-          "jobTitle": "Especialista em Ofertas e E-commerce",
-          "description": "Especialistas focados em encontrar o menor preço histórico e links seguros na Shopee.",
-          "image": "https://melhoresdashopee.com.br/img/favicon.png"
-        }
-      ]
+      "@type": "Organization",
+      "name": "Melhores Ofertas",
+      "url": "https://melhoresdashopee.com.br/",
+      "description": "Curadoria independente de ofertas online com links para produtos na Shopee."
+    }
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "Melhores Ofertas",
+      "url": "https://melhoresdashopee.com.br/",
+      "inLanguage": "pt-BR",
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": "https://melhoresdashopee.com.br/?q={search_term_string}",
+        "query-input": "required name=search_term_string"
+      }
+    }
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebPage",
+      "name": "Ofertas na Shopee por Categoria e Preço",
+      "url": "https://melhoresdashopee.com.br/",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "Melhores Ofertas",
+        "url": "https://melhoresdashopee.com.br/"
+      },
+      "description": "Vitrine de ofertas com rotação por categoria, campanhas e coleções sazonais."
     }
   </script>
 </head>
@@ -103,30 +85,18 @@
   <header>
     <div class="header-inner">
       <div class="logo">
-        <a href="/" title="Voltar ao Início" style="display: block; line-height: 0;">
-          <img src="img/favicon.png" alt="Melhores Ofertas" class="site-logo site-logo-icon" width="46" height="46" style="border-radius: 8px;"/>
-        </a>
+        <img src="img/logo-01-icon.svg" alt="Melhores Ofertas" class="site-logo site-logo-icon"/>
       </div>
-
       <div class="search-wrap">
-        <div class="search-bar">
-          <input type="text" id="searchInput" placeholder="O que você está buscando hoje?" autocomplete="off" aria-label="O que você está buscando hoje?"/>
-          <button class="search-btn btn-haptic" id="searchBtn" title="Pesquisar" aria-label="Pesquisar">
-            <i class="fa-solid fa-magnifying-glass"></i>
-          </button>
-        </div>
+        <input type="text" id="searchInput" placeholder="O que você está buscando hoje?"
+          autocomplete="off"/>
         <div id="searchDropdown" class="search-dropdown hidden-block"></div>
       </div>
-
       <div class="header-actions">
-        <button class="btn-dark-mode btn-haptic" id="darkToggle" title="Modo escuro">
-          <i class="fa-solid fa-moon" id="darkIcon"></i>
+        <button class="btn-header" id="darkToggle" title="Modo escuro">
+          <i class="fas fa-moon" id="darkIcon"></i>
         </button>
-        <div class="user-status-pill" id="userStatus" title="Seu perfil de comprador">
-          <div class="user-level-badge">LV <span id="userLevel">1</span></div>
-          <div class="user-coins"><i class="fa-solid fa-coins"></i> <span id="userCoins">0</span></div>
-        </div>
-        <a href="painel-shopee-vendas" class="btn-admin"><i class="fa-solid fa-gear"></i></a>
+        <a href="painel-shopee-vendas.html" class="btn-header"><i class="fas fa-cog"></i></a>
       </div>
     </div>
   </header>
@@ -141,15 +111,15 @@
   <section class="trust-strip">
     <div class="trust-inner">
       <div class="trust-item">
-        <i class="fa-solid fa-circle-check"></i>
+        <i class="fas fa-check-double"></i>
         <span>Links Verificados Shopee</span>
       </div>
       <div class="trust-item">
-        <i class="fa-solid fa-bolt"></i>
+        <i class="fas fa-bolt"></i>
         <span>Ofertas em Tempo Real</span>
       </div>
       <div class="trust-item">
-        <i class="fa-solid fa-shield-halved"></i>
+        <i class="fas fa-shield-halved"></i>
         <span>Curadoria Independente</span>
       </div>
       <div class="trust-item status-badge">
@@ -169,50 +139,15 @@
     </div>
   </section>
 
-  <!-- SESSION RECOVERY BANNER -->
-  <div id="recoveryBanner" class="recovery-banner hidden-block">
-    <div class="recovery-inner">
-      <div class="recovery-content">
-        <span class="recovery-tag">Vimos que você gostou</span>
-        <h4 id="recoveryProductName">Produto...</h4>
-        <p>Ele ainda está em oferta! Clique para ver novamente.</p>
-      </div>
-      <button class="btn-primary btn-haptic" id="recoveryBtn">Ver agora</button>
-      <button class="recovery-close" id="recoveryClose"><i class="fa-solid fa-xmark"></i></button>
-    </div>
-  </div>
-
-  <!-- SILENT IA WIDGET -->
-  <section class="silent-ia-section">
-    <div class="ia-container">
-      <div class="ia-header">
-        <i class="fa-solid fa-wand-magic-sparkles"></i>
-        <span>Assistente de Compras</span>
-      </div>
-      <div class="ia-chips" id="iaChips">
-        <button class="ia-chip" data-filter="presente">🎁 Presente</button>
-        <button class="ia-chip" data-filter="oferta-relampago">⚡ Ofertas Flash</button>
-        <button class="ia-chip" data-filter="frete-gratis">🚚 Frete Grátis</button>
-        <button class="ia-chip" data-filter="menor-preco">📉 Menor Preço</button>
-        <button class="ia-chip" data-filter="mais-vendidos">🏆 Mais Vendidos</button>
-      </div>
-    </div>
-  </section>
-
-
 
   <!-- FILTROS / CATEGORIAS -->
   <section class="cat-section">
     <div class="cat-track-wrap">
-      <button class="cat-arrow cat-arrow-left" id="catLeft" aria-label="Rolar categorias para a esquerda">&#8249;</button>
+      <button class="cat-arrow cat-arrow-left" id="catLeft">&#8249;</button>
       <div class="cat-track" id="catTrack">
-        <button class="cat-item active" data-cat="todos" aria-label="Ver todas as categorias">
+        <button class="cat-item active" data-cat="todos">
           <span class="cat-circle">🏷️</span>
           <span class="cat-label">Todos</span>
-        </button>
-        <button class="cat-item special-roleta" id="btnRoleta" title="Achadinho Aleatório" aria-label="Girar roleta de achadinhos aleatórios">
-          <span class="cat-circle">🎲</span>
-          <span class="cat-label">Roleta</span>
         </button>
         <button class="cat-item" data-cat="roupas-fem">
           <span class="cat-circle">👗</span>
@@ -303,7 +238,7 @@
           <span class="cat-label">Outros</span>
         </button>
       </div>
-      <button class="cat-arrow cat-arrow-right" id="catRight" aria-label="Rolar categorias para a direita">&#8250;</button>
+      <button class="cat-arrow cat-arrow-right" id="catRight">&#8250;</button>
     </div>
   </section>
 
@@ -316,18 +251,18 @@
         <p id="activeContext">Carregando ofertas...</p>
       </div>
       <div class="controls-inner">
-        <select id="sortSelect" onchange="setSortMode(this.value)" aria-label="Ordenar produtos por">
+        <select id="sortSelect" onchange="setSortMode(this.value)">
           <option value="default">Destaques</option>
           <option value="price-asc">Menor Preço</option>
           <option value="price-desc">Maior Preço</option>
           <option value="discount">Maior Desconto</option>
         </select>
         <div class="price-control">
-          <input type="number" id="priceMin" placeholder="Min" min="0" aria-label="Preço mínimo"/>
-          <input type="number" id="priceMax" placeholder="Max" min="0" aria-label="Preço máximo"/>
+          <input type="number" id="priceMin" placeholder="Min" min="0"/>
+          <input type="number" id="priceMax" placeholder="Max" min="0"/>
         </div>
-        <button class="btn-secondary" type="button" id="clearFiltersBtn" aria-label="Limpar todos os filtros">
-          <i class="fa-solid fa-rotate-left"></i>
+        <button class="btn-secondary" type="button" id="clearFiltersBtn">
+          <i class="fas fa-rotate-left"></i>
         </button>
       </div>
     </div>
@@ -336,24 +271,20 @@
 
   <!-- PRODUTOS -->
   <main id="mainContent">
-    <div id="breadcrumbs" class="breadcrumbs-nav"></div>
     <div id="productGrid" class="product-grid"></div>
     <div id="emptyState" class="empty-state hidden-block" aria-live="polite">
-      <i class="fa-solid fa-box-open"></i>
+      <i class="fas fa-box-open"></i>
       <p>Nenhum produto encontrado com os filtros atuais.</p>
       <span>Tente outra busca, amplie a faixa de preço ou volte para todas as categorias.</span>
       <button class="btn-primary" type="button" id="clearAllBtn">Ver todas as ofertas</button>
     </div>
-
-    <!-- AI-SEO: CATEGORY FAQ -->
-    <div id="categoryFAQ" class="container"></div>
   </main>
 
 
   <!-- PRODUCT DETAIL MODAL -->
   <div id="productModal" class="product-modal">
     <div class="modal-box">
-      <button class="modal-close" id="modalCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+      <button class="modal-close" id="modalCloseBtn">×</button>
 
       <!-- LEFT: gallery -->
       <div class="modal-gallery">
@@ -363,95 +294,36 @@
 
       <!-- RIGHT: info -->
       <div class="modal-info">
-        <div class="modal-category" id="modalCategory">CATEGORIA</div>
-
-        <!-- CRO: FLASH TIMER -->
-        <div id="modalFlashTimer" class="flash-timer-box hidden-block">
-          <div class="flash-label">
-            <i class="fa-solid fa-bolt-lightning"></i> Oferta Relâmpago
-          </div>
-          <div class="flash-timer" id="flashTimer">00:00:00</div>
-        </div>
-
-        <h2 id="modalName">Nome do Produto</h2>
-
-        <!-- CRO: PRICE HEATMAP -->
-        <div id="modalPriceHeatmap" class="price-heatmap">
-          <div class="heatmap-dot good"></div>
-          <span id="heatmapText">Preço excelente hoje</span>
-        </div>
-
+        <span class="modal-category" id="modalCategory"></span>
+        <h2 id="modalName"></h2>
+        <div id="modalStars" class="modal-stars"></div>
+        <div id="modalSoldCount" class="modal-sold"></div>
         <div class="modal-prices">
-          <div id="modalStars" class="modal-stars"></div>
-          <div id="modalSoldCount" class="modal-sold"></div>
-          <div id="modalUrgency" class="modal-urgency hidden-block">
-            <div class="urgency-label"><i class="fa-solid fa-fire"></i> <span id="urgencyText">Restam poucas unidades!</span></div>
-            <div class="urgency-bar"><div id="urgencyProgress" class="urgency-progress"></div></div>
-          </div>
-          <div class="price-main-row">
-            <span class="modal-price" id="modalPrice"></span>
-            <button id="priceAlertBtn" class="price-alert-btn" title="Me avise se o preço cair">
-              <i class="fa-regular fa-bell"></i>
-            </button>
-          </div>
           <span class="modal-original" id="modalOriginal"></span>
+          <span class="modal-price" id="modalPrice"></span>
           <span class="modal-discount" id="modalDiscount"></span>
         </div>
 
         <div class="modal-guarantee">
-          <i class="fa-solid fa-certificate"></i>
+          <i class="fas fa-shield-check"></i>
           <div>
-            <strong>Link Oficial Shopee</strong>
-            <p>Compra garantida. Pagamento e processamento totalmente gerenciados pela Shopee.</p>
+            <strong>Garantia Shopee</strong>
+            <p>Receba seu pedido ou seu dinheiro de volta. Compra 100% segura.</p>
           </div>
         </div>
 
         <div id="modalCountdown" class="modal-countdown hidden-block"></div>
         <p class="modal-desc" id="modalDesc"></p>
-        <div id="modalExpertReviewBox" class="modal-expert-review hidden-block">
-          <div class="expert-review-head">
-             <i class="fa-solid fa-pen-to-square"></i> <strong>Nota do Curador:</strong>
-          </div>
-          <p id="modalExpertReviewContent"></p>
-        </div>
-
-        <!-- UGC GALLERY (E-E-A-T) -->
-        <div id="modalUGCBox" class="modal-ugc-gallery hidden-block">
-          <h4><i class="fa-solid fa-camera"></i> Fotos Reais de Compradores</h4>
-          <div class="ugc-photos" id="modalUGCContent"></div>
-          <p class="ugc-note">Fotos extraídas de avaliações reais na Shopee.</p>
-        </div>
-        <a id="modalBuyBtn" href="#" target="_blank" rel="noopener" class="modal-buy-btn btn-haptic">
-          <i class="fa-solid fa-cart-shopping"></i> Garantir Meu Desconto
+        <a id="modalBuyBtn" href="#" target="_blank" rel="noopener" class="modal-buy-btn">
+          <i class="fas fa-shopping-cart"></i> Ver na Shopee
         </a>
-
-        <div class="trust-badges-row">
-          <div class="trust-badge-mini"><i class="fa-solid fa-shield-check"></i> 100% Seguro</div>
-          <div class="trust-badge-mini"><i class="fa-solid fa-truck-fast"></i> Frete Grátis</div>
-          <div class="trust-badge-mini"><i class="fa-solid fa-rotate-left"></i> Devolução Grátis</div>
-        </div>
-
-        <!-- CONNECTED AUTHORITY (GEO) -->
-        <div id="modalVideoReview" class="video-review-link hidden-block">
-          <a id="videoReviewLink" href="#" target="_blank" rel="noopener">
-            <i class="fa-brands fa-youtube"></i> Ver Review em Vídeo
-          </a>
-        </div>
         <div class="modal-actions-row">
-          <button class="modal-share-btn" id="shareWhatsAppBtn" aria-label="Compartilhar no WhatsApp">
-            <i class="fa-brands fa-whatsapp"></i>
+          <button class="modal-share-btn" id="shareWhatsAppBtn">
+            <i class="fab fa-whatsapp"></i>
           </button>
-          <button class="modal-share-btn telegram" id="shareTelegramBtn" aria-label="Compartilhar no Telegram">
-            <i class="fa-brands fa-telegram"></i>
+          <button class="modal-share-btn telegram" id="shareTelegramBtn">
+            <i class="fab fa-telegram-plane"></i>
           </button>
-        </div>
-        <div id="modalSpecs" class="modal-specs hidden-block">
-          <h4><i class="fa-solid fa-microchip"></i> Ficha Técnica</h4>
-          <table id="modalSpecsTable"></table>
-        </div>
-        <div id="modalFAQ" class="modal-faq hidden-block">
-          <h4><i class="fa-solid fa-circle-question"></i> Dúvidas Frequentes</h4>
-          <div id="modalFAQContent"></div>
         </div>
         <p class="modal-affiliate-note">🔗 Link de afiliado · Você nos ajuda sem pagar nada a mais · <em>Preço promocional sujeito a alteração sem aviso prévio.</em></p>
         <div id="modalRelated" class="modal-related-section hidden-block">
@@ -468,10 +340,10 @@
   <!-- BARRA DE COMPARAÇÃO -->
   <div id="compareBar" class="compare-bar">
     <div class="compare-bar-inner">
-      <span class="compare-title"><i class="fa-solid fa-columns-3"></i> Comparar</span>
+      <span class="compare-title"><i class="fas fa-columns"></i> Comparar</span>
       <div class="compare-slots" id="compareSlots"></div>
       <button class="btn-compare-now" id="btnCompareNow" disabled>Comparar agora</button>
-      <button class="compare-clear" id="compareClearBtn" title="Limpar"><i class="fa-solid fa-xmark"></i></button>
+      <button class="compare-clear" id="compareClearBtn" title="Limpar"><i class="fas fa-times"></i></button>
     </div>
   </div>
 
@@ -479,76 +351,29 @@
   <div id="compareModal" class="compare-modal">
     <div class="compare-box">
       <div class="compare-header">
-        <h2><i class="fa-solid fa-columns-3"></i> Comparar Produtos</h2>
-        <button id="compareCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+        <h2><i class="fas fa-columns"></i> Comparar Produtos</h2>
+        <button id="compareCloseBtn"><i class="fas fa-times"></i></button>
       </div>
       <div id="compareTable" class="compare-table"></div>
     </div>
   </div>
 
   <!-- Botão Telegram flutuante -->
-  <a href="https://t.me/melhoresdashopeeday" target="_blank" class="telegram-fab" title="Entrar no canal de ofertas">
-    <i class="fa-brands fa-telegram"></i>
-    <span>Canal de Ofertas</span>
+  <a href="https://t.me/ofertasshopeeday" target="_blank" class="telegram-fab" title="Entrar no grupo de ofertas">
+    <i class="fab fa-telegram-plane"></i>
+    <span>Grupo de Ofertas</span>
   </a>
 
   <!-- PWA Install Banner -->
   <div id="pwaBanner" class="pwa-banner hidden-block">
     <div class="pwa-banner-inner">
-      <i class="fa-solid fa-mobile-screen-button pwa-icon"></i>
+      <i class="fas fa-mobile-alt pwa-icon"></i>
       <div>
         <strong>Instale o app!</strong>
         <p>Acesse as ofertas ainda mais rápido direto do seu celular.</p>
       </div>
       <button class="pwa-install-btn" id="pwaBtnInstall">Instalar</button>
-    </div>
-    <button class="pwa-close-btn" id="pwaBtnClose" title="Fechar" aria-label="Fechar banner"><i class="fa-solid fa-xmark"></i></button>
-  </div>
-
-  <!-- AFFILIATE TRANSPARENCY BANNER (E-E-A-T) -->
-  <section class="transparency-section">
-    <div class="transparency-banner reveal-on-scroll">
-      <div class="transparency-icon">🍕</div>
-      <div class="transparency-text">
-        <h3>Transparência e Cafeína</h3>
-        <p>Sustentamos este site com links de afiliados. O preço não muda para você, mas você nos ajuda a continuar caçando os melhores descontos do dia!</p>
-      </div>
-      <button class="btn-secondary btn-haptic" onclick="openCriteriaModal()">Nossos Critérios</button>
-    </div>
-  </section>
-
-  <!-- CRITERIA MODAL (E-E-A-T) -->
-  <div id="criteriaModal" class="modal hidden-block">
-    <div class="modal-content criteria-modal-content">
-      <div class="modal-header">
-        <h2>Como escolhemos as ofertas?</h2>
-        <button class="close-modal" id="closeCriteriaBtn" onclick="closeCriteriaModal()">&times;</button>
-      </div>
-      <div class="criteria-grid">
-        <div class="criteria-item">
-          <i class="fa-solid fa-award"></i>
-          <h4>Qualidade Real</h4>
-          <p>Só listamos o que nossa equipe compraria. Filtramos 90% do "lixo" que aparece em promoções.</p>
-        </div>
-        <div class="criteria-item">
-          <i class="fa-solid fa-shield-heart"></i>
-          <h4>Vendedores Elite</h4>
-          <p>Verificamos se o vendedor tem histórico de entrega rápida e se não há reclamações de golpes.</p>
-        </div>
-        <div class="criteria-item">
-          <i class="fa-solid fa-money-bill-trend-up"></i>
-          <h4>Preço Histórico</h4>
-          <p>Não caímos na "metade do dobro". Garantimos que o desconto é genuíno.</p>
-        </div>
-        <div class="criteria-item">
-          <i class="fa-solid fa-truck-ramp-box"></i>
-          <h4>Frete & Taxas</h4>
-          <p>Priorizamos produtos com estoque no Brasil para evitar surpresas na alfândega.</p>
-        </div>
-      </div>
-      <div class="criteria-footer">
-        <p>A curadoria é 100% independente. Nenhuma marca paga para estar aqui.</p>
-      </div>
+      <button class="pwa-close-btn" id="pwaBtnClose" title="Fechar"><i class="fas fa-times"></i></button>
     </div>
   </div>
 
@@ -556,16 +381,16 @@
   <footer class="site-footer">
     <div class="footer-inner">
       <div class="footer-badges">
-        <span class="badge-ssl"><i class="fa-solid fa-lock"></i> Site Seguro · SSL</span>
-        <span class="badge-ssl"><i class="fa-solid fa-shield-halved"></i> Compra Protegida Shopee</span>
-        <span class="badge-ssl"><i class="fa-solid fa-tag"></i> Links Oficiais</span>
+        <span class="badge-ssl"><i class="fas fa-lock"></i> Site Seguro · SSL</span>
+        <span class="badge-ssl"><i class="fas fa-shield-alt"></i> Compra Protegida Shopee</span>
+        <span class="badge-ssl"><i class="fas fa-tag"></i> Links Oficiais</span>
       </div>
 
       <div class="footer-bottom">
         <div class="footer-links">
-          <a href="como-funciona">Como Funcionamos</a>
-          <a href="politica-privacidade">Privacidade</a>
-          <a href="termos-de-uso">Termos</a>
+          <a href="como-funciona.html">Como Funcionamos</a>
+          <a href="politica-privacidade.html">Privacidade</a>
+          <a href="termos-de-uso.html">Termos</a>
         </div>
         <p class="footer-disclaimer">O Melhores Ofertas é uma curadoria independente. Como afiliados Shopee, podemos receber comissões por compras qualificadas, sem custo adicional para você.</p>
         <p class="footer-copy">&copy; 2026 Melhores Ofertas. Curadoria independente de achadinhos Shopee.</p>
@@ -583,6 +408,5 @@
     </div>
   </div>
 
-  <!-- Scripts pesados carregados de forma assíncrona -->
 </body>
 </html>
