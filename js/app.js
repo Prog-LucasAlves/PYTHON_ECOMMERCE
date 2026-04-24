@@ -840,6 +840,21 @@ function _renderFiltered(grid, empty, search) {
         return !usedFingerprints.has(key);
       }).slice(0, HOME_FEED_LIMIT);
 
+      const promoBannerHTML = `
+        <div class="achadinhos-banner">
+          <div class="achadinhos-icon">🔥</div>
+          <div class="achadinhos-content">
+            <div class="achadinhos-header">
+              <span class="verified-badge">Verificado</span>
+              <span class="achadinhos-label">Seleção de Afiliado</span>
+            </div>
+            <h2>Achadinhos do Dia</h2>
+            <p>Nossa equipe selecionou as ofertas com maior estoque e menor preço na Shopee hoje. Aproveite!</p>
+          </div>
+          <a href="#productGrid" class="achadinhos-btn">Ver Ofertas <i class="fas fa-chevron-right"></i></a>
+        </div>
+      `;
+
       const featuredHTML = pinned.length ? `
         <section class="home-vitrine home-vitrine-featured">
           <div class="section-head">
@@ -873,7 +888,7 @@ function _renderFiltered(grid, empty, search) {
           <div class="product-grid-inner">${rest.map(p => cardHTML(p)).join('')}</div>
         </section>` : '';
 
-      grid.innerHTML = `${featuredHTML}${campaignHTML}${feedHTML}`;
+      grid.innerHTML = `${promoBannerHTML}${featuredHTML}${campaignHTML}${feedHTML}`;
     } else {
       // Flat list for search, category or sorted views
       grid.innerHTML = `
