@@ -995,8 +995,9 @@ function cardHTML(p) {
   else if (isHot)      leftBadge = '<span class="badge-hot">🔥 QUENTE</span>';
   else if (isNew)      leftBadge = '<span class="badge-new">✨ NOVO</span>';
 
-  // Verified tag inside card body
-  const verifiedTag = isVerified ? '<span class="verified-tag"><i class="fas fa-check-circle"></i> Verificada</span>' : '';
+  // Conversion badges
+  const freeShippingTag = (p.freeShipping || isHot || p.featured) ? `<span class="badge-free-shipping"><i class="fas fa-truck"></i> FRETE GRÁTIS</span>` : '';
+  const couponTag = (p.hasCoupon || discount > 50) ? `<span class="badge-coupon"><i class="fas fa-ticket-alt"></i> CUPOM</span>` : '';
 
   const allMedia = [...images, ...(p.video ? ['__video__'] : [])];
   const thumbsHTML = hasMore ? `
@@ -1004,33 +1005,37 @@ function cardHTML(p) {
       ${allMedia.slice(0, 5).map((m, i) => {
         if (m === '__video__') {
           const vt = getVideoThumb(p.video);
-          return `<div class="thumb video-thumb" data-action="open-product" data-id="${p.id}" data-start-index="${images.length}">
+          return `<div class="thumb video-thumb" data-action="preview-media" data-id="${p.id}" data-url="${vt || ''}" data-is-video="true">
             ${vt ? `<img src="${vt}" alt="video"/>` : '<div class="vt-placeholder"></div>'}
             <span class="play-icon">▶</span>
           </div>`;
         }
-        return `<div class="thumb ${i===0?'active':''}" data-action="open-product" data-id="${p.id}" data-start-index="${i}">
+        return `<div class="thumb ${i===0?'active':''}" data-action="preview-media" data-id="${p.id}" data-url="${m}">
           <img src="${m}" alt="" loading="lazy"/>
         </div>`;
       }).join('')}
-      ${allMedia.length > 5 ? `<div class="thumb thumb-more">+${allMedia.length - 5}</div>` : ''}
+      ${allMedia.length > 5 ? `<div class="thumb thumb-more" data-action="open-product" data-id="${p.id}">+${allMedia.length - 5}</div>` : ''}
     </div>` : '';
 
   return `
-  <div class="product-card" data-action="open-product" data-id="${p.id}">
+  <div class="product-card" data-id="${p.id}">
     ${leftBadge}
     ${discount   ? `<span class="badge-discount">-${discount}%</span>` : ''}
     ${hasMore ? `<span class="badge-gallery"><i class="fas fa-images"></i> ${[...images, ...(p.video?['v']:[])].length}</span>` : ''}
-    <div class="card-img-wrap">
-      <img src="${main}" alt="${p.name} - imagem principal" loading="lazy"
+    <div class="card-img-wrap" data-action="open-product" data-id="${p.id}">
+      <img src="${main}" alt="${p.name}" class="main-card-img" id="img-${p.id}" loading="lazy"
            onerror="this.src='https://via.placeholder.com/300x300?text=Sem+Imagem'"/>
     </div>
     ${thumbsHTML}
     <div class="card-body">
-      ${verifiedTag}
-      <div class="card-name">${p.name}</div>
+      <div class="card-meta-row">
+        ${verifiedTag}
+        ${freeShippingTag}
+        ${couponTag}
+      </div>
+      <div class="card-name" data-action="open-product" data-id="${p.id}">${p.name}</div>
       ${p.desc ? `<div class="card-desc">${formatDescription(p.desc)}</div>` : ''}
-      <div class="card-prices">
+      <div class="card-prices" data-action="open-product" data-id="${p.id}">
         ${p.originalPrice && p.originalPrice > p.price
           ? `<div class="card-original">R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}</div>` : ''}
         <div class="card-price-row">
@@ -1039,7 +1044,7 @@ function cardHTML(p) {
           <span class="price-decimal">,${(p.price % 1).toFixed(2).substring(2)}</span>
         </div>
       </div>
-      <button class="btn-buy"><i class="fas fa-shopping-cart"></i> Comprar na Shopee</button>
+      <button class="btn-buy" onclick="window.open('${p.link}', '_blank')"><i class="fas fa-shopping-cart"></i> Comprar na Shopee</button>
     </div>
   </div>`;
 }
@@ -1493,10 +1498,27 @@ function initAppBindings() {
 
   productGrid?.addEventListener('click', e => {
     const openEl = e.target.closest('[data-action="open-product"]');
-    if (openEl) handleOpenProductAction(openEl);
+    if (openEl) {
+      e.stopPropagation();
+      handleOpenProductAction(openEl);
+    }
     const compareEl = e.target.closest('[data-action="toggle-compare"]');
     if (compareEl) toggleCompare(compareEl.dataset.pid, e);
   });
+
+  productGrid?.addEventListener('mouseover', e => {
+    const thumb = e.target.closest('[data-action="preview-media"]');
+    if (thumb) {
+      const mainImg = document.getElementById(`img-${thumb.dataset.id}`);
+      if (mainImg && thumb.dataset.url) {
+        mainImg.src = thumb.dataset.url;
+        // Update active thumb
+        thumb.parentElement.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+        thumb.classList.add('active');
+      }
+    }
+  });
+
   modalThumbsStrip?.addEventListener('click', e => {
     const thumb = e.target.closest('[data-action="set-modal-index"]');
     if (thumb) setModalIndex(parseInt(thumb.dataset.index || '0', 10));

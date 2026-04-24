@@ -18,7 +18,7 @@
   --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
   --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --container-max: 1200px;
+  --container-max: 1440px;
 }
 
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -891,12 +891,113 @@ footer {
   padding: 12px 0;
 }
 
-/* ========== MINIMALIST LAYOUT OVERRIDES ========== */
-.featured-row, .product-grid-inner {
+.product-grid-inner {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 20px;
   width: 100%;
+}
+
+.featured-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: minmax(180px, auto);
+  gap: 20px;
+  width: 100%;
+  margin-bottom: 32px;
+}
+
+/* Bento Item - Primeiro card grande */
+.featured-row .product-card:first-child {
+  grid-column: span 2;
+  grid-row: span 2;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  min-height: 400px;
+}
+
+.featured-row .product-card:first-child .card-img-wrap {
+  width: 50%;
+  height: 100%;
+  border-right: 1px solid rgba(0,0,0,0.05);
+}
+
+.featured-row .product-card:first-child .card-body {
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 30px;
+}
+
+.featured-row .product-card:first-child .card-name {
+  font-size: 1.4rem;
+  -webkit-line-clamp: 3;
+  margin-bottom: 15px;
+}
+
+.featured-row .product-card:first-child .card-price-row {
+  font-size: 1.2rem;
+}
+
+.featured-row .product-card:first-child .price-main {
+  font-size: 2.2rem;
+}
+
+@media (max-width: 1024px) {
+  .featured-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .featured-row {
+    grid-template-columns: 1fr;
+  }
+  .featured-row .product-card:first-child {
+    flex-direction: column;
+    grid-column: span 1;
+    grid-row: span 1;
+    min-height: auto;
+  }
+  .featured-row .product-card:first-child .card-img-wrap,
+  .featured-row .product-card:first-child .card-body {
+    width: 100%;
+  }
+}
+
+.card-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+  min-height: 20px;
+}
+
+/* New Badges */
+.badge-free-shipping {
+  background: #00bfa5;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge-coupon {
+  background: #ffc107;
+  color: #000;
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .home-vitrine {
@@ -1991,16 +2092,20 @@ footer {
   overflow: hidden;
 }
 .category-bubbles {
-  max-width: var(--container-max);
+  max-width: 100%;
   margin: 0 auto;
   display: flex;
-  gap: 20px;
+  gap: 24px;
   overflow-x: auto;
-  padding: 0 16px 12px;
-  scrollbar-width: none;
+  padding: 0 40px 16px;
+  scrollbar-width: none; /* Hide scrollbar Firefox */
+  -ms-overflow-style: none; /* Hide scrollbar IE/Edge */
   justify-content: flex-start;
 }
-.category-bubbles::-webkit-scrollbar { display: none; }
+
+.category-bubbles::-webkit-scrollbar {
+  display: none; /* Hide scrollbar Chrome/Safari */
+}
 
 .cat-bubble {
   flex: 0 0 auto;
