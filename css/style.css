@@ -907,89 +907,49 @@ footer {
   margin-bottom: 32px;
 }
 
-/* Bento Item - Primeiro card grande */
+/* Bento Item - Desativado para padronização */
 .featured-row .product-card:first-child {
-  grid-column: span 2;
-  grid-row: span 2;
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  min-height: 440px;
-  background: linear-gradient(135deg, #fff 0%, #fdfdfd 100%);
-  border: 1px solid rgba(0,134,255,0.1);
-  overflow: hidden;
+  grid-column: span 1;
+  grid-row: span 1;
+  display: block;
+  min-height: auto;
+  background: #fff;
+  border: 1px solid #eee;
 }
 
 .featured-row .product-card:first-child::before {
-  content: 'Destaque da Semana';
-  position: absolute;
-  top: 15px;
-  right: -35px;
-  background: var(--brand);
-  color: #000;
-  padding: 5px 40px;
-  font-size: 11px;
-  font-weight: 800;
-  text-transform: uppercase;
-  transform: rotate(45deg);
-  z-index: 10;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: none;
 }
 
 .featured-row .product-card:first-child .card-img-wrap {
-  width: 45%;
-  height: 100%;
-  padding: 20px;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.featured-row .product-card:first-child .main-card-img {
-  max-height: 320px;
-  object-fit: contain;
-  transition: transform 0.5s ease;
-}
-
-.featured-row .product-card:first-child:hover .main-card-img {
-  transform: scale(1.08);
+  width: 100%;
+  height: auto;
+  padding: 0;
+  border-right: none;
 }
 
 .featured-row .product-card:first-child .card-body {
-  width: 55%;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 40px;
-  gap: 12px;
-}
-
-.featured-row .product-card:first-child .card-meta-row {
-  margin-bottom: 5px;
+  width: 100%;
+  padding: 12px;
+  gap: 0;
 }
 
 .featured-row .product-card:first-child .card-name {
-  font-size: 1.8rem;
-  font-weight: 800;
-  line-height: 1.2;
-  color: #111;
-  -webkit-line-clamp: 4;
-}
-
-.featured-row .product-card:first-child .card-price-row {
-  margin-top: 10px;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.4;
+  -webkit-line-clamp: 2;
 }
 
 .featured-row .product-card:first-child .price-main {
-  font-size: 2.8rem;
+  font-size: 1.4rem;
 }
 
 .featured-row .product-card:first-child .btn-buy {
-  margin-top: 20px;
-  padding: 16px 24px;
-  font-size: 1.1rem;
-  box-shadow: 0 8px 24px rgba(238,77,45,0.25);
+  margin-top: 10px;
+  padding: 10px;
+  font-size: 0.9rem;
+  box-shadow: none;
 }
 
 @media (max-width: 1024px) {
