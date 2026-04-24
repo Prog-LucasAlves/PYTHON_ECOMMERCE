@@ -106,12 +106,15 @@
     </div>
   </header>
 
-  <!-- HERO BANNER CAROUSEL -->
-  <section class="hero-banner" id="heroBanner">
-    <div class="hero-slides" id="heroSlides"></div>
-    <div class="hero-dots"   id="heroDots"></div>
-    <button class="hero-arrow hero-prev" id="heroPrevBtn">&#8249;</button>
-    <button class="hero-arrow hero-next" id="heroNextBtn">&#8250;</button>
+  <!-- QUICK CTAs -->
+  <section class="quick-ctas">
+    <div class="cta-inner">
+      <a href="#" class="cta-item" data-cat="todos"><i class="fas fa-th-large"></i> Todas</a>
+      <a href="#" class="cta-item" data-cat="ofertas-relampago"><i class="fas fa-bolt"></i> Relâmpago</a>
+      <a href="#" class="cta-item" data-cat="cupons"><i class="fas fa-ticket-alt"></i> Cupons</a>
+      <a href="#" class="cta-item" data-cat="mais-vendidos"><i class="fas fa-fire"></i> Mais Vendidos</a>
+      <a href="#" class="cta-item" data-cat="r199"><i class="fas fa-tag"></i> Até R$ 1,99</a>
+    </div>
   </section>
 
   <!-- PRODUTOS -->
@@ -119,63 +122,10 @@
     <div id="productGrid" class="product-grid"></div>
     <div id="emptyState" class="empty-state hidden-block" aria-live="polite">
       <i class="fas fa-box-open"></i>
-      <p>Nenhum produto encontrado com os filtros atuais.</p>
-      <span>Tente outra busca, amplie a faixa de preço ou volte para todas as categorias.</span>
-      <button class="btn-primary" type="button" id="clearAllBtn">Ver todas as ofertas</button>
+      <p>Nenhum produto encontrado.</p>
+      <button class="btn-primary" type="button" id="clearAllBtn">Ver tudo</button>
     </div>
   </main>
-
-  <section class="trust-strip" aria-label="Diferenciais do site">
-    <div class="trust-grid">
-      <article class="trust-card">
-        <i class="fas fa-bolt"></i>
-        <h2>Curadoria rápida</h2>
-        <p>Organizamos ofertas em uma vitrine simples para você encontrar oportunidades sem precisar navegar por dezenas de páginas.</p>
-      </article>
-      <article class="trust-card">
-        <i class="fas fa-eye"></i>
-        <h2>Mais clareza</h2>
-        <p>Mostramos preço promocional, preço original, desconto, avaliações e outros sinais úteis para ajudar na decisão.</p>
-      </article>
-      <article class="trust-card">
-        <i class="fas fa-shield-heart"></i>
-        <h2>Transparência afiliada</h2>
-        <p>Quando você compra por nossos links, recebemos comissão sem custo extra para você. A compra acontece na Shopee.</p>
-      </article>
-    </div>
-  </section>
-
-  <section class="editorial-section">
-    <div class="editorial-grid">
-      <article class="editorial-panel">
-        <span class="panel-kicker">Como funciona</span>
-        <h2>Uma vitrine independente para comprar com mais contexto</h2>
-        <ol class="steps-list">
-          <li>Selecionamos produtos com preço competitivo e boa apresentação.</li>
-          <li>Você filtra por categoria, preço e comparação.</li>
-          <li>Ao clicar, a compra é concluída diretamente na Shopee.</li>
-        </ol>
-      </article>
-      <article class="editorial-panel faq-panel">
-        <span class="panel-kicker">Perguntas frequentes</span>
-        <h2>Dúvidas comuns antes de comprar</h2>
-        <div class="faq-list">
-          <details>
-            <summary>Os preços podem mudar?</summary>
-            <p>Sim. Os valores podem ser alterados pela loja ou pela plataforma a qualquer momento. Sempre confira o preço final antes de concluir a compra.</p>
-          </details>
-          <details>
-            <summary>O site vende produtos diretamente?</summary>
-            <p>Não. Este site faz a curadoria e redireciona você para a Shopee, onde a compra é realizada.</p>
-          </details>
-          <details>
-            <summary>Vocês ganham comissão?</summary>
-            <p>Sim. Alguns links são de afiliado, o que ajuda a manter o projeto sem aumentar o valor pago por você.</p>
-          </details>
-        </div>
-      </article>
-    </div>
-  </section>
 
   <!-- PRODUCT DETAIL MODAL -->
   <div id="productModal" class="product-modal">

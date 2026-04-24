@@ -88,77 +88,54 @@ header {
 }
 .btn-admin:hover { background: rgba(212,160,23,0.22); }
 
-/* ========== HERO BANNER CAROUSEL ========== */
-.hero-banner {
-  position: relative; overflow: hidden; height: 320px;
-  background: #161616; cursor: pointer;
+/* ── QUICK CTAs ────────────────────────────────────────────── */
+.quick-ctas {
+  padding: 16px 0;
+  background: #fff;
+  border-bottom: 1px solid #f1f1f1;
+  position: sticky;
+  top: 60px; /* Below header */
+  z-index: 100;
 }
-.hero-slides { position: relative; width: 100%; height: 100%; }
-.hero-slide {
-  position: absolute; inset: 0; opacity: 0;
-  transition: opacity 0.6s ease; display: flex; align-items: center;
+.cta-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scrollbar-width: none; /* Hide scrollbar for clean look */
 }
-.hero-slide.active { opacity: 1; z-index: 1; }
-.hero-slide-bg {
-  position: absolute; inset: 0;
-  background-size: cover; background-position: center;
-  filter: brightness(0.5);
+.cta-inner::-webkit-scrollbar { display: none; }
+
+.cta-item {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: #f8f8f8;
+  color: #444;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.85rem;
+  border-radius: 50px;
+  border: 1px solid #eee;
+  transition: all 0.2s ease;
+  white-space: nowrap;
 }
-.hero-slide-overlay {
-  position: absolute; inset: 0;
-  background: linear-gradient(135deg, rgba(17,17,17,0.92) 0%, rgba(42,42,42,0.72) 48%, rgba(212,160,23,0.52) 100%);
+.cta-item i { font-size: 1rem; color: var(--brand); }
+.cta-item:hover {
+  background: var(--brand);
+  color: #111;
+  border-color: var(--brand);
+  transform: translateY(-2px);
 }
-.hero-slide-content {
-  position: relative; z-index: 2;
-  padding: 36px 52px; color: #fff; max-width: 680px;
+.cta-item.active {
+  background: var(--brand);
+  color: #111;
+  border-color: var(--brand);
 }
-.hero-badge {
-  display: inline-block; background: rgba(255,247,218,.98); color: var(--brand-text);
-  font-weight: 800; font-size: .82rem; letter-spacing: .08em; text-transform: uppercase; padding: 6px 12px;
-  border-radius: 20px; margin-bottom: 12px;
-}
-.hero-slide-content h2 {
-  font-size: 2.2rem; font-weight: 800; margin-bottom: 10px; line-height: 1.08;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.3);
-  display: -webkit-box; -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical; overflow: hidden;
-}
-.hero-slide-price {
-  font-size: 1.7rem; font-weight: 900; color: #fff; margin-bottom: 14px;
-}
-.hero-cta {
-  display: inline-block; background: #fff7da; color: var(--brand-text);
-  font-weight: 700; padding: 8px 20px; border-radius: 24px;
-  font-size: .9rem; transition: transform .2s, box-shadow .2s;
-  box-shadow: 0 8px 18px rgba(0,0,0,.14);
-}
-.hero-slide:hover .hero-cta { transform: translateX(4px); box-shadow: 0 10px 22px rgba(0,0,0,.18); }
-.hero-dots {
-  position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%);
-  display: flex; gap: 8px; z-index: 10;
-}
-.hero-dot {
-  width: 10px; height: 10px; border-radius: 50%; border: none;
-  background: rgba(255,255,255,0.5); cursor: pointer; padding: 0;
-  transition: background .2s, transform .2s;
-}
-.hero-dot.active { background: #fff; transform: scale(1.3); }
-.hero-arrow {
-  position: absolute; top: 50%; transform: translateY(-50%);
-  background: rgba(255,255,255,0.2); border: none; color: #fff;
-  font-size: 2rem; cursor: pointer; padding: 4px 14px;
-  border-radius: 4px; z-index: 10; transition: background .2s; line-height: 1;
-}
-.hero-arrow:hover { background: rgba(255,255,255,0.4); }
-.hero-prev { left: 12px; }
-.hero-next { right: 12px; }
-.hero-static {
-  height: 100%; display: flex; align-items: center; justify-content: center;
-  background: radial-gradient(circle at top, rgba(212,160,23,.22), transparent 30%), linear-gradient(135deg, #121212 0%, #2a2a2a 64%, #6d5320 100%);
-}
-.hero-content { color: #fff; text-align: center; }
-.hero-content h1 { font-size: 2.2rem; margin-bottom: 10px; }
-.hero-content p  { font-size: 1.1rem; opacity: .9; }
 .intro-section {
   padding: 18px 16px 10px;
 }
