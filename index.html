@@ -95,20 +95,25 @@
     <div class="header-inner">
       <div class="logo">
         <a href="/">
-          <h1>magashopee</h1>
+          <div class="logo-placeholder"></div>
         </a>
       </div>
 
-      <div class="header-actions">
-        <div class="search-area">
-          <input type="text" id="searchInput" placeholder="Busque por produtos, categorias..." />
+      <div class="search-container">
+        <div class="search-box">
+          <input type="text" id="searchInput" placeholder="O que você está procurando hoje?" />
           <i class="fas fa-search search-icon"></i>
           <div id="searchDropdown" class="search-dropdown hidden-block"></div>
         </div>
-        <button class="btn-dark-mode" id="darkToggle" title="Modo escuro">
+      </div>
+
+      <div class="header-tools">
+        <button class="tool-btn" id="darkToggle" title="Alternar tema">
           <i class="fas fa-moon" id="darkIcon"></i>
         </button>
-        <a href="admin.html" class="btn-admin"><i class="fas fa-cog"></i></a>
+        <a href="admin.html" class="tool-btn" title="Administração">
+          <i class="fas fa-cog"></i>
+        </a>
       </div>
     </div>
   </header>
