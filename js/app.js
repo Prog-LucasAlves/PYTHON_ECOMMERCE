@@ -1,11 +1,11 @@
-﻿// ── HERO BANNER CAROUSEL ─────────────────────────────────────
+// ── HERO BANNER CAROUSEL ─────────────────────────────────────
 let heroCurrent  = 0;
 let heroTimer    = null;
 const HERO_INTERVAL = 5000;
-const HOME_ROTATION_MINUTES = 20;
+const HOME_ROTATION_MINUTES = 30;
 const HOME_CATEGORY_LIMIT = 12;
 const HOME_SECTION_LIMIT = 16;
-const CAMPAIGN_SECTION_LIMIT = 36;
+const CAMPAIGN_SECTION_LIMIT = 120;
 const HOME_FEED_LIMIT = 80;
 const SEASONAL_COLLECTION_LIMIT = 14;
 const FIRESTORE_CACHE_KEY = 'shopee_products_cache';
@@ -192,13 +192,13 @@ function getCampaignItems(items) {
     })
     .filter((p, i, arr) => arr.findIndex(x => productFingerprint(x) === productFingerprint(p)) === i)
     .slice(0, CAMPAIGN_SECTION_LIMIT);
-  if (campaignSet.length >= 8) return campaignSet;
-  const fill = items
-    .filter(p => !p.featured && !p.homeOrder)
-    .sort((a, b) => getProductScore(b) - getProductScore(a))
-    .filter((p, i, arr) => arr.findIndex(x => productFingerprint(x) === productFingerprint(p)) === i)
-    .filter(p => !campaignSet.some(x => productFingerprint(x) === productFingerprint(p)))
-    .slice(0, 12 - campaignSet.length);
+
+  if (campaignSet.length >= CAMPAIGN_SECTION_LIMIT) return campaignSet;
+
+  const fill = rotateHomeProducts(
+    items.filter(p => !p.featured && !p.homeOrder && !campaignSet.some(x => productFingerprint(x) === productFingerprint(p)))
+  ).slice(0, CAMPAIGN_SECTION_LIMIT - campaignSet.length);
+
   return [...campaignSet, ...fill];
 }
 
@@ -893,7 +893,7 @@ function _renderFiltered(grid, empty, search) {
           </div>
         `).join('')}
       </section>` : '';
-    grid.innerHTML = `${featuredHTML}${campaignHTML}${seasonalHTML}${rotatingHTML}${feedHTML}`;
+    grid.innerHTML = `${featuredHTML}${campaignHTML}`;
     animateCards();
     startCountdownTimers();
   } catch (err) {
