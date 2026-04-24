@@ -603,6 +603,41 @@ def resolve_category_for_keyword(keyword: str, forced_category: str | None = Non
     return "outros"
 
 
+def normalize_text(value: Any) -> str:
+    text = str(value or "").lower().strip()
+    text = re.sub(r"[\u0300-\u036f]", "", text)
+    text = re.sub(r"[^a-z0-9]+", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def normalize_image_url(value: Any) -> str:
+    text = str(value or "").strip()
+    return re.sub(r"[?#].*$", "", text)
+
+
+def product_fingerprint(data: dict[str, Any]) -> str:
+    offer_link = normalize_image_url(data.get("offerLink") or data.get("productLink") or data.get("link"))
+    image = normalize_image_url((data.get("images") or [None])[0] or data.get("image"))
+    name = normalize_text(data.get("name"))
+    price = pick_price(data.get("price"), data.get("priceMin"), data.get("priceMax"))
+    return "|".join([name, str(price or ""), offer_link, image])
+
+
+def reclassify_product_category(data: dict[str, Any]) -> str:
+    keywords = data.get("keywordsSource") or []
+    if isinstance(keywords, str):
+        keywords = [keywords]
+    for keyword in keywords:
+        resolved = resolve_category_for_keyword(str(keyword))
+        if resolved != "outros":
+            return resolved
+    name = str(data.get("name") or "").lower()
+    for category, rules in CATEGORY_RULES.items():
+        if any(rule in name for rule in rules):
+            return category
+    return data.get("category") or "outros"
+
+
 def get_batch_state(db: firestore.Client, total_batches: int) -> dict[str, int]:
     state_ref = db.collection("meta").document("shopee_import_state")
     snap = state_ref.get()
@@ -658,6 +693,11 @@ def main() -> int:
         action="store_true",
         help="Overwrite the category of existing products using the current keyword rules",
     )
+    parser.add_argument(
+        "--cleanup-existing",
+        action="store_true",
+        help="Reclassify existing products and remove duplicate documents from Firestore",
+    )
     parser.add_argument("--dry-run", action="store_true", help="Do not write to Firestore")
     args = parser.parse_args()
 
@@ -709,6 +749,49 @@ def main() -> int:
     summary = {"keywords": len(keywords), "fetched": 0, "saved": 0, "skipped": 0}
     seen_ids: set[str] = set()
 
+    if args.cleanup_existing:
+        docs = list(products_ref.stream())
+        by_fingerprint: dict[str, list[firestore.DocumentReference]] = {}
+        batch = db.batch()
+        batch_ops = 0
+        cleaned = 0
+        duplicated = 0
+        for doc in docs:
+            data = doc.to_dict() or {}
+            fingerprint = product_fingerprint(data)
+            by_fingerprint.setdefault(fingerprint, []).append(doc.reference)
+        for fingerprint, refs in by_fingerprint.items():
+            keep_ref = refs[0]
+            keep_snap = keep_ref.get()
+            keep_data = keep_snap.to_dict() or {}
+            updated_category = reclassify_product_category(keep_data)
+            if updated_category and keep_data.get("category") != updated_category:
+                keep_ref.set({"category": updated_category, "updatedAt": int(time.time() * 1000)}, merge=True)
+                cleaned += 1
+            for dup_ref in refs[1:]:
+                batch.delete(dup_ref)
+                batch_ops += 1
+                duplicated += 1
+                if batch_ops >= 400:
+                    batch.commit()
+                    batch = db.batch()
+                    batch_ops = 0
+        if batch_ops:
+            batch.commit()
+        print(
+            json.dumps(
+                {
+                    "event": "cleanup_existing",
+                    "checked": len(docs),
+                    "updated": cleaned,
+                    "deletedDuplicates": duplicated,
+                },
+                ensure_ascii=False,
+            ),
+        )
+        if args.dry_run:
+            return 0
+
     for keyword in keywords:
         default_category = resolve_category_for_keyword(keyword, args.category)
         try:
@@ -748,7 +831,9 @@ def main() -> int:
                     product["keywordsSource"] = sorted(set(existing_keywords + [keyword]))
                 else:
                     product["keywordsSource"] = existing_keywords
-                if existing_data.get("category") and not args.category and not args.reclassify_existing:
+                if args.reclassify_existing:
+                    product["category"] = reclassify_product_category(existing_data | product)
+                elif existing_data.get("category") and not args.category:
                     product["category"] = existing_data["category"]
 
             if not args.dry_run:
