@@ -182,17 +182,11 @@ function getActiveSeasonalCollections(items) {
 }
 
 function getCampaignItems(items) {
-  const allCampaign = items.filter(p => !p.featured && !p.homeOrder && getCampaignGroupKey(p));
-  const bucket = getHomeRotationBucket();
-
-  // Rotate the pool of campaign items every 30 minutes
-  const rotated = [...allCampaign].sort((a, b) => {
-    const aKey = hashString(`${bucket}:campaign:${a.id}`);
-    const bKey = hashString(`${bucket}:campaign:${b.id}`);
-    return aKey - bKey;
-  });
-
-  return rotated.slice(0, CAMPAIGN_SECTION_LIMIT);
+  const source = items.filter(p => !p.featured && !p.homeOrder);
+  const campaignSet = rotateHomeProducts(source)
+    .filter((p, i, arr) => arr.findIndex(x => productFingerprint(x) === productFingerprint(p)) === i)
+    .slice(0, CAMPAIGN_SECTION_LIMIT);
+  return campaignSet;
 }
 
 function getProductScore(p) {
@@ -781,29 +775,19 @@ function _renderFiltered(grid, empty, search) {
     const pinned = pickUnique(
       sortFeaturedFirst(uniqueFiltered.filter(p => p.featured || p.homeOrder)),
       usedFingerprints,
-      HOME_SECTION_LIMIT,
+      5,
     );
     const campaignItems = pickUnique(getCampaignItems(uniqueFiltered), usedFingerprints, CAMPAIGN_SECTION_LIMIT);
-    const rotatingSource = uniqueFiltered.filter(p => !(p.featured || p.homeOrder || getCampaignGroupKey(p)));
-    const rotatingGroups = groupByCategory(rotatingSource);
-    const categoryOrder = Object.entries(rotatingGroups)
-      .map(([cat, items]) => ({
-        cat,
-        items: pickUnique(
-          rotateHomeProducts(items).sort((a, b) => getProductScore(b) - getProductScore(a)),
-          usedFingerprints,
-          HOME_CATEGORY_LIMIT,
-        ),
-      }))
-      .sort((a, b) => b.items.length - a.items.length || a.cat.localeCompare(b.cat));
-    const featured = pinned.filter(Boolean).slice(0, 5); // Limit to one line
+
+    const featured = pinned.filter(Boolean);
     const featuredHTML = featured.length ? `
       <section class="home-vitrine home-vitrine-featured">
         <div class="section-head">
           <div>
             <span class="section-kicker">Primeira linha</span>
-            <h3>Produtos fixos e destaque</h3>
+            <h3>Produtos fixos e campanhas ativas</h3>
           </div>
+          <p>Itens fixados manualmente, campanhas e promoções temporárias ficam acima da rotação.</p>
         </div>
         <div class="featured-row">${featured.map(p => cardHTML(p)).join('')}</div>
       </section>` : '';
@@ -813,8 +797,9 @@ function _renderFiltered(grid, empty, search) {
         <div class="section-head">
           <div>
             <span class="section-kicker">Vitrine de campanha</span>
-            <h3>Novidades a cada 30 minutos</h3>
+            <h3>Ofertas temporárias e campanhas semanais</h3>
           </div>
+          <p>Itens com campanha, janela de data ou promoção destacada entram aqui sem misturar com a rotação principal.</p>
         </div>
         <div class="product-grid-inner">${campaignItems.map(p => cardHTML(p)).join('')}</div>
       </section>` : '';
