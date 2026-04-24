@@ -2,11 +2,11 @@
 let heroCurrent  = 0;
 let heroTimer    = null;
 const HERO_INTERVAL = 5000;
-const HOME_ROTATION_MINUTES = 20;
-const HOME_ROTATION_MINUTES_LONG = 30;
+const HOME_ROTATION_MINUTES = 30;
+const HOME_CATEGORY_LIMIT = 12;
 const HOME_SECTION_LIMIT = 16;
-const CAMPAIGN_SECTION_LIMIT = 250;
-const HOME_ROTATION_LIMIT = 100;
+const CAMPAIGN_SECTION_LIMIT = 120;
+const HOME_FEED_LIMIT = 80;
 const SEASONAL_COLLECTION_LIMIT = 14;
 const FIRESTORE_CACHE_KEY = 'shopee_products_cache';
 const FIRESTORE_CACHE_TTL_MS = 10 * 60 * 1000;
@@ -88,35 +88,12 @@ function productFingerprint(item) {
   return String(item?.id || '').trim();
 }
 
-// Extracts the canonical Shopee product path (strips tracking params)
-function productLinkKey(item) {
-  const raw = String(item?.link || '').trim();
-  if (!raw) return '';
-  try {
-    const url = new URL(raw);
-    return (url.hostname + url.pathname).toLowerCase().replace(/\/+$/, '');
-  } catch { return raw.split('?')[0].toLowerCase(); }
-}
-
-// Soft key: name+price only, ignores image/URL differences
-function productSoftKey(item) {
-  const name = normalizeText(item?.name || '');
-  const price = Number.isFinite(Number(item?.price)) ? Number(Number(item.price)).toFixed(2) : '';
-  return name ? `${name}|${price}` : productFingerprint(item);
-}
-
 function dedupeProducts(items) {
-  const seenFp   = new Set();
-  const seenSoft = new Set();
-  const seenLink = new Set();
+  const seen = new Set();
   return items.filter(item => {
-    const fp   = productFingerprint(item);
-    const soft = productSoftKey(item);
-    const link = productLinkKey(item);
-    if (seenFp.has(fp) || seenSoft.has(soft) || (link && seenLink.has(link))) return false;
-    seenFp.add(fp);
-    seenSoft.add(soft);
-    if (link) seenLink.add(link);
+    const key = productFingerprint(item);
+    if (seen.has(key)) return false;
+    seen.add(key);
     return true;
   });
 }
@@ -126,17 +103,11 @@ function dedupeByContent(items) {
 }
 
 function pickUnique(items, used, limit) {
-  const picked    = [];
-  const usedSoft  = new Set();
-  const usedLink  = new Set();
+  const picked = [];
   for (const item of items) {
-    const key  = productFingerprint(item);
-    const soft = productSoftKey(item);
-    const link = productLinkKey(item);
-    if (used.has(key) || usedSoft.has(soft) || (link && usedLink.has(link))) continue;
+    const key = productFingerprint(item);
+    if (used.has(key)) continue;
     used.add(key);
-    usedSoft.add(soft);
-    if (link) usedLink.add(link);
     picked.push(item);
     if (picked.length >= limit) break;
   }
@@ -211,44 +182,17 @@ function getActiveSeasonalCollections(items) {
 }
 
 function getCampaignItems(items) {
-  const campaignSet = items
-    .filter(p => !p.featured && !p.homeOrder && getCampaignGroupKey(p))
-    .sort((a, b) => {
-      const aOrder = Number.isFinite(Number(a.homeOrder)) ? Number(a.homeOrder) : Number.MAX_SAFE_INTEGER;
-      const bOrder = Number.isFinite(Number(b.homeOrder)) ? Number(b.homeOrder) : Number.MAX_SAFE_INTEGER;
-      if (aOrder !== bOrder) return aOrder - bOrder;
-      return getProductScore(b) - getProductScore(a);
-    })
-    .filter((p, i, arr) => arr.findIndex(x => productFingerprint(x) === productFingerprint(p)) === i)
-    .slice(0, CAMPAIGN_SECTION_LIMIT);
+  const allCampaign = items.filter(p => !p.featured && !p.homeOrder && getCampaignGroupKey(p));
+  const bucket = getHomeRotationBucket();
 
-  if (campaignSet.length >= CAMPAIGN_SECTION_LIMIT) return campaignSet;
+  // Rotate the pool of campaign items every 30 minutes
+  const rotated = [...allCampaign].sort((a, b) => {
+    const aKey = hashString(`${bucket}:campaign:${a.id}`);
+    const bKey = hashString(`${bucket}:campaign:${b.id}`);
+    return aKey - bKey;
+  });
 
-  // Fill remaining slots with products from all categories, spread evenly
-  const usedFp = new Set(campaignSet.map(p => productFingerprint(p)));
-  const candidates = items
-    .filter(p => !p.featured && !p.homeOrder && !usedFp.has(productFingerprint(p)))
-    .filter((p, i, arr) => arr.findIndex(x => productFingerprint(x) === productFingerprint(p)) === i)
-    .sort((a, b) => getProductScore(b) - getProductScore(a));
-
-  // Interleave by category for diversity
-  const byCategory = {};
-  for (const p of candidates) {
-    const cat = p.category || 'outros';
-    if (!byCategory[cat]) byCategory[cat] = [];
-    byCategory[cat].push(p);
-  }
-  const catQueues = Object.values(byCategory);
-  const fill = [];
-  const needed = CAMPAIGN_SECTION_LIMIT - campaignSet.length;
-  while (fill.length < needed && catQueues.some(q => q.length)) {
-    for (const q of catQueues) {
-      if (fill.length >= needed) break;
-      if (q.length) fill.push(q.shift());
-    }
-  }
-
-  return [...campaignSet, ...fill];
+  return rotated.slice(0, CAMPAIGN_SECTION_LIMIT);
 }
 
 function getProductScore(p) {
@@ -289,7 +233,7 @@ function isDisplayableProduct(p) {
 }
 
 function rotateHomeProducts(items) {
-  const bucket = getTimeBucket(HOME_ROTATION_MINUTES_LONG);
+  const bucket = getHomeRotationBucket();
   return [...items].sort((a, b) => {
     const aKey = hashString(`${bucket}:${a.category}:${a.id}:${a.name}`);
     const bKey = hashString(`${bucket}:${b.category}:${b.id}:${b.name}`);
@@ -658,10 +602,7 @@ function handleSearchKey(e) {
 
 // ── DARK MODE ─────────────────────────────────────────────────
 function initDarkMode() {
-  const saved = localStorage.getItem('darkMode');
-  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-  if (saved === '1' || (saved === null && prefersDark)) {
+  if (localStorage.getItem('darkMode') === '1') {
     document.documentElement.setAttribute('data-theme', 'dark');
     const icon = document.getElementById('darkIcon');
     if (icon) icon.className = 'fas fa-sun';
@@ -718,7 +659,7 @@ let currentSort     = 'default';
 let priceMin        = null;
 let priceMax        = null;
 let firstLoad       = true;
-let allProducts = dedupeProducts(JSON.parse(localStorage.getItem('shopee_products') || '[]'));
+let allProducts = JSON.parse(localStorage.getItem('shopee_products') || '[]');
 let firestoreDb = null;
 let firestoreReady = false;
 
@@ -807,22 +748,10 @@ function _renderFiltered(grid, empty, search) {
   // Hide products scheduled for the future
   filtered = filtered.filter(p => !p.publishDate || new Date(p.publishDate) <= new Date());
   if (currentCategory !== 'todos') filtered = filtered.filter(p => p.category === currentCategory);
-  if (search) {
-    const searchTerms = search.split(/\s+/);
-    filtered = filtered.filter(p => {
-      const name = p.name.toLowerCase();
-      const desc = (p.desc || '').toLowerCase();
-      const cat = (p.category || '').toLowerCase();
-      // Match all terms (AND logic) for better precision
-      return searchTerms.every(term =>
-        name.includes(term) || desc.includes(term) || cat.includes(term)
-      );
-    });
-  }
+  if (search) filtered = filtered.filter(p => p.name.toLowerCase().includes(search));
   if (priceMin !== null) filtered = filtered.filter(p => p.price >= priceMin);
   if (priceMax !== null) filtered = filtered.filter(p => p.price <= priceMax);
   const uniqueFiltered = dedupeByContent(filtered);
-  const rotationPool = uniqueFiltered.filter(p => !(p.featured || p.homeOrder || getCampaignGroupKey(p)));
 
   switch (currentSort) {
     case 'price-asc':  filtered.sort((a, b) => a.price - b.price); break;
@@ -831,9 +760,8 @@ function _renderFiltered(grid, empty, search) {
     case 'newest':     filtered.sort((a, b) => b.id - a.id); break;
     default: {
       const featured = sortFeaturedFirst(uniqueFiltered.filter(p => p.featured || p.homeOrder));
-      const campaignPreview = getCampaignItems(uniqueFiltered);
-      const rotating = rotateHomeProducts(rotationPool).slice(0, HOME_ROTATION_LIMIT);
-      filtered = [...featured, ...campaignPreview, ...rotating];
+      const rotating = rotateHomeProducts(uniqueFiltered.filter(p => !(p.featured || p.homeOrder)));
+      filtered = [...featured, ...rotating];
       break;
     }
   }
@@ -850,51 +778,48 @@ function _renderFiltered(grid, empty, search) {
   empty.style.display = 'none';
   try {
     const usedFingerprints = new Set();
-    const featured = pickUnique(
+    const pinned = pickUnique(
       sortFeaturedFirst(uniqueFiltered.filter(p => p.featured || p.homeOrder)),
       usedFingerprints,
       HOME_SECTION_LIMIT,
     );
     const campaignItems = pickUnique(getCampaignItems(uniqueFiltered), usedFingerprints, CAMPAIGN_SECTION_LIMIT);
-    const rotatingItems = pickUnique(
-      rotateHomeProducts(rotationPool).sort((a, b) => getProductScore(b) - getProductScore(a)),
-      usedFingerprints,
-      HOME_ROTATION_LIMIT,
-    );
+    const rotatingSource = uniqueFiltered.filter(p => !(p.featured || p.homeOrder || getCampaignGroupKey(p)));
+    const rotatingGroups = groupByCategory(rotatingSource);
+    const categoryOrder = Object.entries(rotatingGroups)
+      .map(([cat, items]) => ({
+        cat,
+        items: pickUnique(
+          rotateHomeProducts(items).sort((a, b) => getProductScore(b) - getProductScore(a)),
+          usedFingerprints,
+          HOME_CATEGORY_LIMIT,
+        ),
+      }))
+      .sort((a, b) => b.items.length - a.items.length || a.cat.localeCompare(b.cat));
+    const featured = pinned.filter(Boolean).slice(0, 5); // Limit to one line
     const featuredHTML = featured.length ? `
       <section class="home-vitrine home-vitrine-featured">
         <div class="section-head">
           <div>
             <span class="section-kicker">Primeira linha</span>
-            <h3>Produtos fixos e campanhas ativas</h3>
+            <h3>Produtos fixos e destaque</h3>
           </div>
-          <p>Itens fixados manualmente, campanhas e promoções temporárias ficam acima da rotação.</p>
         </div>
-        <div class="product-grid-inner">${featured.map(p => cardHTML(p)).join('')}</div>
+        <div class="featured-row">${featured.map(p => cardHTML(p)).join('')}</div>
       </section>` : '';
+
     const campaignHTML = campaignItems.length ? `
       <section class="home-vitrine home-vitrine-campaign">
         <div class="section-head">
           <div>
             <span class="section-kicker">Vitrine de campanha</span>
-            <h3>Ofertas temporárias e campanhas semanais</h3>
+            <h3>Novidades a cada 30 minutos</h3>
           </div>
-          <p>Itens com campanha, janela de data ou promoção destacada entram aqui sem misturar com a rotação principal.</p>
         </div>
         <div class="product-grid-inner">${campaignItems.map(p => cardHTML(p)).join('')}</div>
       </section>` : '';
-    const rotatingHTML = rotatingItems.length ? `
-      <section class="home-vitrine home-vitrine-rotating">
-        <div class="section-head">
-          <div>
-            <span class="section-kicker">Vitrine rotativa</span>
-            <h3>100 produtos que mudam a cada 30 minutos</h3>
-          </div>
-          <p>Seleção única, sem repetir a primeira linha nem a campanha.</p>
-        </div>
-        <div class="product-grid-inner">${rotatingItems.map(p => cardHTML(p)).join('')}</div>
-      </section>` : '';
-    grid.innerHTML = `${featuredHTML}${campaignHTML}${rotatingHTML}`;
+
+    grid.innerHTML = `${featuredHTML}${campaignHTML}`;
     animateCards();
     startCountdownTimers();
   } catch (err) {
@@ -907,21 +832,16 @@ function _renderFiltered(grid, empty, search) {
 // ── SKELETON ─────────────────────────────────────────────────
 function showSkeleton() {
   const grid = document.getElementById('productGrid');
-  if (!grid) return;
-  grid.innerHTML = `
-    <div class="skeleton-grid">
-      ${Array(8).fill(0).map(() => `
-        <div class="skeleton-card">
-          <div class="skel-img"></div>
-          <div class="skel-body">
-            <div class="skel-line"></div>
-            <div class="skel-line skel-meta"></div>
-            <div class="skel-line skel-price"></div>
-          </div>
-        </div>
-      `).join('')}
-    </div>
-  `;
+  grid.innerHTML = Array(8).fill(0).map(() => `
+    <div class="skeleton-card">
+      <div class="skel skel-img"></div>
+      <div class="skel-body">
+        <div class="skel skel-line"></div>
+        <div class="skel skel-line skel-short"></div>
+        <div class="skel skel-price"></div>
+      </div>
+      <div class="skel skel-btn"></div>
+    </div>`).join('');
 }
 
 // ── CARD ANIMATION ────────────────────────────────────────────
@@ -981,41 +901,60 @@ function getDiscount(p) {
 function cardHTML(p) {
   const images   = getImages(p);
   const main     = images[0] || 'https://via.placeholder.com/300x300?text=Sem+Imagem';
+  const hasMore  = images.length > 1 || !!p.video;
   const discount = getDiscount(p);
+  const isNew    = p.id && (Date.now() - p.id) < 7 * 24 * 60 * 60 * 1000;
+  const isHot    = discount >= 30;
   const isCampaign = isCampaignActive(p) || p.campaignId;
 
   let leftBadge = '';
-  if (p.featured)    leftBadge = '<span class="badge-featured">DESTAQUE</span>';
-  else if (isCampaign) leftBadge = '<span class="badge-featured">OFERTA</span>';
+  if (p.featured)    leftBadge = '<span class="badge-featured">⭐ Destaque</span>';
+  else if (isCampaign) leftBadge = '<span class="badge-featured">🎯 Campanha</span>';
+  else if (isHot)    leftBadge = '<span class="badge-hot">🔥 QUENTE</span>';
+  else if (isNew)    leftBadge = '<span class="badge-new">✨ NOVO</span>';
+
+  const allMedia = [...images, ...(p.video ? ['__video__'] : [])];
+  const thumbsHTML = hasMore ? `
+    <div class="card-thumbs">
+      ${allMedia.slice(0, 5).map((m, i) => {
+        if (m === '__video__') {
+          const vt = getVideoThumb(p.video);
+          return `<div class="thumb video-thumb" data-action="open-product" data-id="${p.id}" data-start-index="${images.length}">
+            ${vt ? `<img src="${vt}" alt="video"/>` : '<div class="vt-placeholder"></div>'}
+            <span class="play-icon">▶</span>
+          </div>`;
+        }
+        return `<div class="thumb ${i===0?'active':''}" data-action="open-product" data-id="${p.id}" data-start-index="${i}">
+          <img src="${m}" alt="" loading="lazy"/>
+        </div>`;
+      }).join('')}
+      ${allMedia.length > 5 ? `<div class="thumb thumb-more">+${allMedia.length - 5}</div>` : ''}
+    </div>` : '';
 
   return `
   <div class="product-card" data-action="open-product" data-id="${p.id}">
     ${leftBadge}
-    ${discount ? `<span class="badge-discount">-${discount}%</span>` : ''}
-
+    ${discount   ? `<span class="badge-discount">-${discount}%</span>` : ''}
+    ${hasMore ? `<span class="badge-gallery"><i class="fas fa-images"></i> ${[...images, ...(p.video?['v']:[])].length}</span>` : ''}
     <div class="card-img-wrap">
-      <img src="${main}" alt="${p.name}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x300?text=Sem+Imagem'"/>
+      <img src="${main}" alt="${p.name} - imagem principal" loading="lazy"
+           onerror="this.src='https://via.placeholder.com/300x300?text=Sem+Imagem'"/>
     </div>
-
+    ${thumbsHTML}
     <div class="card-body">
-      <div class="card-trust">
-        <i class="fas fa-check-circle"></i> Produto Verificado
-      </div>
       <div class="card-name">${p.name}</div>
-      <div class="card-price-row">
-        <span class="card-price-label">A partir de</span>
-        <span class="card-price-value">
-          R$ ${Number(p.price).toFixed(2).replace('.',',')}
-          ${p.originalPrice && p.originalPrice > p.price
-            ? `<span class="card-original">R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}</span>` : ''}
-        </span>
+      ${p.desc ? `<div class="card-desc">${formatDescription(p.desc)}</div>` : ''}
+      ${p.rating ? `<div class="card-stars">${starsHTML(p.rating)}${p.soldCount ? `<span class="card-sold">${p.soldCount}+ vendidos</span>` : ''}</div>` : (p.soldCount ? `<div class="card-stars"><span class="card-sold">${p.soldCount}+ vendidos</span></div>` : '')}
+      <div class="card-prices">
+        ${p.originalPrice && p.originalPrice > p.price
+          ? `<div class="card-original">R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}</div>` : ''}
+        <div class="card-price">R$ ${Number(p.price).toFixed(2).replace('.',',')}</div>
       </div>
     </div>
-
-    <div class="card-btn">Ver Oferta</div>
-
+        <div class="card-btn">🛒 Comprar na Shopee</div>
+    ${(() => { const t = p.countdown ? new Date(p.countdown).getTime() : null; const s = t ? renderCountdownStr(t) : null; return s ? `<div class="card-countdown-wrap"><span class="card-countdown" data-countdown="${t}">⏰ Oferta encerra em: ${s}</span></div>` : ''; })()}
     <button class="card-compare-btn ${compareList.some(id => sameId(id, p.id))?'active':''}" data-pid="${p.id}"
-      data-action="toggle-compare" title="Comparar">
+      data-action="toggle-compare" title="Adicionar para comparar">
       <i class="fas fa-columns"></i>
     </button>
   </div>`;
@@ -1060,34 +999,34 @@ function openProductModal(id, startIdx) {
   });
 
   document.getElementById('modalName').textContent = p.name;
-  document.getElementById('modalCategory').innerHTML = `<i class="fas fa-magic"></i> ${categoryLabel(p.category)}`;
+  document.getElementById('modalCategory').textContent = categoryLabel(p.category);
+  document.getElementById('modalDesc').textContent = p.desc || '';
   document.getElementById('modalBuyBtn').href = p.link;
-
-  // Flash Offer
-  const flashEl = document.getElementById('modalFlash');
-  const flashTimerEl = document.getElementById('modalFlashTimer');
-  const cdTarget = p.countdown ? new Date(p.countdown).getTime() : null;
-  if (flashEl && cdTarget) {
-    flashEl.classList.remove('hidden-block');
-    flashTimerEl.textContent = renderCountdownStr(cdTarget);
-  } else {
-    flashEl?.classList.add('hidden-block');
+  const buyBtn = document.getElementById('modalBuyBtn');
+  if (buyBtn && !buyBtn.dataset.analyticsBound) {
+    buyBtn.dataset.analyticsBound = '1';
+    buyBtn.addEventListener('click', () => {
+      if (!modalProduct) return;
+      trackEvent('click_buy_shopee', {
+        item_id: modalProduct.id,
+        item_name: modalProduct.name,
+        item_category: modalProduct.category,
+        price: Number(modalProduct.price) || 0,
+        currency: 'BRL',
+      });
+    });
   }
 
-  // Stock
-  const stockCountEl = document.getElementById('modalStockCount');
-  const stockFillEl = document.querySelector('.stock-fill');
-  const randomStock = Math.floor(Math.random() * 30) + 5;
-  if (stockCountEl) stockCountEl.textContent = randomStock;
-  if (stockFillEl) stockFillEl.style.width = `${Math.floor(Math.random() * 40) + 60}%`;
+  // Stars & sold count
+  const starsEl = document.getElementById('modalStars');
+  const soldEl  = document.getElementById('modalSoldCount');
+  starsEl.innerHTML  = p.rating ? starsHTML(p.rating) : '';
+  soldEl.textContent = p.soldCount ? `🛒 ${p.soldCount}+ vendidos` : '';
 
-  // Prices
   const priceEl    = document.getElementById('modalPrice');
   const origEl     = document.getElementById('modalOriginal');
   const discEl     = document.getElementById('modalDiscount');
-  const priceStr   = `R$ ${Number(p.price).toFixed(2).replace('.',',')}`;
-  priceEl.textContent = priceStr;
-
+  priceEl.textContent = `R$ ${Number(p.price).toFixed(2).replace('.',',')}`;
   if (p.originalPrice && p.originalPrice > p.price) {
     origEl.textContent = `R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}`;
     discEl.textContent = discount ? `-${discount}%` : '';
@@ -1096,17 +1035,18 @@ function openProductModal(id, startIdx) {
     origEl.style.display = 'none'; discEl.style.display = 'none';
   }
 
-  // Specs Table
-  document.getElementById('specCat').textContent = categoryLabel(p.category);
-  document.getElementById('specOrig').textContent = p.originalPrice ? `R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}` : priceStr;
-  document.getElementById('specDiscPrice').textContent = priceStr;
-  document.getElementById('specTotalDisc').textContent = discount ? `${discount}%` : '0%';
-
-  // FAQ Price
-  document.querySelectorAll('.faq-price').forEach(el => el.textContent = priceStr);
-
   renderModalMedia(allMedia);
   renderModalThumbs(allMedia);
+
+  // Countdown
+  const cdEl     = document.getElementById('modalCountdown');
+  const cdTarget = p.countdown ? new Date(p.countdown).getTime() : null;
+  const cdStr    = cdTarget ? renderCountdownStr(cdTarget) : null;
+  if (cdEl) {
+    if (cdStr) { cdEl.textContent = `⏰ Oferta encerra em: ${cdStr}`; cdEl.style.display = ''; }
+    else        { cdEl.style.display = 'none'; }
+  }
+
   renderRelated(p);
 
   document.getElementById('productModal').classList.add('open');
@@ -1240,13 +1180,12 @@ function updateHeroStats() {
 }
 
 function updatePageSeo(filtered, search) {
-  const baseTitle = 'Ofertas na Shopee por Categoria e Preço | Melhores Ofertas';
-  const baseDescription = 'Curadoria de ofertas na Shopee por categoria, preço e campanha. Veja produtos atualizados, compare valores e descubra promoções com rapidez.';
+  const baseTitle = 'Ofertas na Shopee com Desconto | Melhores Ofertas';
+  const baseDescription = 'Curadoria de ofertas na Shopee com descontos, comparação de preços e links de afiliado. Veja produtos atualizados por categoria, preço, campanha e coleção sazonal.';
   const liveCount = filtered.length;
   const activeCategory = currentCategory !== 'todos' ? categoryLabel(currentCategory) : null;
   const searchTerm = search ? `busca por "${search}"` : null;
   const activeCategoryName = activeCategory ? activeCategory.replace(/^.*? /, '') : null;
-  const isCategoryPage = window.location.pathname.endsWith('/categoria.html') || window.location.pathname.endsWith('/categoria');
   const titleBits = [];
   if (activeCategoryName) titleBits.push(activeCategoryName);
   if (searchTerm) titleBits.push(searchTerm);
@@ -1266,13 +1205,9 @@ function updatePageSeo(filtered, search) {
 
   const canonical = document.querySelector('link[rel="canonical"]');
   if (canonical) {
-    if (isCategoryPage) {
-      canonical.setAttribute('href', `${window.location.origin}${window.location.pathname}`);
-    } else {
-      canonical.setAttribute('href', hasFilteredView
-        ? `${window.location.origin}${window.location.pathname}${currentCategory !== 'todos' ? `?cat=${encodeURIComponent(currentCategory)}` : ''}`
-        : `${window.location.origin}/`);
-    }
+    canonical.setAttribute('href', hasFilteredView
+      ? `${window.location.origin}${window.location.pathname}${currentCategory !== 'todos' ? `?cat=${encodeURIComponent(currentCategory)}` : ''}`
+      : `${window.location.origin}/`);
   }
 
   const ogTitle = document.querySelector('meta[property="og:title"]');
@@ -1280,24 +1215,32 @@ function updatePageSeo(filtered, search) {
   const ogUrl = document.querySelector('meta[property="og:url"]');
   if (ogTitle) ogTitle.setAttribute('content', document.title);
   if (ogDesc) ogDesc.setAttribute('content', description);
-  if (ogUrl) ogUrl.setAttribute('content', isCategoryPage
-    ? `${window.location.origin}${window.location.pathname}`
-    : hasFilteredView && currentCategory !== 'todos'
-      ? `${window.location.origin}${window.location.pathname}?cat=${encodeURIComponent(currentCategory)}`
-      : `${window.location.origin}/`);
+  if (ogUrl) ogUrl.setAttribute('content', hasFilteredView && currentCategory !== 'todos'
+    ? `${window.location.origin}${window.location.pathname}?cat=${encodeURIComponent(currentCategory)}`
+    : `${window.location.origin}/`);
 }
 
 function updateResultsSummary(filtered, search) {
   const summaryEl = document.getElementById('resultsSummary');
   const contextEl = document.getElementById('activeContext');
-  if (!summaryEl || !contextEl) return;
+  const updatedEl = document.getElementById('resultsUpdated');
+  if (!summaryEl || !contextEl || !updatedEl) return;
 
   const totalLive = allProducts.filter(p => !p.publishDate || new Date(p.publishDate) <= new Date()).length;
-  summaryEl.textContent = search ? `Resultados para "${search}"` : (currentCategory !== 'todos' ? categoryLabel(currentCategory).split(' ').slice(1).join(' ') : 'Todas as Ofertas');
+  summaryEl.textContent = `${filtered.length} oferta${filtered.length === 1 ? '' : 's'} encontrada${filtered.length === 1 ? '' : 's'} de ${totalLive}`;
 
-  const countText = `${filtered.length} de ${totalLive} produtos encontrados`;
-  contextEl.textContent = countText;
-
+  const parts = [];
+  if (currentCategory !== 'todos') parts.push(categoryLabel(currentCategory));
+  if (search) parts.push(`busca por "${search}"`);
+  if (priceMin !== null || priceMax !== null) {
+    const minText = priceMin !== null ? `R$ ${priceMin.toFixed(2).replace('.', ',')}` : 'qualquer valor';
+    const maxText = priceMax !== null ? `R$ ${priceMax.toFixed(2).replace('.', ',')}` : 'qualquer valor';
+    parts.push(`faixa de ${minText} até ${maxText}`);
+  }
+  const sortLabel = document.getElementById('sortSelect')?.selectedOptions?.[0]?.textContent?.toLowerCase() || 'destaques';
+  parts.push(currentSort === 'default' ? 'ordenado por destaques' : `ordenado por ${sortLabel}`);
+  contextEl.textContent = parts.join(' · ');
+  updatedEl.textContent = `Última atualização: ${formatUpdatedTime(lastRenderAt)}`;
   updateHeroStats();
   updatePageSeo(filtered, search);
 }
@@ -1367,8 +1310,8 @@ function updateStructuredData(filtered) {
 }
 
 function initAppBindings() {
-  const darkToggle = document.getElementById('darkToggle');
   const searchInput = document.getElementById('searchInput');
+  const darkToggle = document.getElementById('darkToggle');
   const heroPrevBtn = document.getElementById('heroPrevBtn');
   const heroNextBtn = document.getElementById('heroNextBtn');
   const catLeft = document.getElementById('catLeft');
@@ -1386,13 +1329,6 @@ function initAppBindings() {
   const compareClearBtn = document.getElementById('compareClearBtn');
   const compareModal = document.getElementById('compareModal');
   const compareCloseBtn = document.getElementById('compareCloseBtn');
-
-  const productGrid = document.getElementById('productGrid');
-  const heroSlides = document.getElementById('heroSlides');
-  const heroDots = document.getElementById('heroDots');
-  const modalThumbsStrip = document.getElementById('modalThumbsStrip');
-  const modalRelatedList = document.getElementById('modalRelatedList');
-  const compareSlots = document.getElementById('compareSlots');
 
   searchInput?.addEventListener('input', () => { filterProducts(); updateSearchSuggestions(); });
   searchInput?.addEventListener('focus', showSearchHistory);
@@ -1416,6 +1352,13 @@ function initAppBindings() {
   compareCloseBtn?.addEventListener('click', closeCompareModal);
   productModal?.addEventListener('click', e => { if (e.target === productModal) closeProductModal(); });
   compareModal?.addEventListener('click', e => { if (e.target === compareModal) closeCompareModal(); });
+
+  const productGrid = document.getElementById('productGrid');
+  const heroSlides = document.getElementById('heroSlides');
+  const heroDots = document.getElementById('heroDots');
+  const modalThumbsStrip = document.getElementById('modalThumbsStrip');
+  const modalRelatedList = document.getElementById('modalRelatedList');
+  const compareSlots = document.getElementById('compareSlots');
 
   productGrid?.addEventListener('click', e => {
     const openEl = e.target.closest('[data-action="open-product"]');

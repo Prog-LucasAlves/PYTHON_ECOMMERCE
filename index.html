@@ -3,32 +3,37 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Ofertas na Shopee por Categoria e Preço | Melhores Ofertas</title>
-  <meta name="description" content="Curadoria de ofertas na Shopee por categoria, preço e campanha. Encontre produtos atualizados, compare valores e descubra promoções com mais rapidez." />
+  <title>Ofertas na Shopee com Desconto | Melhores Ofertas</title>
+  <meta name="description" content="Curadoria de ofertas na Shopee com descontos, comparação de preços e links de afiliado. Veja produtos atualizados por categoria, preço e vitrine fixa." />
   <meta name="keywords" content="ofertas na shopee, desconto shopee, produtos com cupom, frete grátis shopee, compras online" />
   <meta name="author" content="Melhores Ofertas" />
   <meta name="robots" content="index, follow" />
   <link rel="canonical" href="https://melhoresdashopee.com.br/" />
   <link rel="preconnect" href="https://www.googletagmanager.com" />
   <link rel="preconnect" href="https://www.gstatic.com" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; script-src 'self' https://www.gstatic.com https://www.googletagmanager.com; connect-src 'self' https://www.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.gstatic.com https://www.googletagmanager.com; font-src 'self' https://cdnjs.cloudflare.com data:; manifest-src 'self'; upgrade-insecure-requests">
   <!-- Google tag (gtag.js) -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CJZX1ZJ2GM"></script>
-  <script src="js/analytics.js" defer></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-CJZX1ZJ2GM');
+  </script>
 
   <!-- Open Graph (Facebook, WhatsApp) -->
-  <meta property="og:title" content="Ofertas na Shopee por Categoria e Preço | Melhores Ofertas" />
-  <meta property="og:description" content="Curadoria de ofertas na Shopee por categoria, preço e campanha. Encontre produtos atualizados e compare promoções com rapidez." />
+  <meta property="og:title" content="Melhores Ofertas Online 🛍️" />
+  <meta property="og:description" content="Curadoria de ofertas na Shopee com descontos, categorias e links de afiliado." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://melhoresdashopee.com.br/" />
   <meta property="og:site_name" content="Melhores Ofertas" />
   <meta property="og:image" content="https://melhoresdashopee.com.br/img/logo-01-header.svg" />
   <meta property="og:image:alt" content="Melhores Ofertas - curadoria de ofertas na Shopee" />
 
-
   <!-- Twitter Card -->
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Ofertas na Shopee por Categoria e Preço | Melhores Ofertas" />
-  <meta name="twitter:description" content="Curadoria de ofertas na Shopee por categoria, preço e campanha. Encontre produtos atualizados e compare promoções com rapidez." />
+  <meta name="twitter:title" content="Melhores Ofertas Online 🛍️" />
+  <meta name="twitter:description" content="Curadoria de ofertas na Shopee com descontos, categorias e links de afiliado." />
   <meta name="twitter:image" content="https://melhoresdashopee.com.br/img/logo-01-header.svg" />
 
   <link rel="stylesheet" href="css/style.css"/>
@@ -67,7 +72,7 @@
     {
       "@context": "https://schema.org",
       "@type": "WebPage",
-      "name": "Ofertas na Shopee por Categoria e Preço",
+      "name": "Ofertas na Shopee com Desconto",
       "url": "https://melhoresdashopee.com.br/",
       "isPartOf": {
         "@type": "WebSite",
@@ -87,16 +92,16 @@
       <div class="logo">
         <img src="img/logo-01-icon.svg" alt="Melhores Ofertas" class="site-logo site-logo-icon"/>
       </div>
-      <div class="search-wrap">
-        <input type="text" id="searchInput" placeholder="O que você está buscando hoje?"
-          autocomplete="off"/>
-        <div id="searchDropdown" class="search-dropdown hidden-block"></div>
-      </div>
       <div class="header-actions">
-        <button class="btn-header" id="darkToggle" title="Modo escuro">
+        <div class="search-wrap">
+          <input type="text" id="searchInput" placeholder="🔍 Buscar produto..."
+            autocomplete="off"/>
+          <div id="searchDropdown" class="search-dropdown hidden-block"></div>
+        </div>
+        <button class="btn-dark-mode" id="darkToggle" title="Modo escuro">
           <i class="fas fa-moon" id="darkIcon"></i>
         </button>
-        <a href="painel-shopee-vendas.html" class="btn-header"><i class="fas fa-cog"></i></a>
+        <a href="admin.html" class="btn-admin"><i class="fas fa-cog"></i></a>
       </div>
     </div>
   </header>
@@ -105,169 +110,9 @@
   <section class="hero-banner" id="heroBanner">
     <div class="hero-slides" id="heroSlides"></div>
     <div class="hero-dots"   id="heroDots"></div>
+    <button class="hero-arrow hero-prev" id="heroPrevBtn">&#8249;</button>
+    <button class="hero-arrow hero-next" id="heroNextBtn">&#8250;</button>
   </section>
-
-  <!-- TRUST STRIP -->
-  <section class="trust-strip">
-    <div class="trust-inner">
-      <div class="trust-item">
-        <i class="fas fa-check-double"></i>
-        <span>Links Verificados Shopee</span>
-      </div>
-      <div class="trust-item">
-        <i class="fas fa-bolt"></i>
-        <span>Ofertas em Tempo Real</span>
-      </div>
-      <div class="trust-item">
-        <i class="fas fa-shield-halved"></i>
-        <span>Curadoria Independente</span>
-      </div>
-      <div class="trust-item status-badge">
-        <span class="status-dot"></span>
-        <span>Shopee Online</span>
-      </div>
-    </div>
-  </section>
-
-  <section class="intro-section">
-    <div class="intro-shell">
-      <div class="intro-copy">
-        <span class="intro-kicker">Curadoria Diamante</span>
-        <h1>As Melhores Ofertas da Shopee em um só lugar.</h1>
-        <p>Seleção manual das melhores promoções do dia. Compare preços e economize com links 100% seguros e verificados.</p>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- FILTROS / CATEGORIAS -->
-  <section class="cat-section">
-    <div class="cat-track-wrap">
-      <button class="cat-arrow cat-arrow-left" id="catLeft">&#8249;</button>
-      <div class="cat-track" id="catTrack">
-        <button class="cat-item active" data-cat="todos">
-          <span class="cat-circle">🏷️</span>
-          <span class="cat-label">Todos</span>
-        </button>
-        <button class="cat-item" data-cat="roupas-fem">
-          <span class="cat-circle">👗</span>
-          <span class="cat-label">Roupas Femininas</span>
-        </button>
-        <button class="cat-item" data-cat="roupas-masc">
-          <span class="cat-circle">👔</span>
-          <span class="cat-label">Roupas Masculinas</span>
-        </button>
-        <button class="cat-item" data-cat="sapatos">
-          <span class="cat-circle">👟</span>
-          <span class="cat-label">Sapatos</span>
-        </button>
-        <button class="cat-item" data-cat="moda">
-          <span class="cat-circle">💍</span>
-          <span class="cat-label">Acessórios de Moda</span>
-        </button>
-        <button class="cat-item" data-cat="celulares">
-          <span class="cat-circle">📱</span>
-          <span class="cat-label">Celulares</span>
-        </button>
-        <button class="cat-item" data-cat="eletronicos">
-          <span class="cat-circle">💻</span>
-          <span class="cat-label">Eletrônicos</span>
-        </button>
-        <button class="cat-item" data-cat="eletrodom">
-          <span class="cat-circle">🏠</span>
-          <span class="cat-label">Eletrodomésticos</span>
-        </button>
-        <button class="cat-item" data-cat="computadores">
-          <span class="cat-circle">🖥️</span>
-          <span class="cat-label">Computadores</span>
-        </button>
-        <button class="cat-item" data-cat="jogos">
-          <span class="cat-circle">🎮</span>
-          <span class="cat-label">Jogos e Consoles</span>
-        </button>
-        <button class="cat-item" data-cat="cameras">
-          <span class="cat-circle">📷</span>
-          <span class="cat-label">Câmeras e Drones</span>
-        </button>
-        <button class="cat-item" data-cat="audio">
-          <span class="cat-circle">🎧</span>
-          <span class="cat-label">Áudio</span>
-        </button>
-        <button class="cat-item" data-cat="casa">
-          <span class="cat-circle">🏡</span>
-          <span class="cat-label">Casa e Construção</span>
-        </button>
-        <button class="cat-item" data-cat="beleza">
-          <span class="cat-circle">💄</span>
-          <span class="cat-label">Beleza</span>
-        </button>
-        <button class="cat-item" data-cat="saude">
-          <span class="cat-circle">💊</span>
-          <span class="cat-label">Saúde</span>
-        </button>
-        <button class="cat-item" data-cat="esporte">
-          <span class="cat-circle">⚽</span>
-          <span class="cat-label">Esportes e Lazer</span>
-        </button>
-        <button class="cat-item" data-cat="animais">
-          <span class="cat-circle">🐾</span>
-          <span class="cat-label">Animais Domésticos</span>
-        </button>
-        <button class="cat-item" data-cat="brinquedos">
-          <span class="cat-circle">🧸</span>
-          <span class="cat-label">Brinquedos e Hobbies</span>
-        </button>
-        <button class="cat-item" data-cat="bebes">
-          <span class="cat-circle">👶</span>
-          <span class="cat-label">Mãe e Bebê</span>
-        </button>
-        <button class="cat-item" data-cat="automoveis">
-          <span class="cat-circle">🚗</span>
-          <span class="cat-label">Automóveis</span>
-        </button>
-        <button class="cat-item" data-cat="alimentos">
-          <span class="cat-circle">🍎</span>
-          <span class="cat-label">Alimentos e Bebidas</span>
-        </button>
-        <button class="cat-item" data-cat="livros">
-          <span class="cat-circle">📚</span>
-          <span class="cat-label">Livros e Revistas</span>
-        </button>
-        <button class="cat-item" data-cat="outros">
-          <span class="cat-circle">✨</span>
-          <span class="cat-label">Outros</span>
-        </button>
-      </div>
-      <button class="cat-arrow cat-arrow-right" id="catRight">&#8250;</button>
-    </div>
-  </section>
-
-  <!-- CONTROLES: ORDENAÇÃO + FILTRO DE PREÇO -->
-  <!-- FILTERS & RESULTS -->
-  <section class="results-bar">
-    <div class="results-inner">
-      <div class="results-copy">
-        <h2 id="resultsSummary">Todas as Ofertas</h2>
-        <p id="activeContext">Carregando ofertas...</p>
-      </div>
-      <div class="controls-inner">
-        <select id="sortSelect" onchange="setSortMode(this.value)">
-          <option value="default">Destaques</option>
-          <option value="price-asc">Menor Preço</option>
-          <option value="price-desc">Maior Preço</option>
-          <option value="discount">Maior Desconto</option>
-        </select>
-        <div class="price-control">
-          <input type="number" id="priceMin" placeholder="Min" min="0"/>
-          <input type="number" id="priceMax" placeholder="Max" min="0"/>
-        </div>
-        <button class="btn-secondary" type="button" id="clearFiltersBtn">
-          <i class="fas fa-rotate-left"></i>
-        </button>
-      </div>
-    </div>
-  </section>
-
 
   <!-- PRODUTOS -->
   <main id="mainContent">
@@ -294,55 +139,20 @@
 
       <!-- RIGHT: info -->
       <div class="modal-info">
-        <div class="modal-top-meta">
-          <span class="modal-category" id="modalCategory"></span>
-        </div>
-
-        <div id="modalFlash" class="modal-flash hidden-block">
-          <div class="flash-label"><i class="fas fa-bolt"></i> OFERTA RELÂMPAGO</div>
-          <div id="modalFlashTimer" class="flash-timer">00:00:00</div>
-        </div>
-
+        <span class="modal-category" id="modalCategory"></span>
         <h2 id="modalName"></h2>
-
-        <div class="modal-historic-label">
-          <span class="dot-yellow"></span> Preço justo (Média histórica)
-        </div>
-
-        <div class="modal-stock-wrap">
-          <div class="stock-info">
-            <i class="fas fa-fire"></i> Restam apenas <span id="modalStockCount">22</span> unidades em estoque!
-          </div>
-          <div class="stock-bar"><div class="stock-fill" style="width: 70%;"></div></div>
-        </div>
-
+        <div id="modalStars" class="modal-stars"></div>
+        <div id="modalSoldCount" class="modal-sold"></div>
         <div class="modal-prices">
-          <div class="price-main-row">
-            <span class="modal-price" id="modalPrice"></span>
-            <button class="btn-price-alert"><i class="far fa-bell"></i></button>
-          </div>
           <span class="modal-original" id="modalOriginal"></span>
+          <span class="modal-price" id="modalPrice"></span>
           <span class="modal-discount" id="modalDiscount"></span>
         </div>
-
-        <div class="modal-trust-box">
-          <div class="trust-box-icon"><i class="fas fa-certificate"></i></div>
-          <div class="trust-box-copy">
-            <strong>Link Oficial Shopee</strong>
-            <p>Compra garantida. Pagamento e processamento totalmente gerenciados pela Shopee.</p>
-          </div>
-        </div>
-
+        <div id="modalCountdown" class="modal-countdown hidden-block"></div>
+        <p class="modal-desc" id="modalDesc"></p>
         <a id="modalBuyBtn" href="#" target="_blank" rel="noopener" class="modal-buy-btn">
-          <i class="fas fa-shopping-cart"></i> Garantir Meu Desconto
+          <i class="fas fa-shopping-cart"></i> Ver na Shopee
         </a>
-
-        <div class="modal-trust-chips">
-          <span class="trust-chip">100% Seguro</span>
-          <span class="trust-chip"><i class="fas fa-truck-fast"></i> Frete Grátis</span>
-          <span class="trust-chip"><i class="fas fa-rotate-left"></i> Devolução Grátis</span>
-        </div>
-
         <div class="modal-actions-row">
           <button class="modal-share-btn" id="shareWhatsAppBtn">
             <i class="fab fa-whatsapp"></i>
@@ -351,31 +161,7 @@
             <i class="fab fa-telegram-plane"></i>
           </button>
         </div>
-
-        <div class="modal-specs-section">
-          <h3><i class="fas fa-microchip"></i> Ficha Técnica</h3>
-          <table class="specs-table">
-            <tr><td>Categoria</td><td id="specCat"></td></tr>
-            <tr><td>Preço Original</td><td id="specOrig"></td></tr>
-            <tr><td>Preço com Desconto</td><td id="specDiscPrice"></td></tr>
-            <tr><td>Desconto Total</td><td id="specTotalDisc"></td></tr>
-            <tr><td>Selo de Confiança</td><td>Verificado Shopee</td></tr>
-            <tr><td>Vendedor</td><td>Oficial</td></tr>
-          </table>
-        </div>
-
-        <div class="modal-faq-section">
-          <h3><i class="fas fa-circle-question"></i> Dúvidas Frequentes</h3>
-          <div class="faq-card">
-            <strong>Este produto está em oferta?</strong>
-            <p>Sim! O preço promocional atual é de <span class="faq-price">R$ 0,00</span>. Aproveite enquanto durar o estoque.</p>
-          </div>
-          <div class="faq-card">
-            <strong>É seguro comprar por este link?</strong>
-            <p>Com certeza. O Melhores Ofertas faz a curadoria e você finaliza a compra diretamente no ambiente seguro da Shopee, com garantia total.</p>
-          </div>
-        </div>
-
+        <p class="modal-affiliate-note">🔗 Link de afiliado · Você nos ajuda sem pagar nada a mais · <em>Preço promocional sujeito a alteração sem aviso prévio.</em></p>
         <div id="modalRelated" class="modal-related-section hidden-block">
           <h4>Produtos Relacionados</h4>
           <div class="modal-related-list" id="modalRelatedList"></div>
@@ -409,7 +195,7 @@
   </div>
 
   <!-- Botão Telegram flutuante -->
-  <a href="https://t.me/ofertasshopeeday" target="_blank" class="telegram-fab" title="Entrar no grupo de ofertas">
+  <a href="https://t.me/melhoresdashopeeday" target="_blank" class="telegram-fab" title="Entrar no grupo de ofertas">
     <i class="fab fa-telegram-plane"></i>
     <span>Grupo de Ofertas</span>
   </a>
@@ -432,19 +218,17 @@
     <div class="footer-inner">
       <div class="footer-badges">
         <span class="badge-ssl"><i class="fas fa-lock"></i> Site Seguro · SSL</span>
-        <span class="badge-ssl"><i class="fas fa-shield-alt"></i> Compra Protegida Shopee</span>
-        <span class="badge-ssl"><i class="fas fa-tag"></i> Links Oficiais</span>
+        <span class="badge-ssl"><i class="fas fa-shield-alt"></i> Compra realizada na Shopee</span>
+        <span class="badge-ssl"><i class="fas fa-tag"></i> Links para a Shopee</span>
       </div>
-
-      <div class="footer-bottom">
-        <div class="footer-links">
-          <a href="como-funciona.html">Como Funcionamos</a>
-          <a href="politica-privacidade.html">Privacidade</a>
-          <a href="termos-de-uso.html">Termos</a>
-        </div>
-        <p class="footer-disclaimer">O Melhores Ofertas é uma curadoria independente. Como afiliados Shopee, podemos receber comissões por compras qualificadas, sem custo adicional para você.</p>
-        <p class="footer-copy">&copy; 2026 Melhores Ofertas. Curadoria independente de achadinhos Shopee.</p>
-      </div>
+      <p class="footer-copy">© 2026 Melhores Ofertas · Todos os direitos reservados</p>
+      <p class="footer-contact">Contato: <a href="mailto:contato@melhoresdashopee.com.br">contato@melhoresdashopee.com.br</a></p>
+      <p class="footer-affiliate">Este site utiliza links de afiliados. Você nos ajuda sem pagar nada a mais. 💛</p>
+      <p class="footer-disclaimer">Site independente, não afiliado oficialmente à Shopee. "Shopee" é marca registrada de Sea Limited. Os preços exibidos podem não refletir os valores atuais. Consulte sempre a página do produto antes de comprar.</p>
+      <p class="footer-legal">
+        <a href="/politica-privacidade.html">Política de Privacidade</a> ·
+        <a href="/termos-de-uso.html">Termos de Uso</a>
+      </p>
     </div>
   </footer>
   <!-- LGPD Consent Banner -->
