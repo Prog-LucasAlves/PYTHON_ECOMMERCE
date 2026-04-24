@@ -898,11 +898,20 @@ function cardHTML(p) {
   const isHot    = discount >= 30;
   const isCampaign = isCampaignActive(p) || p.campaignId;
 
+  const isBestSeller = p.soldCount >= 500;
+  const isTopRated   = p.rating >= 4.8 && p.soldCount >= 100;
+  const isVerified   = p.verifiedShop || p.officialStore;
+
   let leftBadge = '';
-  if (p.featured)    leftBadge = '<span class="badge-featured">⭐ Destaque</span>';
+  if (p.featured)      leftBadge = '<span class="badge-featured">⭐ Destaque</span>';
   else if (isCampaign) leftBadge = '<span class="badge-featured">🎯 Campanha</span>';
-  else if (isHot)    leftBadge = '<span class="badge-hot">🔥 QUENTE</span>';
-  else if (isNew)    leftBadge = '<span class="badge-new">✨ NOVO</span>';
+  else if (isBestSeller) leftBadge = '<span class="badge-best">🏆 Mais Vendido</span>';
+  else if (isTopRated)   leftBadge = '<span class="badge-top">⭐ Top Avaliado</span>';
+  else if (isHot)      leftBadge = '<span class="badge-hot">🔥 QUENTE</span>';
+  else if (isNew)      leftBadge = '<span class="badge-new">✨ NOVO</span>';
+
+  // Verified tag inside card body
+  const verifiedTag = isVerified ? '<span class="verified-tag"><i class="fas fa-check-circle"></i> Verificada</span>' : '';
 
   const allMedia = [...images, ...(p.video ? ['__video__'] : [])];
   const thumbsHTML = hasMore ? `
@@ -933,6 +942,7 @@ function cardHTML(p) {
     </div>
     ${thumbsHTML}
     <div class="card-body">
+      ${verifiedTag}
       <div class="card-name">${p.name}</div>
       ${p.desc ? `<div class="card-desc">${formatDescription(p.desc)}</div>` : ''}
       ${p.rating ? `<div class="card-stars">${starsHTML(p.rating)}${p.soldCount ? `<span class="card-sold">${p.soldCount}+ vendidos</span>` : ''}</div>` : (p.soldCount ? `<div class="card-stars"><span class="card-sold">${p.soldCount}+ vendidos</span></div>` : '')}

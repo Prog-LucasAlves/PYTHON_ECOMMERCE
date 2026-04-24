@@ -451,6 +451,23 @@ main {
   background: var(--brand); color: #111; font-size: 0.72rem; font-weight: 800;
   padding: 4px 9px; border-radius: 999px;
 }
+.product-card .badge-best {
+  position: absolute; top: 8px; left: 8px;
+  background: #FFD700; color: #000; font-size: 0.7rem; font-weight: 800;
+  padding: 4px 9px; border-radius: 999px; z-index: 1; border: 1px solid rgba(0,0,0,0.1);
+}
+.product-card .badge-top {
+  position: absolute; top: 8px; left: 8px;
+  background: #52c41a; color: #fff; font-size: 0.7rem; font-weight: 800;
+  padding: 4px 9px; border-radius: 999px; z-index: 1;
+}
+
+.verified-tag {
+  font-size: 0.65rem; color: #229ED9; font-weight: 800;
+  display: flex; align-items: center; gap: 4px; margin-bottom: 6px;
+  text-transform: uppercase; letter-spacing: 0.02em;
+}
+.verified-tag i { font-size: 0.75rem; }
 
 .card-img-wrap {
   width: 100%; aspect-ratio: 1/1; overflow: hidden;
