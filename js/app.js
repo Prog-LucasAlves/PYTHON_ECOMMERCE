@@ -79,7 +79,10 @@ function normalizeText(value) {
 function normalizeImageUrl(url) {
   const value = String(url || '').trim();
   if (!value) return '';
-  return value.replace(/[?#].*$/, '');
+  // Normalize Shopee domains to ensure fingerprint consistency
+  return value
+    .replace(/^https?:\/\/(?:down-br\.img\.susercontent\.com|cf\.shopee\.com\.br)\/file\//, 'shopee-img://')
+    .replace(/[?#].*$/, '');
 }
 
 function productFingerprint(item) {
@@ -724,6 +727,7 @@ window.addEventListener('storage', (e) => {
     if (initialSearch && searchInput && !searchInput.value) searchInput.value = initialSearch;
     currentCategory = getInitialCategory();
     renderProducts();
+    renderCategories();
     initHeroBanner();
     updateResultsSummary(allProducts.filter(p => !p.publishDate || new Date(p.publishDate) <= new Date()), (document.getElementById('searchInput')?.value || '').toLowerCase().trim());
   } catch (e) {
@@ -766,6 +770,7 @@ function renderProducts() {
 
 function _renderFiltered(grid, empty, search) {
   if (!grid || !empty) return;
+  renderCategories();
   let filtered = dedupeProducts(allProducts).filter(isDisplayableProduct);
   // Hide products scheduled for the future
   filtered = filtered.filter(p => !p.publishDate || new Date(p.publishDate) <= new Date());
@@ -799,40 +804,65 @@ function _renderFiltered(grid, empty, search) {
   if (!filtered.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
   try {
-    const usedFingerprints = new Set();
-    const pinned = pickUnique(
-      sortFeaturedFirst(uniqueFiltered.filter(p => p.featured || p.homeOrder)),
-      usedFingerprints,
-      HOME_SECTION_LIMIT,
-    );
-    const campaignItems = pickUnique(getCampaignItems(uniqueFiltered), usedFingerprints, CAMPAIGN_SECTION_LIMIT);
-    const featured = pinned.filter(Boolean);
-    const featuredHTML = featured.length ? `
-      <section class="home-vitrine home-vitrine-featured">
-        <div class="section-head">
-          <div>
-            <span class="section-kicker">Primeira linha</span>
-            <h3>Produtos fixos e campanhas ativas</h3>
-          </div>
-        </div>
-        <div class="featured-row">${featured.map(p => cardHTML(p)).join('')}</div>
-      </section>` : '';
-    const campaignHTML = campaignItems.length ? `
-      <section class="home-vitrine home-vitrine-campaign">
-        <div class="section-head">
-          <div>
-            <span class="section-kicker">Vitrine de campanha</span>
-            <h3>Ofertas temporárias e campanhas semanais</h3>
-          </div>
-        </div>
-        <div class="product-grid-inner">${campaignItems.map(p => cardHTML(p)).join('')}</div>
-      </section>` : '';
+    const isHome = currentCategory === 'todos' && !search && currentSort === 'default' && priceMin === null && priceMax === null;
 
-    const gridHTML = `
-      ${featuredHTML}
-      ${campaignHTML}
-    `;
-    grid.innerHTML = gridHTML;
+    if (isHome) {
+      const usedFingerprints = new Set();
+      const pinned = pickUnique(
+        sortFeaturedFirst(uniqueFiltered.filter(p => p.featured || p.homeOrder)),
+        usedFingerprints,
+        HOME_SECTION_LIMIT
+      );
+      const campaignItems = pickUnique(getCampaignItems(uniqueFiltered), usedFingerprints, CAMPAIGN_SECTION_LIMIT);
+
+      // Get the rest of the products that were not pinned or in campaign
+      const rest = uniqueFiltered.filter(p => {
+        const key = productFingerprint(p);
+        return !usedFingerprints.has(key);
+      }).slice(0, HOME_FEED_LIMIT);
+
+      const featuredHTML = pinned.length ? `
+        <section class="home-vitrine home-vitrine-featured">
+          <div class="section-head">
+            <div>
+              <span class="section-kicker">Destaques</span>
+              <h3>Produtos fixos e seleções especiais</h3>
+            </div>
+          </div>
+          <div class="featured-row">${pinned.map(p => cardHTML(p)).join('')}</div>
+        </section>` : '';
+
+      const campaignHTML = campaignItems.length ? `
+        <section class="home-vitrine home-vitrine-campaign">
+          <div class="section-head">
+            <div>
+              <span class="section-kicker">Em Campanha</span>
+              <h3>Ofertas temporárias e campanhas semanais</h3>
+            </div>
+          </div>
+          <div class="product-grid-inner">${campaignItems.map(p => cardHTML(p)).join('')}</div>
+        </section>` : '';
+
+      const feedHTML = rest.length ? `
+        <section class="home-vitrine home-vitrine-feed">
+          <div class="section-head">
+            <div>
+              <span class="section-kicker">Mais Ofertas</span>
+              <h3>Explorar todas as promoções</h3>
+            </div>
+          </div>
+          <div class="product-grid-inner">${rest.map(p => cardHTML(p)).join('')}</div>
+        </section>` : '';
+
+      grid.innerHTML = `${featuredHTML}${campaignHTML}${feedHTML}`;
+    } else {
+      // Flat list for search, category or sorted views
+      grid.innerHTML = `
+        <div class="product-grid-inner">
+          ${filtered.map(p => cardHTML(p)).join('')}
+        </div>
+      `;
+    }
     animateCards();
     startCountdownTimers();
   } catch (err) {
@@ -967,19 +997,17 @@ function cardHTML(p) {
       ${verifiedTag}
       <div class="card-name">${p.name}</div>
       ${p.desc ? `<div class="card-desc">${formatDescription(p.desc)}</div>` : ''}
-      ${p.rating ? `<div class="card-stars">${starsHTML(p.rating)}${p.soldCount ? `<span class="card-sold">${p.soldCount}+ vendidos</span>` : ''}</div>` : (p.soldCount ? `<div class="card-stars"><span class="card-sold">${p.soldCount}+ vendidos</span></div>` : '')}
       <div class="card-prices">
         ${p.originalPrice && p.originalPrice > p.price
           ? `<div class="card-original">R$ ${Number(p.originalPrice).toFixed(2).replace('.',',')}</div>` : ''}
-        <div class="card-price">R$ ${Number(p.price).toFixed(2).replace('.',',')}</div>
+        <div class="card-price-row">
+          <span class="price-symbol">R$</span>
+          <span class="price-main">${Math.floor(p.price)}</span>
+          <span class="price-decimal">,${(p.price % 1).toFixed(2).substring(2)}</span>
+        </div>
       </div>
+      <button class="btn-buy"><i class="fas fa-shopping-cart"></i> Comprar na Shopee</button>
     </div>
-        <div class="card-btn">🛒 Comprar na Shopee</div>
-    ${(() => { const t = p.countdown ? new Date(p.countdown).getTime() : null; const s = t ? renderCountdownStr(t) : null; return s ? `<div class="card-countdown-wrap"><span class="card-countdown" data-countdown="${t}">⏰ Oferta encerra em: ${s}</span></div>` : ''; })()}
-    <button class="card-compare-btn ${compareList.some(id => sameId(id, p.id))?'active':''}" data-pid="${p.id}"
-      data-action="toggle-compare" title="Adicionar para comparar">
-      <i class="fas fa-columns"></i>
-    </button>
   </div>`;
 }
 
@@ -1163,30 +1191,81 @@ function filterProducts() { renderProducts(); }
 
 function categoryLabel(cat) {
   const map = {
-    'roupas-fem':  '👗 Roupas Femininas',
-    'roupas-masc': '👔 Roupas Masculinas',
+    'todos':       '🏠 Home',
+    'roupas-fem':  '👗 Feminino',
+    'roupas-masc': '👔 Masculino',
     'sapatos':     '👟 Sapatos',
-    'moda':        '💍 Acessórios de Moda',
+    'moda':        '💍 Acessórios',
     'celulares':   '📱 Celulares',
     'eletronicos': '💻 Eletrônicos',
-    'computadores':'🖥️ Computadores',
-    'jogos':       '🎮 Jogos e Consoles',
-    'cameras':     '📷 Câmeras e Drones',
+    'computadores':'🖥️ PCs',
+    'jogos':       '🎮 Jogos',
+    'cameras':     '📷 Câmeras',
     'audio':       '🎧 Áudio',
-    'eletrodom':   '🏠 Eletrodomésticos',
-    'casa':        '🏡 Casa e Construção',
-    'alimentos':   '🍎 Alimentos e Bebidas',
+    'eletrodom':   '🏠 Eletro',
+    'casa':        '🏡 Casa',
+    'alimentos':   '🍎 Mercado',
     'beleza':      '💄 Beleza',
     'saude':       '💊 Saúde',
-    'esporte':     '⚽ Esportes e Lazer',
-    'bebes':       '👶 Mãe e Bebê',
-    'brinquedos':  '🧸 Brinquedos e Hobbies',
-    'animais':     '🐾 Animais Domésticos',
-    'automoveis':  '🚗 Automóveis',
-    'livros':      '📚 Livros e Revistas',
+    'esporte':     '⚽ Esportes',
+    'bebes':       '👶 Bebês',
+    'brinquedos':  '🧸 Brinquedos',
+    'animais':     '🐾 Pets',
+    'automoveis':  '🚗 Auto',
+    'livros':      '📚 Livros',
     'outros':      '✨ Outros',
   };
   return map[cat] || cat;
+}
+
+function categoryIcon(cat) {
+  const map = {
+    'todos':       'fa-home',
+    'roupas-fem':  'fa-female',
+    'roupas-masc': 'fa-male',
+    'sapatos':     'fa-shoe-prints',
+    'moda':        'fa-gem',
+    'celulares':   'fa-mobile-alt',
+    'eletronicos': 'fa-laptop',
+    'computadores':'fa-desktop',
+    'jogos':       'fa-gamepad',
+    'cameras':     'fa-camera',
+    'audio':       'fa-headphones',
+    'eletrodom':   'fa-blender',
+    'casa':        'fa-couch',
+    'alimentos':   'fa-utensils',
+    'beleza':      'fa-magic',
+    'saude':       'fa-heartbeat',
+    'esporte':     'fa-football-ball',
+    'bebes':       'fa-baby',
+    'brinquedos':  'fa-puzzle-piece',
+    'animais':     'fa-paw',
+    'automoveis':  'fa-car',
+    'livros':      'fa-book',
+    'outros':      'fa-ellipsis-h',
+  };
+  return map[cat] || 'fa-tag';
+}
+
+function renderCategories() {
+  const track = document.getElementById('categoryTrack');
+  if (!track) return;
+
+  const categories = ['todos', ...new Set(allProducts.map(p => p.category))].slice(0, 15);
+
+  track.innerHTML = categories.map(cat => {
+    const label = categoryLabel(cat);
+    const icon  = categoryIcon(cat);
+    const active = currentCategory === cat ? 'active' : '';
+    return `
+      <button class="cat-bubble ${active}" data-cat="${cat}" onclick="setCategory('${cat}', this)">
+        <div class="cat-circle">
+          <i class="fas ${icon}"></i>
+        </div>
+        <span class="cat-label">${label}</span>
+      </button>
+    `;
+  }).join('');
 }
 
 function formatUpdatedTime(ts) {
