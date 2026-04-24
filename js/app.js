@@ -275,48 +275,67 @@ function groupByCategory(items) {
 }
 
 function initHeroBanner() {
+  const bannerEl = document.getElementById('heroBanner');
   const slidesEl = document.getElementById('heroSlides');
   const dotsEl   = document.getElementById('heroDots');
-  if (!slidesEl) return;
+  if (!slidesEl || !allProducts.length) return;
 
   const visibleProducts = allProducts.filter(isDisplayableProduct);
-  const featured = visibleProducts.filter(p => p.featured).slice(0, 3);
-  const slides   = featured.length >= 2 ? featured : visibleProducts.slice(0, Math.min(3, visibleProducts.length));
+  // Filter for featured products OR the first 5 products if none are featured
+  const featured = visibleProducts.filter(p => p.featured || p.homeOrder > 0);
+  const slides = featured.length > 0 ? featured.slice(0, 5) : visibleProducts.slice(0, 5);
 
   if (!slides.length) {
-    document.getElementById('heroBanner').innerHTML = `
-      <div class="hero-static">
-        <div class="hero-content">
-          <h1>🔥 Ofertas Imperdíveis</h1>
-          <p>Seleção de ofertas online com links para a Shopee.</p>
-        </div>
-      </div>`;
-    updateHeroStats();
+    if (bannerEl) bannerEl.classList.add('hidden-block');
     return;
+  } else {
+    if (bannerEl) bannerEl.classList.remove('hidden-block');
   }
 
   slidesEl.innerHTML = slides.map((p, i) => {
     const img      = getImages(p)[0] || '';
     const discount = getDiscount(p);
-    return `<div class="hero-slide ${i === 0 ? 'active' : ''}" data-action="open-product" data-id="${p.id}">
+    return `<div class="hero-slide ${i === 0 ? 'active' : ''}" data-id="${p.id}">
       ${img ? `<div class="hero-slide-bg" style="background-image:url('${img}')"></div>` : ''}
       <div class="hero-slide-overlay"></div>
       <div class="hero-slide-content">
-        ${discount ? `<span class="hero-badge">-${discount}%</span>` : ''}
+        ${discount ? `<span class="hero-badge">-${discount}% OFF</span>` : ''}
         <h2>${p.name}</h2>
-        <p class="hero-slide-price">R$ ${Number(p.price).toFixed(2).replace('.',',')}</p>
-        <span class="hero-cta">Ver oferta →</span>
+        <p class="hero-slide-price">A partir de <strong>R$ ${Number(p.price).toFixed(2).replace('.',',')}</strong></p>
+        <div class="hero-cta">Ver detalhes <i class="fas fa-arrow-right"></i></div>
       </div>
     </div>`;
   }).join('');
 
   dotsEl.innerHTML = slides.map((_, i) =>
-    `<button class="hero-dot ${i===0?'active':''}" data-action="hero-dot" data-index="${i}"></button>`
+    `<button class="hero-dot ${i===0?'active':''}" data-index="${i}"></button>`
   ).join('');
 
+  // Add event listeners to slides
+  slidesEl.querySelectorAll('.hero-slide').forEach(s => {
+    s.onclick = () => openProductModal(s.dataset.id);
+  });
+
+  // Add event listeners to dots
+  dotsEl.querySelectorAll('.hero-dot').forEach(d => {
+    d.onclick = () => {
+      goHeroSlide(parseInt(d.dataset.index));
+      resetHeroTimer();
+    };
+  });
+
+  // Add arrow listeners
+  const btnPrev = document.getElementById('heroPrev');
+  const btnNext = document.getElementById('heroNext');
+  if (btnPrev) btnPrev.onclick = (e) => { e.stopPropagation(); heroPrev(); resetHeroTimer(); };
+  if (btnNext) btnNext.onclick = (e) => { e.stopPropagation(); heroNext(); resetHeroTimer(); };
+
+  resetHeroTimer();
+}
+
+function resetHeroTimer() {
   if (heroTimer) clearInterval(heroTimer);
   heroTimer = setInterval(heroNext, HERO_INTERVAL);
-  updateHeroStats();
 }
 
 function goHeroSlide(n) {

@@ -489,12 +489,157 @@ main {
 .price-main { font-size: 28px; font-weight: 900; line-height: 1; }
 .price-decimal { font-size: 14px; font-weight: 700; align-self: flex-start; margin-top: 4px; }
 
-.btn-buy {
-  background: var(--accent); color: #fff; border: none; width: 100%;
-  padding: 12px; font-weight: 800; text-transform: uppercase; font-size: 14px;
-  cursor: pointer; transition: background 0.2s; border-radius: var(--radius-sm); margin-top: 12px;
+/* ========== HERO BANNER ========== */
+.hero-banner {
+  background: #f0f0f0;
+  padding: 20px 16px;
+  overflow: hidden;
 }
-.btn-buy:hover { background: var(--accent-hover); }
+.hero-container {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  position: relative;
+  height: 380px;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: var(--shadow-md);
+}
+.hero-slides {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+.hero-slide {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: #fff;
+}
+.hero-slide.active {
+  opacity: 1;
+  z-index: 1;
+}
+.hero-slide-bg {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background-size: cover;
+  background-position: center;
+  transition: transform 10s linear;
+}
+.hero-slide.active .hero-slide-bg {
+  transform: scale(1.1);
+}
+.hero-slide-overlay {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0) 100%);
+  z-index: 2;
+}
+.hero-slide-content {
+  position: relative;
+  z-index: 3;
+  color: #fff;
+  padding: 0 60px;
+  max-width: 600px;
+  margin-right: auto;
+  text-align: left;
+}
+.hero-badge {
+  display: inline-block;
+  background: var(--accent);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px rgba(238,77,45,0.3);
+}
+.hero-slide-content h2 {
+  font-size: 2.5rem;
+  font-weight: 900;
+  line-height: 1.1;
+  margin-bottom: 12px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+.hero-slide-price {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-bottom: 24px;
+  color: #fff;
+}
+.hero-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  color: var(--primary);
+  padding: 14px 28px;
+  border-radius: 12px;
+  font-weight: 800;
+  font-size: 1rem;
+  text-transform: uppercase;
+  transition: transform 0.2s;
+}
+.hero-slide:hover .hero-cta {
+  transform: scale(1.05);
+}
+
+.hero-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 50px; height: 50px;
+  background: #fff;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transition: background 0.2s, color 0.2s;
+  color: #333;
+  font-size: 1.2rem;
+}
+.hero-arrow:hover {
+  background: var(--primary);
+  color: #fff;
+}
+.hero-arrow.prev { left: 20px; }
+.hero-arrow.next { right: 20px; }
+
+.hero-dots {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 10px;
+  z-index: 10;
+}
+.hero-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.4);
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s, width 0.3s;
+}
+.hero-dot.active {
+  background: #fff;
+  width: 30px;
+  border-radius: 5px;
+}
 
 @media (max-width: 600px) {
   .hero-banner { height: 220px; }
