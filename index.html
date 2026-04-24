@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR" data-theme="light">
 <head>
   <meta charset="UTF-8" />
@@ -112,161 +112,6 @@
     <div class="hero-dots"   id="heroDots"></div>
     <button class="hero-arrow hero-prev" id="heroPrevBtn">&#8249;</button>
     <button class="hero-arrow hero-next" id="heroNextBtn">&#8250;</button>
-  </section>
-
-  <section class="intro-section">
-    <div class="intro-shell">
-      <div class="intro-copy">
-        <span class="intro-kicker">Curadoria diária</span>
-        <h1>Ofertas online escolhidas por categoria, campanha e melhor preço</h1>
-        <p>Encontramos produtos com bom custo-benefício, organizamos por intenção de busca e mostramos links diretos para você comparar, descobrir promoções e decidir com mais rapidez.</p>
-      </div>
-      <div class="intro-highlights">
-        <div class="intro-chip"><strong id="heroCount">0</strong><span>ofertas no ar</span></div>
-        <div class="intro-chip"><strong>Atualização</strong><span id="heroUpdated">em tempo real no seu navegador</span></div>
-        <div class="intro-chip"><strong>Transparência afiliada</strong><span>links de afiliado identificados sem custo extra para você</span></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- FILTROS / CATEGORIAS -->
-  <section class="cat-section">
-    <div class="cat-track-wrap">
-      <button class="cat-arrow cat-arrow-left" id="catLeft">&#8249;</button>
-      <div class="cat-track" id="catTrack">
-        <button class="cat-item active" data-cat="todos">
-          <span class="cat-circle">🏷️</span>
-          <span class="cat-label">Todos</span>
-        </button>
-        <button class="cat-item" data-cat="roupas-fem">
-          <span class="cat-circle">👗</span>
-          <span class="cat-label">Roupas Femininas</span>
-        </button>
-        <button class="cat-item" data-cat="roupas-masc">
-          <span class="cat-circle">👔</span>
-          <span class="cat-label">Roupas Masculinas</span>
-        </button>
-        <button class="cat-item" data-cat="sapatos">
-          <span class="cat-circle">👟</span>
-          <span class="cat-label">Sapatos</span>
-        </button>
-        <button class="cat-item" data-cat="moda">
-          <span class="cat-circle">💍</span>
-          <span class="cat-label">Acessórios de Moda</span>
-        </button>
-        <button class="cat-item" data-cat="celulares">
-          <span class="cat-circle">📱</span>
-          <span class="cat-label">Celulares</span>
-        </button>
-        <button class="cat-item" data-cat="eletronicos">
-          <span class="cat-circle">💻</span>
-          <span class="cat-label">Eletrônicos</span>
-        </button>
-        <button class="cat-item" data-cat="eletrodom">
-          <span class="cat-circle">🏠</span>
-          <span class="cat-label">Eletrodomésticos</span>
-        </button>
-        <button class="cat-item" data-cat="computadores">
-          <span class="cat-circle">🖥️</span>
-          <span class="cat-label">Computadores</span>
-        </button>
-        <button class="cat-item" data-cat="jogos">
-          <span class="cat-circle">🎮</span>
-          <span class="cat-label">Jogos e Consoles</span>
-        </button>
-        <button class="cat-item" data-cat="cameras">
-          <span class="cat-circle">📷</span>
-          <span class="cat-label">Câmeras e Drones</span>
-        </button>
-        <button class="cat-item" data-cat="audio">
-          <span class="cat-circle">🎧</span>
-          <span class="cat-label">Áudio</span>
-        </button>
-        <button class="cat-item" data-cat="casa">
-          <span class="cat-circle">🏡</span>
-          <span class="cat-label">Casa e Construção</span>
-        </button>
-        <button class="cat-item" data-cat="beleza">
-          <span class="cat-circle">💄</span>
-          <span class="cat-label">Beleza</span>
-        </button>
-        <button class="cat-item" data-cat="saude">
-          <span class="cat-circle">💊</span>
-          <span class="cat-label">Saúde</span>
-        </button>
-        <button class="cat-item" data-cat="esporte">
-          <span class="cat-circle">⚽</span>
-          <span class="cat-label">Esportes e Lazer</span>
-        </button>
-        <button class="cat-item" data-cat="animais">
-          <span class="cat-circle">🐾</span>
-          <span class="cat-label">Animais Domésticos</span>
-        </button>
-        <button class="cat-item" data-cat="brinquedos">
-          <span class="cat-circle">🧸</span>
-          <span class="cat-label">Brinquedos e Hobbies</span>
-        </button>
-        <button class="cat-item" data-cat="bebes">
-          <span class="cat-circle">👶</span>
-          <span class="cat-label">Mãe e Bebê</span>
-        </button>
-        <button class="cat-item" data-cat="automoveis">
-          <span class="cat-circle">🚗</span>
-          <span class="cat-label">Automóveis</span>
-        </button>
-        <button class="cat-item" data-cat="alimentos">
-          <span class="cat-circle">🍎</span>
-          <span class="cat-label">Alimentos e Bebidas</span>
-        </button>
-        <button class="cat-item" data-cat="livros">
-          <span class="cat-circle">📚</span>
-          <span class="cat-label">Livros e Revistas</span>
-        </button>
-        <button class="cat-item" data-cat="outros">
-          <span class="cat-circle">✨</span>
-          <span class="cat-label">Outros</span>
-        </button>
-      </div>
-      <button class="cat-arrow cat-arrow-right" id="catRight">&#8250;</button>
-    </div>
-  </section>
-
-  <!-- CONTROLES: ORDENAÇÃO + FILTRO DE PREÇO -->
-  <section class="results-bar" aria-label="Resumo dos filtros">
-    <div class="results-inner">
-      <div class="results-copy">
-        <p id="resultsSummary">Carregando ofertas...</p>
-        <span id="activeContext">Use busca, categoria e faixa de preço para refinar sua vitrine.</span>
-      </div>
-      <div class="results-actions">
-        <button class="btn-secondary" type="button" id="clearFiltersBtn">
-          <i class="fas fa-rotate-left"></i> Limpar filtros
-        </button>
-        <span class="results-updated" id="resultsUpdated">Última atualização: agora</span>
-      </div>
-    </div>
-  </section>
-
-  <section class="controls-bar">
-    <div class="controls-inner">
-      <div class="sort-control">
-        <label><i class="fas fa-sort"></i></label>
-        <select id="sortSelect" onchange="setSortMode(this.value)">
-          <option value="default">Destaques primeiro</option>
-          <option value="price-asc">Menor preço</option>
-          <option value="price-desc">Maior preço</option>
-          <option value="discount">Maior desconto</option>
-          <option value="newest">Mais recente</option>
-        </select>
-      </div>
-      <div class="price-control">
-        <label><i class="fas fa-tag"></i> Preço:</label>
-        <input type="number" id="priceMin" placeholder="Min" min="0"/>
-        <span>—</span>
-        <input type="number" id="priceMax" placeholder="Max" min="0"/>
-        <button class="btn-clear-price" id="clearPriceBtn" title="Limpar"><i class="fas fa-times"></i></button>
-      </div>
-    </div>
   </section>
 
   <!-- PRODUTOS -->
@@ -401,7 +246,7 @@
   </div>
 
   <!-- Botão Telegram flutuante -->
-  <a href="https://t.me/ofertasshopeeday" target="_blank" class="telegram-fab" title="Entrar no grupo de ofertas">
+  <a href="https://t.me/melhoresdashopeeday" class="fab-telegram" target="_blank" rel="noopener noreferrer" title="Canal no Telegram">
     <i class="fab fa-telegram-plane"></i>
     <span>Grupo de Ofertas</span>
   </a>
