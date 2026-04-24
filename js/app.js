@@ -996,6 +996,7 @@ function cardHTML(p) {
   else if (isNew)      leftBadge = '<span class="badge-new">✨ NOVO</span>';
 
   // Conversion badges
+  const verifiedTag = isVerified ? '<span class="verified-tag"><i class="fas fa-check-circle"></i> Verificada</span>' : '';
   const freeShippingTag = (p.freeShipping || isHot || p.featured) ? `<span class="badge-free-shipping"><i class="fas fa-truck"></i> FRETE GRÁTIS</span>` : '';
   const couponTag = (p.hasCoupon || discount > 50) ? `<span class="badge-coupon"><i class="fas fa-ticket-alt"></i> CUPOM</span>` : '';
 
