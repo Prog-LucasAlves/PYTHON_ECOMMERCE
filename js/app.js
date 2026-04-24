@@ -1367,15 +1367,15 @@ function updateStructuredData(filtered) {
 }
 
 function initAppBindings() {
-  const searchInput = document.getElementById('searchInput');
   const darkToggle = document.getElementById('darkToggle');
+  const searchInput = document.getElementById('searchInput');
   const heroPrevBtn = document.getElementById('heroPrevBtn');
   const heroNextBtn = document.getElementById('heroNextBtn');
   const catLeft = document.getElementById('catLeft');
   const catRight = document.getElementById('catRight');
-  const clearFiltersBtn = document.getElementById('clearFiltersBtn');
-  const clearPriceBtn = document.getElementById('clearPriceBtn');
-  const clearAllBtn = document.getElementById('clearAllBtn');
+  const clearFiltersBtn = document.getElementById('clearFilters');
+  const clearPriceBtn = document.getElementById('clearPrice');
+  const clearAllBtn = document.getElementById('clearAll');
   const priceMinEl = document.getElementById('priceMin');
   const priceMaxEl = document.getElementById('priceMax');
   const productModal = document.getElementById('productModal');
@@ -1386,6 +1386,13 @@ function initAppBindings() {
   const compareClearBtn = document.getElementById('compareClearBtn');
   const compareModal = document.getElementById('compareModal');
   const compareCloseBtn = document.getElementById('compareCloseBtn');
+
+  const productGrid = document.getElementById('productGrid');
+  const heroSlides = document.getElementById('heroSlides');
+  const heroDots = document.getElementById('heroDots');
+  const modalThumbsStrip = document.getElementById('modalThumbsStrip');
+  const modalRelatedList = document.getElementById('modalRelatedList');
+  const compareSlots = document.getElementById('compareSlots');
 
   searchInput?.addEventListener('input', () => { filterProducts(); updateSearchSuggestions(); });
   searchInput?.addEventListener('focus', showSearchHistory);
@@ -1409,30 +1416,6 @@ function initAppBindings() {
   compareCloseBtn?.addEventListener('click', closeCompareModal);
   productModal?.addEventListener('click', e => { if (e.target === productModal) closeProductModal(); });
   compareModal?.addEventListener('click', e => { if (e.target === compareModal) closeCompareModal(); });
-
-// ── EVENT ACTIONS ─────────────────────────────────────────────
-function handleOpenProductAction(el) {
-  const id = el.dataset.id;
-  if (id) openProductModal(id, 0);
-}
-
-function trackEvent(name, params) {
-  if (typeof gtag === 'function') {
-    gtag('event', name, params);
-  } else if (typeof firebase !== 'undefined' && firebase.analytics) {
-    firebase.analytics().logEvent(name, params);
-  } else {
-    console.log('[TrackEvent]', name, params);
-  }
-}
-
-function initAppBindings() {
-  const productGrid = document.getElementById('productGrid');
-  const heroSlides = document.getElementById('heroSlides');
-  const heroDots = document.getElementById('heroDots');
-  const modalThumbsStrip = document.getElementById('modalThumbsStrip');
-  const modalRelatedList = document.getElementById('modalRelatedList');
-  const compareSlots = document.getElementById('compareSlots');
 
   productGrid?.addEventListener('click', e => {
     const openEl = e.target.closest('[data-action="open-product"]');
