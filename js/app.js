@@ -1373,9 +1373,9 @@ function initAppBindings() {
   const heroNextBtn = document.getElementById('heroNextBtn');
   const catLeft = document.getElementById('catLeft');
   const catRight = document.getElementById('catRight');
-  const clearFiltersBtn = document.getElementById('clearFilters');
-  const clearPriceBtn = document.getElementById('clearPrice');
-  const clearAllBtn = document.getElementById('clearAll');
+  const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+  const clearPriceBtn = document.getElementById('clearPriceBtn');
+  const clearAllBtn = document.getElementById('clearAllBtn');
   const priceMinEl = document.getElementById('priceMin');
   const priceMaxEl = document.getElementById('priceMax');
   const productModal = document.getElementById('productModal');
