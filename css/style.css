@@ -907,50 +907,7 @@ footer {
   margin-bottom: 32px;
 }
 
-/* Bento Item - Desativado para padronização */
-.featured-row .product-card:first-child {
-  grid-column: span 1;
-  grid-row: span 1;
-  display: block;
-  min-height: auto;
-  background: #fff;
-  border: 1px solid #eee;
-}
-
-.featured-row .product-card:first-child::before {
-  display: none;
-}
-
-.featured-row .product-card:first-child .card-img-wrap {
-  width: 100%;
-  height: auto;
-  padding: 0;
-  border-right: none;
-}
-
-.featured-row .product-card:first-child .card-body {
-  width: 100%;
-  padding: 12px;
-  gap: 0;
-}
-
-.featured-row .product-card:first-child .card-name {
-  font-size: 0.95rem;
-  font-weight: 500;
-  line-height: 1.4;
-  -webkit-line-clamp: 2;
-}
-
-.featured-row .product-card:first-child .price-main {
-  font-size: 1.4rem;
-}
-
-.featured-row .product-card:first-child .btn-buy {
-  margin-top: 10px;
-  padding: 10px;
-  font-size: 0.9rem;
-  box-shadow: none;
-}
+/* Padronização Completa: Removidas exceções do primeiro card */
 
 @media (max-width: 1024px) {
   .featured-row {
@@ -958,19 +915,8 @@ footer {
   }
 }
 
-@media (max-width: 600px) {
   .featured-row {
     grid-template-columns: 1fr;
-  }
-  .featured-row .product-card:first-child {
-    flex-direction: column;
-    grid-column: span 1;
-    grid-row: span 1;
-    min-height: auto;
-  }
-  .featured-row .product-card:first-child .card-img-wrap,
-  .featured-row .product-card:first-child .card-body {
-    width: 100%;
   }
 }
 
