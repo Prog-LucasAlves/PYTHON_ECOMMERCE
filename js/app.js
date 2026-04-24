@@ -1,11 +1,11 @@
-﻿// ── HERO BANNER CAROUSEL ─────────────────────────────────────
+// ── HERO BANNER CAROUSEL ─────────────────────────────────────
 let heroCurrent  = 0;
 let heroTimer    = null;
 const HERO_INTERVAL = 5000;
-const HOME_ROTATION_MINUTES = 20;
+const HOME_ROTATION_MINUTES = 30;
 const HOME_CATEGORY_LIMIT = 12;
 const HOME_SECTION_LIMIT = 16;
-const CAMPAIGN_SECTION_LIMIT = 36;
+const CAMPAIGN_SECTION_LIMIT = 120;
 const HOME_FEED_LIMIT = 80;
 const SEASONAL_COLLECTION_LIMIT = 14;
 const FIRESTORE_CACHE_KEY = 'shopee_products_cache';
@@ -182,24 +182,17 @@ function getActiveSeasonalCollections(items) {
 }
 
 function getCampaignItems(items) {
-  const campaignSet = items
-    .filter(p => !p.featured && !p.homeOrder && getCampaignGroupKey(p))
-    .sort((a, b) => {
-      const aOrder = Number.isFinite(Number(a.homeOrder)) ? Number(a.homeOrder) : Number.MAX_SAFE_INTEGER;
-      const bOrder = Number.isFinite(Number(b.homeOrder)) ? Number(b.homeOrder) : Number.MAX_SAFE_INTEGER;
-      if (aOrder !== bOrder) return aOrder - bOrder;
-      return getProductScore(b) - getProductScore(a);
-    })
-    .filter((p, i, arr) => arr.findIndex(x => productFingerprint(x) === productFingerprint(p)) === i)
-    .slice(0, CAMPAIGN_SECTION_LIMIT);
-  if (campaignSet.length >= 8) return campaignSet;
-  const fill = items
-    .filter(p => !p.featured && !p.homeOrder)
-    .sort((a, b) => getProductScore(b) - getProductScore(a))
-    .filter((p, i, arr) => arr.findIndex(x => productFingerprint(x) === productFingerprint(p)) === i)
-    .filter(p => !campaignSet.some(x => productFingerprint(x) === productFingerprint(p)))
-    .slice(0, 12 - campaignSet.length);
-  return [...campaignSet, ...fill];
+  const allCampaign = items.filter(p => !p.featured && !p.homeOrder && getCampaignGroupKey(p));
+  const bucket = getHomeRotationBucket();
+
+  // Rotate the pool of campaign items every 30 minutes
+  const rotated = [...allCampaign].sort((a, b) => {
+    const aKey = hashString(`${bucket}:campaign:${a.id}`);
+    const bKey = hashString(`${bucket}:campaign:${b.id}`);
+    return aKey - bKey;
+  });
+
+  return rotated.slice(0, CAMPAIGN_SECTION_LIMIT);
 }
 
 function getProductScore(p) {
@@ -803,97 +796,30 @@ function _renderFiltered(grid, empty, search) {
         ),
       }))
       .sort((a, b) => b.items.length - a.items.length || a.cat.localeCompare(b.cat));
-    const featured = pinned.filter(Boolean);
+    const featured = pinned.filter(Boolean).slice(0, 5); // Limit to one line
     const featuredHTML = featured.length ? `
       <section class="home-vitrine home-vitrine-featured">
         <div class="section-head">
           <div>
             <span class="section-kicker">Primeira linha</span>
-            <h3>Produtos fixos e campanhas ativas</h3>
+            <h3>Produtos fixos e destaque</h3>
           </div>
-          <p>Itens fixados manualmente, campanhas e promoções temporárias ficam acima da rotação.</p>
         </div>
         <div class="featured-row">${featured.map(p => cardHTML(p)).join('')}</div>
       </section>` : '';
+
     const campaignHTML = campaignItems.length ? `
       <section class="home-vitrine home-vitrine-campaign">
         <div class="section-head">
           <div>
             <span class="section-kicker">Vitrine de campanha</span>
-            <h3>Ofertas temporárias e campanhas semanais</h3>
+            <h3>Novidades a cada 30 minutos</h3>
           </div>
-          <p>Itens com campanha, janela de data ou promoção destacada entram aqui sem misturar com a rotação principal.</p>
         </div>
         <div class="product-grid-inner">${campaignItems.map(p => cardHTML(p)).join('')}</div>
       </section>` : '';
-    const rotatingHTML = categoryOrder.length ? `
-      <section class="home-vitrine home-vitrine-rotating">
-        <div class="section-head">
-          <div>
-            <span class="section-kicker">Rotação por categoria</span>
-            <h3>Vitrine organizada por blocos</h3>
-          </div>
-          <p>Rotação previsível por janela temporal fixa, sem repetir os fixos na fila rotativa.</p>
-        </div>
-        ${categoryOrder.map(section => `
-          <div class="category-rotation-block">
-            <div class="category-rotation-head">
-              <h4>${categoryLabel(section.cat)}</h4>
-              <span>${section.items.length} oferta${section.items.length === 1 ? '' : 's'}</span>
-            </div>
-            <div class="product-grid-inner">${section.items.map(p => cardHTML(p)).join('')}</div>
-          </div>
-        `).join('')}
-      </section>` : '';
-    const seasonalCollections = getActiveSeasonalCollections(rotatingSource).map(collection => ({
-      ...collection,
-      items: pickUnique(collection.items, usedFingerprints, SEASONAL_COLLECTION_LIMIT),
-    })).filter(collection => collection.items.length);
-    const feedSource = uniqueFiltered
-      .filter(p => !p.featured && !p.homeOrder)
-      .sort((a, b) => getProductScore(b) - getProductScore(a))
-      .filter((p, i, arr) => arr.findIndex(x => productFingerprint(x) === productFingerprint(p)) === i)
-      .slice(0, HOME_FEED_LIMIT);
-    const feedBlocks = groupByCategory(feedSource.filter(p => !usedFingerprints.has(productFingerprint(p))));
-    const feedHTML = Object.entries(feedBlocks).length ? `
-      <section class="home-vitrine home-vitrine-feed">
-        <div class="section-head">
-          <div>
-            <span class="section-kicker">Mais produtos</span>
-            <h3>Seleção ampliada da loja</h3>
-          </div>
-          <p>Uma grade extra para mostrar mais variedade sem repetir os itens fixos.</p>
-        </div>
-        ${Object.entries(feedBlocks).map(([cat, items]) => `
-          <div class="category-rotation-block">
-            <div class="category-rotation-head">
-              <h4>${categoryLabel(cat)}</h4>
-              <span>${items.length} oferta${items.length === 1 ? '' : 's'}</span>
-            </div>
-            <div class="product-grid-inner">${pickUnique(items, usedFingerprints, 12).map(p => cardHTML(p)).join('')}</div>
-          </div>
-        `).join('')}
-      </section>` : '';
-    const seasonalHTML = seasonalCollections.length ? `
-      <section class="home-vitrine home-vitrine-seasonal">
-        <div class="section-head">
-          <div>
-            <span class="section-kicker">Datas sazonais</span>
-            <h3>Coleções especiais por período</h3>
-          </div>
-          <p>Blocos ativados por janela temporal fixa e previsível.</p>
-        </div>
-        ${seasonalCollections.map(collection => `
-          <div class="category-rotation-block">
-            <div class="category-rotation-head">
-              <h4>${collection.title}</h4>
-              <span>${collection.kicker}</span>
-            </div>
-            <div class="product-grid-inner">${collection.items.map(p => cardHTML(p)).join('')}</div>
-          </div>
-        `).join('')}
-      </section>` : '';
-    grid.innerHTML = `${featuredHTML}${campaignHTML}${seasonalHTML}${rotatingHTML}${feedHTML}`;
+
+    grid.innerHTML = `${featuredHTML}${campaignHTML}`;
     animateCards();
     startCountdownTimers();
   } catch (err) {
