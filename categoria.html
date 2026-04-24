@@ -3,28 +3,34 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Categorias | Melhores Ofertas</title>
-  <meta name="description" content="Páginas de categoria com ofertas na Shopee, comparação de preços, campanhas e coleções sazonais." />
+  <title>Ofertas por Categoria na Shopee | Melhores Ofertas</title>
+  <link rel="icon" type="image/png" href="img/favicon.png" />
+  <meta name="description" content="Encontre ofertas por categoria na Shopee com preços atualizados, comparação rápida e vitrine organizada para descobrir produtos com facilidade." />
+  <meta name="keywords" content="ofertas por categoria, ofertas shopee, produtos shopee, categorias shopee, comparação de preços" />
+  <meta name="author" content="Melhores Ofertas" />
   <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://melhoresdashopee.com.br/categoria.html" />
-  <meta property="og:title" content="Categorias | Melhores Ofertas" />
-  <meta property="og:description" content="Vitrine dedicada por categoria com ofertas selecionadas, campanhas e rotação previsível." />
+  <link rel="canonical" id="canonicalLink" href="" />
+  <link rel="preconnect" href="https://www.googletagmanager.com" />
+  <link rel="preconnect" href="https://www.gstatic.com" />
+  <meta name="theme-color" content="#161616" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="MelhoresOfertas" />
+  <meta property="og:title" content="Ofertas por Categoria na Shopee | Melhores Ofertas" />
+  <meta property="og:description" content="Encontre ofertas por categoria na Shopee com preços atualizados, comparação rápida e vitrine organizada." />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://melhoresdashopee.com.br/categoria.html" />
+  <meta property="og:site_name" content="Melhores Ofertas" />
   <meta property="og:image" content="https://melhoresdashopee.com.br/img/logo-01-header.svg" />
   <meta property="og:image:alt" content="Melhores Ofertas - páginas de categoria" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Categorias | Melhores Ofertas" />
-  <meta name="twitter:description" content="Vitrine dedicada por categoria com ofertas selecionadas, campanhas e rotação previsível." />
+  <meta name="twitter:title" content="Ofertas por Categoria na Shopee | Melhores Ofertas" />
+  <meta name="twitter:description" content="Encontre ofertas por categoria na Shopee com preços atualizados, comparação rápida e vitrine organizada." />
   <meta name="twitter:image" content="https://melhoresdashopee.com.br/img/logo-01-header.svg" />
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; script-src 'self' https://www.gstatic.com https://www.googletagmanager.com; connect-src 'self' https://www.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.gstatic.com https://www.googletagmanager.com; font-src 'self' https://cdnjs.cloudflare.com data:; manifest-src 'self'; upgrade-insecure-requests">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'none'; img-src 'self' data: https:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; script-src 'self' https://www.gstatic.com https://www.googletagmanager.com; connect-src 'self' https://www.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com https://www.gstatic.com https://www.googletagmanager.com https://www.google-analytics.com https://analytics.google.com; font-src 'self' https://cdnjs.cloudflare.com data:; manifest-src 'self'; upgrade-insecure-requests">
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-CJZX1ZJ2GM"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-CJZX1ZJ2GM');
-  </script>
+  <script src="js/analytics.js" defer></script>
   <link rel="stylesheet" href="css/style.css"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
   <link rel="manifest" href="manifest.json"/>
@@ -32,9 +38,35 @@
     {
       "@context": "https://schema.org",
       "@type": "CollectionPage",
-      "name": "Categorias",
+      "name": "Ofertas por Categoria na Shopee",
       "url": "https://melhoresdashopee.com.br/categoria.html",
-      "description": "Página dedicada para navegar por categoria com SEO próprio."
+      "inLanguage": "pt-BR",
+      "description": "Página dedicada para navegar por categoria com SEO próprio, preços atualizados e organização por intenção de busca.",
+      "isPartOf": {
+        "@type": "WebSite",
+        "name": "Melhores Ofertas",
+        "url": "https://melhoresdashopee.com.br/"
+      }
+    }
+  </script>
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://melhoresdashopee.com.br/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Categorias",
+          "item": "https://melhoresdashopee.com.br/categoria.html"
+        }
+      ]
     }
   </script>
 </head>
@@ -44,7 +76,7 @@
     <div class="header-inner">
       <div class="logo">
         <a href="/" aria-label="Ir para a home">
-          <img src="img/logo-01-icon.svg" alt="Melhores Ofertas" class="site-logo site-logo-icon"/>
+          <img src="img/favicon.png" alt="Melhores Ofertas" class="site-logo site-logo-icon" style="border-radius: 8px;"/>
         </a>
       </div>
       <div class="header-actions">
@@ -52,7 +84,7 @@
           <input type="text" id="searchInput" placeholder="🔍 Buscar produto..." autocomplete="off"/>
           <div id="searchDropdown" class="search-dropdown hidden-block"></div>
         </div>
-        <a href="/" class="btn-secondary"><i class="fas fa-home"></i> Home</a>
+        <a href="/" class="btn-secondary"><i class="fa-solid fa-house"></i> Home</a>
       </div>
     </div>
   </header>
@@ -61,23 +93,94 @@
     <div class="intro-shell">
       <div class="intro-copy">
         <span class="intro-kicker">Navegação por categoria</span>
-        <h1 id="pageTitle">Categorias com ofertas selecionadas</h1>
-        <p id="pageSubtitle">Encontre produtos por intenção de busca, compare preços e navegue por coleções específicas com foco em descoberta rápida.</p>
+        <h1 id="pageTitle">Categorias com ofertas selecionadas na Shopee</h1>
+        <p id="pageSubtitle">Encontre produtos por intenção de busca, compare preços e navegue por coleções específicas com foco em descoberta rápida, organização clara e ofertas atualizadas.</p>
       </div>
       <div class="intro-highlights">
-        <div class="intro-chip"><strong>SEO dedicado</strong><span>url, canonical e descrição próprios</span></div>
-        <div class="intro-chip"><strong>Rotação</strong><span>blocos previsíveis por categoria</span></div>
-        <div class="intro-chip"><strong>Campanhas</strong><span>itens temporários em destaque</span></div>
+        <div class="intro-chip"><strong>Busca rápida</strong><span>categorias organizadas por intenção de compra</span></div>
+        <div class="intro-chip"><strong>Comparação</strong><span>preços e ofertas em uma única vitrine</span></div>
+        <div class="intro-chip"><strong>Atualização</strong><span>conteúdo dinâmico para descoberta contínua</span></div>
       </div>
     </div>
   </section>
 
   <main id="mainContent">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="/">Home</a>
+      <span aria-hidden="true">›</span>
+      <a href="/categoria.html">Categorias</a>
+      <span aria-hidden="true">›</span>
+      <span>Página de ofertas</span>
+    </nav>
+
+    <section class="content-section" aria-labelledby="categorySeoTitle">
+      <div class="content-shell">
+        <div class="content-copy">
+          <span class="section-kicker">Guia rápido</span>
+          <h2 id="categorySeoTitle">Como encontrar ofertas por categoria mais rápido</h2>
+          <p>Use esta página para abrir uma categoria específica, refinar por preço e descobrir produtos relacionados sem precisar procurar página por página. As URLs com `?cat=` ajudam a manter cada grupo de produtos mais fácil de indexar e de compartilhar.</p>
+          <p>Se você quer navegar mais rápido, comece pelas categorias mais procuradas abaixo e depois refine com busca ou filtro de preço.</p>
+        </div>
+        <div class="content-links" aria-label="Categorias mais acessadas">
+          <a href="/?cat=celulares">Celulares</a>
+          <a href="/?cat=eletronicos">Eletrônicos</a>
+          <a href="/?cat=beleza">Beleza</a>
+          <a href="/?cat=roupas-fem">Roupas Femininas</a>
+          <a href="/?cat=sapatos">Sapatos</a>
+          <a href="/?cat=casa">Casa e Construção</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section" aria-labelledby="categorySignalsTitle">
+      <div class="content-shell">
+        <div class="content-copy">
+          <span class="section-kicker">Por que esta página existe</span>
+          <h2 id="categorySignalsTitle">Uma vitrine dedicada para encontrar ofertas com mais contexto</h2>
+          <p>Esta página reúne ofertas organizadas por categoria, com foco em descoberta rápida e comparação visual. Ela existe para ajudar quem quer sair da busca genérica e ir direto para um grupo de produtos mais relevante.</p>
+          <p>Além de facilitar a navegação, esta estrutura ajuda a separar a página inicial da página de categorias, tornando a experiência mais clara para o usuário e para o Google.</p>
+        </div>
+        <div class="content-copy">
+          <span class="section-kicker">O que você encontra</span>
+          <ul class="seo-list">
+            <li>Ofertas por categoria com navegação rápida</li>
+            <li>Comparação de preços e filtros práticos</li>
+            <li>Página dedicada para indexação da categoria</li>
+            <li>Links internos para as categorias mais acessadas</li>
+            <li>Atualização dinâmica conforme os produtos mudam</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="content-section" aria-labelledby="faqTitle">
+      <div class="content-shell">
+        <div class="content-copy">
+          <span class="section-kicker">Perguntas frequentes</span>
+          <h2 id="faqTitle">Dúvidas comuns sobre esta página</h2>
+        </div>
+        <div class="faq-list">
+          <details>
+            <summary>Como as categorias são organizadas?</summary>
+            <p>As categorias são exibidas de forma dinâmica, com foco em descoberta rápida, comparação de preços e navegação por intenção de busca.</p>
+          </details>
+          <details>
+            <summary>Posso abrir uma categoria específica pela URL?</summary>
+            <p>Sim. Use <code>?cat=</code> na URL para abrir uma categoria dedicada e facilitar a indexação e o compartilhamento.</p>
+          </details>
+          <details>
+            <summary>O que devo priorizar para ter melhor resultado no SEO?</summary>
+            <p>Priorize páginas úteis, rápidas, com títulos claros, texto original, links internos e boa experiência no celular.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
     <section class="results-bar" aria-label="Resumo da categoria">
       <div class="results-inner">
         <div class="results-copy">
-          <p id="resultsSummary">Carregando ofertas...</p>
-          <span id="activeContext">Use a URL com `?cat=` para abrir uma categoria dedicada.</span>
+          <p id="resultsSummary">Carregando ofertas por categoria...</p>
+          <span id="activeContext">Abra uma categoria pela URL com `?cat=` para ver a vitrine dedicada.</span>
         </div>
         <div class="results-actions">
           <span class="results-updated" id="resultsUpdated">Última atualização: agora</span>
@@ -88,7 +191,7 @@
     <section class="controls-bar">
       <div class="controls-inner">
         <div class="sort-control">
-          <label><i class="fas fa-sort"></i></label>
+          <label><i class="fa-solid fa-sort"></i></label>
           <select id="sortSelect" onchange="setSortMode(this.value)">
             <option value="default">Destaques primeiro</option>
             <option value="price-asc">Menor preço</option>
@@ -98,22 +201,55 @@
           </select>
         </div>
         <div class="price-control">
-          <label><i class="fas fa-tag"></i> Preço:</label>
+          <label><i class="fa-solid fa-tag"></i> Preço:</label>
           <input type="number" id="priceMin" placeholder="Min" min="0"/>
           <span>—</span>
           <input type="number" id="priceMax" placeholder="Max" min="0"/>
-          <button class="btn-clear-price" id="clearPriceBtn" title="Limpar"><i class="fas fa-times"></i></button>
+          <button class="btn-clear-price" id="clearPriceBtn" title="Limpar"><i class="fa-solid fa-xmark"></i></button>
         </div>
       </div>
     </section>
 
     <div id="productGrid" class="product-grid"></div>
     <div id="emptyState" class="empty-state hidden-block" aria-live="polite">
-      <i class="fas fa-box-open"></i>
+      <i class="fa-solid fa-box-open"></i>
       <p>Nenhum produto encontrado com os filtros atuais.</p>
-      <span>Tente outra busca ou troque a categoria na URL.</span>
+      <span>Tente outra busca, ajuste o preço ou troque a categoria na URL.</span>
     </div>
   </main>
+
+  <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Como as categorias são organizadas?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "As categorias são exibidas de forma dinâmica, com foco em descoberta rápida, comparação de preços e navegação por intenção de busca."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Posso abrir uma categoria específica pela URL?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sim. Use ?cat= na URL para abrir uma categoria dedicada e facilitar a indexação e o compartilhamento."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "O que devo priorizar para ter melhor resultado no SEO?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Priorize páginas úteis, rápidas, com títulos claros, texto original, links internos e boa experiência no celular."
+          }
+        }
+      ]
+    }
+  </script>
 
   <script src="js/app.js" defer></script>
 </body>

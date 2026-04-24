@@ -2,26 +2,105 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://melhoresdashopee.com.br/</loc>
-    <lastmod>2026-04-03</lastmod>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://melhoresdashopee.com.br/categoria.html</loc>
-    <lastmod>2026-04-03</lastmod>
+    <loc>https://melhoresdashopee.com.br/categoria</loc>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://melhoresdashopee.com.br/politica-privacidade.html</loc>
-    <lastmod>2026-04-03</lastmod>
+    <loc>https://melhoresdashopee.com.br/politica-privacidade</loc>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
+    <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://melhoresdashopee.com.br/termos-de-uso.html</loc>
-    <lastmod>2026-04-03</lastmod>
+    <loc>https://melhoresdashopee.com.br/termos-de-uso</loc>
+    <lastmod>2026-04-16</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
+    <priority>0.3</priority>
+  </url>
+  <!-- Produtos Adicionados Dinamicamente -->
+  <url>
+    <loc>https://melhoresdashopee.com.br/?p=conjunto-relogio-feminino-kit-colar-brinco-pulseira-anel-preto-relogio-femenino-bijuterias-femininas</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://melhoresdashopee.com.br/?p=relogio-feminino-banhado-colar-porta-joia-pulseira-original-presente-anel-social-colar-brincos</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://melhoresdashopee.com.br/?p=conjunto-feminino-5-em-1-de-relogio-e-joias-relogio-de-aco-inoxidavel-com-colar-de-borboleta-brincos-pulseira-anel</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://melhoresdashopee.com.br/?p=nim-relogio-feminino-strass-borboleta-aneis-colar-brincos-pulseira-conjunto-relogios-couro-pulso-para</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://melhoresdashopee.com.br/?p=perillas-relogio-feminino-strass-borboleta-aneis-colar-brincos-pulseira-conjunto-relogios-couro-pulso</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://melhoresdashopee.com.br/?p=relogio-feminino-banhado-ouro-porta-joias-pulseira-brincos-colar-anel-presente-completo</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://melhoresdashopee.com.br/?p=conjunto-relogio-feminino-kit-colar-brinco-pulseira-anel-relogio-femenino-bijuterias-femininas</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://melhoresdashopee.com.br/?p=blusa-de-frio-moletom-masculina-jaqueta-casaco-cardigan-longline</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://melhoresdashopee.com.br/?p=blusa-de-frio-moletom-e-t-esquece-frente-braco-casaco-de-frio-com-capuz-ou-sem-capuz-casaco-de-frio</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://melhoresdashopee.com.br/?p=blusa-de-frio-moletom-angel-anjo-streetwear-casaco-de-frio-com-capuz-ou-sem-capuz-casaco-de-frio</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://melhoresdashopee.com.br/?p=moletom-canguru-tiime-palmeirass-blusa-de-frio-com-capuz-unissex-inverno-blusa-de-frio-casaco-flanelado-promocao</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://melhoresdashopee.com.br/?p=moletom-com-capuz-e-cordao-estampado-a-child-of-god-com-slogan-heart-para-lazer-casaco-de-frio-blusa-de-moletom-casaco</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://melhoresdashopee.com.br/?p=moletom-careca-unissex-feminino-e-masculino-casaco-flanelado-blusa-de-frio-moletom-algodao-urso-hibernando-frente</loc>
+    <lastmod>2026-04-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
   </url>
 </urlset>
