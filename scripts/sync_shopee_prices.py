@@ -13,6 +13,7 @@ from urllib.parse import parse_qs, urlparse
 
 import firebase_admin
 from firebase_admin import credentials, firestore
+from google.api_core import exceptions as gcloud_exceptions
 
 GRAPHQL_URL = "https://open-api.affiliate.shopee.com.br/graphql"
 PRODUCT_URL_RE = re.compile(r"/(?:product|[^/?#]+)/(\d+)/(\d+)")
@@ -217,27 +218,48 @@ def update_product(db: firestore.Client, doc_id: str, affiliate_data: dict[str, 
 
 
 def find_products_to_sync(db: firestore.Client) -> list[tuple[str, dict[str, Any]]]:
-    docs = db.collection("products").stream()
+    collection = db.collection("products")
     results = []
-    for doc in docs:
-        data = doc.to_dict() or {}
-        item_id = data.get("itemId") or data.get("affiliate", {}).get("itemId")
-        offer_link = data.get("offerLink") or data.get("affiliate", {}).get("offerLink")
-        if not item_id and offer_link:
-            try:
-                final_url = resolve_offer_url(str(offer_link))
-            except urllib.error.URLError:
-                final_url = str(offer_link)
-            shop_from_url, item_from_url = extract_ids_from_url(final_url)
-            if item_from_url:
-                data["itemId"] = item_from_url
-            if shop_from_url:
-                data["shopId"] = shop_from_url
-            if not item_from_url:
+    last_doc = None
+    page_size = 200
+
+    while True:
+        query = collection.order_by("__name__").limit(page_size)
+        if last_doc is not None:
+            query = query.start_after(last_doc)
+
+        try:
+            docs = query.get()
+        except (AttributeError, gcloud_exceptions.DeadlineExceeded, gcloud_exceptions.GoogleAPICallError):
+            if page_size > 25:
+                page_size //= 2
                 continue
-        if not item_id and not data.get("itemId"):
-            continue
-        results.append((doc.id, data))
+            raise
+
+        if not docs:
+            break
+
+        for doc in docs:
+            data = doc.to_dict() or {}
+            item_id = data.get("itemId") or data.get("affiliate", {}).get("itemId")
+            offer_link = data.get("offerLink") or data.get("affiliate", {}).get("offerLink")
+            if not item_id and offer_link:
+                try:
+                    final_url = resolve_offer_url(str(offer_link))
+                except urllib.error.URLError:
+                    final_url = str(offer_link)
+                shop_from_url, item_from_url = extract_ids_from_url(final_url)
+                if item_from_url:
+                    data["itemId"] = item_from_url
+                if shop_from_url:
+                    data["shopId"] = shop_from_url
+                if not item_from_url:
+                    continue
+            if not item_id and not data.get("itemId"):
+                continue
+            results.append((doc.id, data))
+
+        last_doc = docs[-1]
     return results
 
 
