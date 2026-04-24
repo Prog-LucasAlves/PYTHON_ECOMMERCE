@@ -485,7 +485,7 @@ function openCompareModal() {
     { label: 'Desconto',   fn: p => { const d=getDiscount(p); return d ? `<span class="badge-discount">-${d}%</span>` : '–'; } },
     { label: 'Avaliação',  fn: p => p.rating    ? starsHTML(p.rating) : '–' },
     { label: 'Vendidos',   fn: p => p.soldCount ? `${p.soldCount}+`   : '–' },
-    { label: '',           fn: p => `<a href="${p.link}" target="_blank" rel="noopener" class="modal-buy-btn" style="font-size:.78rem;padding:7px 12px"><i class="fas fa-shopping-cart"></i> Comprar</a>` },
+    { label: '',           fn: p => `<a href="${p.link}" target="_blank" rel="noopener" class="modal-buy-btn btn-small"><i class="fas fa-shopping-cart"></i> Comprar</a>` },
   ];
 
   table.innerHTML = `<table class="compare-tbl">
