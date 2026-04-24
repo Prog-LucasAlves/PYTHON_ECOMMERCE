@@ -1,4 +1,4 @@
-﻿// ── FIREBASE CONFIG ───────────────────────────────────────────
+// ── FIREBASE CONFIG ───────────────────────────────────────────
 // SECURITY NOTE: Firebase API keys for web apps are intentionally public.
 // Real security is enforced via Firebase Security Rules on the console:
 // https://console.firebase.google.com → Authentication → Settings → Authorized domains
@@ -115,6 +115,34 @@ let imageCount = 0;
 
 function sameId(a, b) {
   return String(a) === String(b);
+}
+
+function normalizeImageUrl(url) {
+  const value = String(url || '').trim();
+  if (!value) return '';
+  // Normalize Shopee domains to ensure fingerprint consistency
+  return value
+    .replace(/^https?:\/\/(?:down-br\.img\.susercontent\.com|cf\.shopee\.com\.br)\/file\//, 'shopee-img://')
+    .replace(/[?#].*$/, '');
+}
+
+function productFingerprint(item) {
+  const name = String(item?.name || '').toLowerCase().trim();
+  const price = Number.isFinite(Number(item?.price)) ? Number(Number(item.price)).toFixed(2) : '';
+  const imgs = Array.isArray(item?.images) ? item.images : (item?.image ? [item.image] : []);
+  const image = normalizeImageUrl(imgs[0] || '');
+  if (name || image || price) return [name, price, image].join('|');
+  return String(item?.id || '').trim();
+}
+
+function dedupeProducts(items) {
+  const seen = new Set();
+  return items.filter(item => {
+    const key = productFingerprint(item);
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 function trackEvent(name, params = {}) {
@@ -425,8 +453,13 @@ async function saveProduct(e) {
     const idx = products.findIndex(p => sameId(p.id, editingId));
     if (idx !== -1) products[idx] = product;
   } else {
-    const duplicateIdx = products.findIndex(p => sameId(p.id, product.id));
-    if (duplicateIdx !== -1) products.splice(duplicateIdx, 1);
+    // Check for both ID and Content duplicate
+    const key = productFingerprint(product);
+    const duplicateIdx = products.findIndex(p => sameId(p.id, product.id) || productFingerprint(p) === key);
+    if (duplicateIdx !== -1) {
+      if (!confirm('Este produto (ou um idêntico) já existe. Deseja sobrescrever?')) return;
+      products.splice(duplicateIdx, 1);
+    }
     products.unshift(product);
   }
 
@@ -687,7 +720,7 @@ async function loadProductsFromFirestore() {
     const snap = await getDocs_fn(query_fn(collection_fn(db, 'products'), orderBy_fn('updatedAt', 'desc')));
     const remote = snap.docs.map(d => d.data()).filter(Boolean);
     if (remote.length) {
-      products = remote;
+      products = dedupeProducts(remote);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
       console.log('[FIRESTORE] ✅ Loaded', products.length, 'products from Firestore');
     }

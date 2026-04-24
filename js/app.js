@@ -79,7 +79,10 @@ function normalizeText(value) {
 function normalizeImageUrl(url) {
   const value = String(url || '').trim();
   if (!value) return '';
-  return value.replace(/[?#].*$/, '');
+  // Normalize Shopee domains to ensure fingerprint consistency
+  return value
+    .replace(/^https?:\/\/(?:down-br\.img\.susercontent\.com|cf\.shopee\.com\.br)\/file\//, 'shopee-img://')
+    .replace(/[?#].*$/, '');
 }
 
 function productFingerprint(item) {
@@ -799,40 +802,65 @@ function _renderFiltered(grid, empty, search) {
   if (!filtered.length) { grid.innerHTML = ''; empty.style.display = 'block'; return; }
   empty.style.display = 'none';
   try {
-    const usedFingerprints = new Set();
-    const pinned = pickUnique(
-      sortFeaturedFirst(uniqueFiltered.filter(p => p.featured || p.homeOrder)),
-      usedFingerprints,
-      HOME_SECTION_LIMIT,
-    );
-    const campaignItems = pickUnique(getCampaignItems(uniqueFiltered), usedFingerprints, CAMPAIGN_SECTION_LIMIT);
-    const featured = pinned.filter(Boolean);
-    const featuredHTML = featured.length ? `
-      <section class="home-vitrine home-vitrine-featured">
-        <div class="section-head">
-          <div>
-            <span class="section-kicker">Primeira linha</span>
-            <h3>Produtos fixos e campanhas ativas</h3>
-          </div>
-        </div>
-        <div class="featured-row">${featured.map(p => cardHTML(p)).join('')}</div>
-      </section>` : '';
-    const campaignHTML = campaignItems.length ? `
-      <section class="home-vitrine home-vitrine-campaign">
-        <div class="section-head">
-          <div>
-            <span class="section-kicker">Vitrine de campanha</span>
-            <h3>Ofertas temporárias e campanhas semanais</h3>
-          </div>
-        </div>
-        <div class="product-grid-inner">${campaignItems.map(p => cardHTML(p)).join('')}</div>
-      </section>` : '';
+    const isHome = currentCategory === 'todos' && !search && currentSort === 'default' && priceMin === null && priceMax === null;
 
-    const gridHTML = `
-      ${featuredHTML}
-      ${campaignHTML}
-    `;
-    grid.innerHTML = gridHTML;
+    if (isHome) {
+      const usedFingerprints = new Set();
+      const pinned = pickUnique(
+        sortFeaturedFirst(uniqueFiltered.filter(p => p.featured || p.homeOrder)),
+        usedFingerprints,
+        HOME_SECTION_LIMIT
+      );
+      const campaignItems = pickUnique(getCampaignItems(uniqueFiltered), usedFingerprints, CAMPAIGN_SECTION_LIMIT);
+
+      // Get the rest of the products that were not pinned or in campaign
+      const rest = uniqueFiltered.filter(p => {
+        const key = productFingerprint(p);
+        return !usedFingerprints.has(key);
+      }).slice(0, HOME_FEED_LIMIT);
+
+      const featuredHTML = pinned.length ? `
+        <section class="home-vitrine home-vitrine-featured">
+          <div class="section-head">
+            <div>
+              <span class="section-kicker">Destaques</span>
+              <h3>Produtos fixos e seleções especiais</h3>
+            </div>
+          </div>
+          <div class="featured-row">${pinned.map(p => cardHTML(p)).join('')}</div>
+        </section>` : '';
+
+      const campaignHTML = campaignItems.length ? `
+        <section class="home-vitrine home-vitrine-campaign">
+          <div class="section-head">
+            <div>
+              <span class="section-kicker">Em Campanha</span>
+              <h3>Ofertas temporárias e campanhas semanais</h3>
+            </div>
+          </div>
+          <div class="product-grid-inner">${campaignItems.map(p => cardHTML(p)).join('')}</div>
+        </section>` : '';
+
+      const feedHTML = rest.length ? `
+        <section class="home-vitrine home-vitrine-feed">
+          <div class="section-head">
+            <div>
+              <span class="section-kicker">Mais Ofertas</span>
+              <h3>Explorar todas as promoções</h3>
+            </div>
+          </div>
+          <div class="product-grid-inner">${rest.map(p => cardHTML(p)).join('')}</div>
+        </section>` : '';
+
+      grid.innerHTML = `${featuredHTML}${campaignHTML}${feedHTML}`;
+    } else {
+      // Flat list for search, category or sorted views
+      grid.innerHTML = `
+        <div class="product-grid-inner">
+          ${filtered.map(p => cardHTML(p)).join('')}
+        </div>
+      `;
+    }
     animateCards();
     startCountdownTimers();
   } catch (err) {
