@@ -2100,7 +2100,7 @@ footer {
   padding: 0 40px 16px;
   scrollbar-width: none; /* Hide scrollbar Firefox */
   -ms-overflow-style: none; /* Hide scrollbar IE/Edge */
-  justify-content: flex-start;
+  justify-content: center;
 }
 
 .category-bubbles::-webkit-scrollbar {
