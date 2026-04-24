@@ -4,8 +4,8 @@ let heroTimer    = null;
 const HERO_INTERVAL = 5000;
 const HOME_ROTATION_MINUTES = 20;
 const HOME_CATEGORY_LIMIT = 12;
-const HOME_SECTION_LIMIT = 16;
-const CAMPAIGN_SECTION_LIMIT = 120; // Expanded capacity
+const HOME_SECTION_LIMIT = 32;
+const CAMPAIGN_SECTION_LIMIT = 200; // Even more products
 const CAMPAIGN_ROTATION_MS = 30 * 60 * 1000; // 30 minutes
 const FEATURED_LIMIT = 20;
 const HOME_FEED_LIMIT = 80;
@@ -185,14 +185,36 @@ function getActiveSeasonalCollections(items) {
 
 function getCampaignItems(all) {
   const active = all.filter(p => isCampaignActive(p) || p.campaignId);
-  if (active.length <= CAMPAIGN_SECTION_LIMIT) return active;
+  if (!active.length) return [];
 
-  // 30-minute bucket rotation logic
-  const bucketCount = Math.ceil(active.length / CAMPAIGN_SECTION_LIMIT);
+  // Group by category to ensure diversity
+  const groups = {};
+  active.forEach(p => {
+    (groups[p.category] ||= []).push(p);
+  });
+
+  const diverseItems = [];
+  const CATEGORY_MIN = 5;
+  const categories = Object.keys(groups);
+
+  // Take up to 5 from each category first
+  categories.forEach(cat => {
+    diverseItems.push(...groups[cat].slice(0, CATEGORY_MIN));
+  });
+
+  // Collect remaining items that weren't picked
+  const remaining = active.filter(p => !diverseItems.includes(p));
+
+  // Combine and apply rotation/limit
+  const combined = [...diverseItems, ...remaining];
+
+  if (combined.length <= CAMPAIGN_SECTION_LIMIT) return combined;
+
+  const bucketCount = Math.ceil(combined.length / CAMPAIGN_SECTION_LIMIT);
   const currentBucket = Math.floor(Date.now() / CAMPAIGN_ROTATION_MS) % bucketCount;
   const start = currentBucket * CAMPAIGN_SECTION_LIMIT;
 
-  return active.slice(start, start + CAMPAIGN_SECTION_LIMIT);
+  return combined.slice(start, start + CAMPAIGN_SECTION_LIMIT);
 }
 
 function getProductScore(p) {
@@ -877,7 +899,7 @@ function clearAllFilters() {
   document.getElementById('priceMin').value = '';
   document.getElementById('priceMax').value = '';
   document.getElementById('sortSelect').value = 'default';
-  document.querySelectorAll('.cat-item').forEach(btn => {
+  document.querySelectorAll('.cat-item, .cta-item').forEach(btn => {
     btn.classList.toggle('active', btn.dataset.cat === 'todos');
   });
   renderProducts();
@@ -1336,10 +1358,6 @@ function initAppBindings() {
   searchInput?.addEventListener('blur', hideSearchDropdown);
   searchInput?.addEventListener('keydown', handleSearchKey);
   darkToggle?.addEventListener('click', toggleDarkMode);
-  heroPrevBtn?.addEventListener('click', heroPrev);
-  heroNextBtn?.addEventListener('click', heroNext);
-  catLeft?.addEventListener('click', () => scrollCat(-1));
-  catRight?.addEventListener('click', () => scrollCat(1));
   clearFiltersBtn?.addEventListener('click', clearAllFilters);
   clearPriceBtn?.addEventListener('click', clearPriceFilter);
   clearAllBtn?.addEventListener('click', clearAllFilters);
@@ -1367,14 +1385,6 @@ function initAppBindings() {
     const compareEl = e.target.closest('[data-action="toggle-compare"]');
     if (compareEl) toggleCompare(compareEl.dataset.pid, e);
   });
-  heroSlides?.addEventListener('click', e => {
-    const openEl = e.target.closest('[data-action="open-product"]');
-    if (openEl) handleOpenProductAction(openEl);
-  });
-  heroDots?.addEventListener('click', e => {
-    const dot = e.target.closest('[data-action="hero-dot"]');
-    if (dot) goHeroSlide(parseInt(dot.dataset.index || '0', 10));
-  });
   modalThumbsStrip?.addEventListener('click', e => {
     const thumb = e.target.closest('[data-action="set-modal-index"]');
     if (thumb) setModalIndex(parseInt(thumb.dataset.index || '0', 10));
@@ -1388,8 +1398,11 @@ function initAppBindings() {
     if (btn) toggleCompare(btn.dataset.pid, e);
   });
 
-  document.querySelectorAll('.cat-item[data-cat]').forEach(btn => {
-    btn.addEventListener('click', () => setCategory(btn.dataset.cat, btn));
+  document.querySelectorAll('.cat-item[data-cat], .cta-item[data-cat]').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      setCategory(btn.dataset.cat, btn);
+    });
   });
 }
 
