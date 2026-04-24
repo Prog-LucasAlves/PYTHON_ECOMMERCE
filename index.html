@@ -86,16 +86,23 @@
 <body>
   <a class="skip-link" href="#mainContent">Pular para o conteúdo</a>
 
-  <!-- HEADER -->
+  <!-- Top Affiliate Bar (Informative & Focused) -->
+  <div class="top-affiliate-bar">
+    <i class="fas fa-info-circle"></i> SITE AFILIADO SHOPEE <span>&nbsp;· Pesquisamos e selecionamos as melhores ofertas para você economizar com segurança.</span>
+  </div>
+
   <header>
     <div class="header-inner">
       <div class="logo">
-        <img src="img/logo-01-icon.svg" alt="Melhores Ofertas" class="site-logo site-logo-icon"/>
+        <a href="/">
+          <h1>magashopee</h1>
+        </a>
       </div>
+
       <div class="header-actions">
-        <div class="search-wrap">
-          <input type="text" id="searchInput" placeholder="🔍 Buscar produto..."
-            autocomplete="off"/>
+        <div class="search-area">
+          <input type="text" id="searchInput" placeholder="Busque por produtos, categorias..." />
+          <i class="fas fa-search search-icon"></i>
           <div id="searchDropdown" class="search-dropdown hidden-block"></div>
         </div>
         <button class="btn-dark-mode" id="darkToggle" title="Modo escuro">
@@ -106,14 +113,10 @@
     </div>
   </header>
 
-  <!-- QUICK CTAs -->
-  <section class="quick-ctas">
-    <div class="cta-inner">
-      <a href="#" class="cta-item" data-cat="todos"><i class="fas fa-th-large"></i> Todas</a>
-      <a href="#" class="cta-item" data-cat="ofertas-relampago"><i class="fas fa-bolt"></i> Relâmpago</a>
-      <a href="#" class="cta-item" data-cat="cupons"><i class="fas fa-ticket-alt"></i> Cupons</a>
-      <a href="#" class="cta-item" data-cat="mais-vendidos"><i class="fas fa-fire"></i> Mais Vendidos</a>
-      <a href="#" class="cta-item" data-cat="r199"><i class="fas fa-tag"></i> Até R$ 1,99</a>
+  <!-- Category Strip (Magalu Style) -->
+  <section class="category-strip">
+    <div class="category-bubbles" id="categoryTrack">
+      <!-- Dynamic circular categories -->
     </div>
   </section>
 
