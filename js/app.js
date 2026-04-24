@@ -87,9 +87,8 @@ function normalizeImageUrl(url) {
 
 function productFingerprint(item) {
   const name = normalizeText(item?.name || '');
-  const price = Number.isFinite(Number(item?.price)) ? Number(Number(item.price)).toFixed(2) : '';
   const image = normalizeImageUrl(getImages(item)[0] || '');
-  if (name || image || price) return [name, price, image].join('|');
+  if (name || image) return [name, image].join('|');
   return String(item?.id || '').trim();
 }
 
