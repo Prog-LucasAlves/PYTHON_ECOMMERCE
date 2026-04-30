@@ -118,15 +118,39 @@ function pickUnique(items, used, limit) {
   return picked;
 }
 
+function generateSlug(text) {
+  return normalizeText(text).replace(/\s+/g, '-');
+}
+
 function updateShareableUrl() {
-  const params = new URLSearchParams();
+  const params = new URLSearchParams(window.location.search);
+
+  // Keep or update existing filters
   if (currentCategory && currentCategory !== 'todos') params.set('cat', currentCategory);
+  else params.delete('cat');
+
   const search = (document.getElementById('searchInput')?.value || '').trim();
   if (search) params.set('q', search);
+  else params.delete('q');
+
   if (currentSort && currentSort !== 'default') params.set('sort', currentSort);
+  else params.delete('sort');
+
   if (priceMin !== null) params.set('min', String(priceMin));
+  else params.delete('min');
+
   if (priceMax !== null) params.set('max', String(priceMax));
-  const nextUrl = `${window.location.pathname}${params.toString() ? `?${params.toString()}` : ''}`;
+  else params.delete('max');
+
+  // Handle product parameter
+  if (modalProduct) {
+    params.set('p', generateSlug(modalProduct.name));
+  } else {
+    params.delete('p');
+  }
+
+  const queryString = params.toString();
+  const nextUrl = `${window.location.pathname}${queryString ? `?${queryString}` : ''}`;
   window.history.replaceState({}, '', nextUrl);
 }
 
@@ -747,6 +771,17 @@ window.addEventListener('storage', (e) => {
     renderProducts();
     renderCategories();
     initHeroBanner();
+
+    // Check for product in URL (?p=slug)
+    const params = new URLSearchParams(window.location.search);
+    const pSlug = params.get('p');
+    if (pSlug) {
+      const target = allProducts.find(x => generateSlug(x.name) === pSlug);
+      if (target) {
+        openProductModal(target.id);
+      }
+    }
+
     updateResultsSummary(allProducts.filter(p => !p.publishDate || new Date(p.publishDate) <= new Date()), (document.getElementById('searchInput')?.value || '').toLowerCase().trim());
   } catch (e) {
     console.warn('[FIRESTORE] Falling back to localStorage:', e.message);
@@ -1141,6 +1176,7 @@ function openProductModal(id, startIdx) {
 
   document.getElementById('productModal').classList.add('open');
   document.body.style.overflow = 'hidden';
+  updateShareableUrl();
 }
 
 function renderModalMedia(allMedia) {
@@ -1190,6 +1226,7 @@ function closeProductModal() {
   // Stop video
   document.getElementById('modalMainDisplay').innerHTML = '';
   modalProduct = null;
+  updateShareableUrl();
 }
 
 function closeModalOutside(e) {
@@ -1323,6 +1360,15 @@ function updateHeroStats() {
 function updatePageSeo(filtered, search) {
   const baseTitle = 'Ofertas na Shopee com Desconto | Melhores Ofertas';
   const baseDescription = 'Curadoria de ofertas na Shopee com descontos, comparação de preços e links de afiliado. Veja produtos atualizados por categoria, preço, campanha e coleção sazonal.';
+
+  if (modalProduct) {
+    document.title = `${modalProduct.name} | Melhores Ofertas`;
+    const description = `Confira ${modalProduct.name} na Shopee. ${stripHtml(modalProduct.desc || '').substring(0, 150)}...`;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', description);
+    return; // Skip standard SEO update if modal is open
+  }
+
   const liveCount = filtered.length;
   const activeCategory = currentCategory !== 'todos' ? categoryLabel(currentCategory) : null;
   const searchTerm = search ? `busca por "${search}"` : null;
@@ -1346,9 +1392,17 @@ function updatePageSeo(filtered, search) {
 
   const canonical = document.querySelector('link[rel="canonical"]');
   if (canonical) {
-    canonical.setAttribute('href', hasFilteredView
-      ? `${window.location.origin}${window.location.pathname}${currentCategory !== 'todos' ? `?cat=${encodeURIComponent(currentCategory)}` : ''}`
-      : `${window.location.origin}/`);
+    let canonicalUrl = `${window.location.origin}${window.location.pathname}`;
+    const canonParams = new URLSearchParams();
+
+    if (modalProduct) {
+      canonParams.set('p', generateSlug(modalProduct.name));
+    } else if (currentCategory !== 'todos') {
+      canonParams.set('cat', currentCategory);
+    }
+
+    const qs = canonParams.toString();
+    canonical.setAttribute('href', qs ? `${canonicalUrl}?${qs}` : canonicalUrl);
   }
 
   const ogTitle = document.querySelector('meta[property="og:title"]');
